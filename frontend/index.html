@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Detection - OSINT Enhanced</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Phishing Detection</h1>
+            <p>OSINT-Enhanced URL & Email Analysis</p>
+        </header>
+
+        <main>
+            <form id="analyzeForm">
+                <div class="inputGroup">
+                    <label for="inputUrl">Enter suspicious URL or paste email content:</label>
+                    <textarea id="inputUrl" placeholder="https://suspicious-site.com or paste email..." rows="4"></textarea>
+                </div>
+                <button type="submit" id="analyzeBtn">Analyze</button>
+            </form>
+
+            <div id="results" class="hidden">
+                <h2>Analysis Results</h2>
+                <div id="resultContent"></div>
+            </div>
+        </main>
+
+        <footer>
+            <p>BSc Thesis Project - ELTE Faculty of Informatics</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

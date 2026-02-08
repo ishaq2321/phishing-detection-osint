@@ -36,7 +36,7 @@ from typing import Any, Optional, Protocol
 
 import whois
 
-from config import settings
+from backend.config import settings
 from .schemas import (
     DataSource,
     LookupStatus,

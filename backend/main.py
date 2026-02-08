@@ -34,14 +34,14 @@ async def lifespan(app: FastAPI):
     initializing connections, etc.
     """
     # Startup
-    print(f"🚀 Starting {settings.APP_NAME} v{settings.API_VERSION}")
-    print(f"📊 Analyzer Engine: {settings.ANALYZER_ENGINE}")
-    print(f"🌍 Environment: {settings.ENVIRONMENT}")
+    print(f"🚀 Starting Phishing Detection API v1.0.0")
+    print(f"📊 Analyzer Engine: {settings.analyzerEngine.value}")
+    print(f"🌍 Environment: {settings.environment.value}")
     
     yield
     
     # Shutdown
-    print(f"👋 Shutting down {settings.APP_NAME}")
+    print(f"👋 Shutting down Phishing Detection API")
 
 
 # =============================================================================
@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI):
 # =============================================================================
 
 app = FastAPI(
-    title=settings.APP_NAME,
+    title="Phishing Detection API",
     description="""
     # Phishing Detection API
     
@@ -70,7 +70,7 @@ app = FastAPI(
     BSc Thesis - ELTE Faculty of Informatics  
     Academic Year: 2025/2026
     """,
-    version=settings.API_VERSION,
+    version="1.0.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -107,7 +107,7 @@ async def valueErrorHandler(request, exc: ValueError):
 @app.exception_handler(Exception)
 async def genericExceptionHandler(request, exc: Exception):
     """Handle unexpected errors."""
-    if settings.DEBUG:
+    if settings.debug:
         # Show full error in debug mode
         return JSONResponse(
             status_code=500,
@@ -140,8 +140,8 @@ async def root():
     Returns basic API information and links to documentation.
     """
     return {
-        "name": settings.APP_NAME,
-        "version": settings.API_VERSION,
+        "name": "Phishing Detection API",
+        "version": "1.0.0",
         "status": "running",
         "docs": "/docs",
         "redoc": "/redoc",
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=8000,
-        reload=settings.DEBUG,
-        log_level=settings.LOG_LEVEL.lower()
+        reload=settings.debug,
+        log_level=settings.logLevel.value.lower()
     )
 

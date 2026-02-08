@@ -28,7 +28,6 @@ from osint.schemas import (
     ReputationCheck,
     ReputationResult,
     ReputationSource,
-    RiskLevel,
     WhoisContact,
     WhoisResult,
 )

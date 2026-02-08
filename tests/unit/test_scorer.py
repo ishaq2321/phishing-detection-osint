@@ -11,12 +11,10 @@ Course: BSc Thesis - ELTE Faculty of Informatics
 import pytest
 
 from backend.ml.schemas import (
-    FeatureCategory,
     FeatureSet,
     OsintFeatures,
     RiskLevel,
     RiskScore,
-    ScoreComponent,
     UrlFeatures,
 )
 from backend.ml.scorer import (

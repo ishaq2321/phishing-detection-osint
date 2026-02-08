@@ -23,7 +23,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 from typing import Any, Generator
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 

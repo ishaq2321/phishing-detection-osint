@@ -12,8 +12,6 @@ Author: Ishaq Muhammad (PXPRGK)
 Course: BSc Thesis - ELTE Faculty of Informatics
 """
 
-import os
-
 import pytest
 
 from config import (

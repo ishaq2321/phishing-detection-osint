@@ -15,20 +15,15 @@ Course: BSc Thesis - ELTE Faculty of Informatics
 
 import pytest
 from unittest.mock import MagicMock
-from datetime import datetime
 
 from osint.dnsChecker import (
     DnsChecker,
-    lookupDns,
-    DefaultDnsResolver,
     DnsError,
     DnsTimeoutError,
     DnsNotFoundError,
     CDN_PATTERNS,
 )
 from osint.schemas import (
-    DnsResult,
-    DnsRecord,
     DnsRecordType,
     LookupStatus,
 )
@@ -497,10 +492,10 @@ class TestLookupDnsFunction:
         """Test lookupDns convenience function works."""
         # This test would need to monkeypatch DnsChecker
         # For now, we just verify the function signature
-        from osint.dnsChecker import lookupDns
+        from osint.dnsChecker import lookupDns as lookupDnsFunc
         
         # Verify function exists and is callable
-        assert callable(lookupDns)
+        assert callable(lookupDnsFunc)
 
 
 # =============================================================================

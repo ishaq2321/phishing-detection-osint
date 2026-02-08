@@ -14,19 +14,15 @@ Course: BSc Thesis - ELTE Faculty of Informatics
 
 import pytest
 from unittest.mock import MagicMock, AsyncMock
-from datetime import datetime
 
 from osint.reputationChecker import (
     ReputationChecker,
-    lookupReputation,
-    DefaultReputationClient,
     ReputationError,
     ReputationTimeoutError,
     ReputationApiError,
     ReputationRateLimitError,
 )
 from osint.schemas import (
-    ReputationResult,
     ReputationCheck,
     ReputationSource,
     LookupStatus,
@@ -209,8 +205,6 @@ class TestAggregateScore:
             confidence=0.0
         )
         
-        callCount = {"value": 0}
-        
         async def checkDomain(domain, source):
             if source == ReputationSource.VIRUSTOTAL:
                 return vtCheck
@@ -269,6 +263,7 @@ class TestIpAddressChecks:
         
         # Should call checkIp for each IP
         assert mockClientClean.checkIp.call_count >= 1
+        assert result is not None
     
     @pytest.mark.asyncio
     async def test_limitsIpChecks(self, mockClientClean):
@@ -284,6 +279,7 @@ class TestIpAddressChecks:
         
         # Should only check first 5 IPs
         assert mockClientClean.checkIp.call_count <= 5
+        assert result is not None
     
     @pytest.mark.asyncio
     async def test_maliciousIpDetected(self, mockReputationClient, maliciousReputationCheck):
@@ -378,6 +374,7 @@ class TestReputationErrorHandling:
         
         # Rate limits should not retry
         assert mockReputationClient.checkDomain.call_count == 1
+        assert result is not None
 
 
 # =============================================================================
@@ -428,6 +425,7 @@ class TestReputationRetryLogic:
         
         # Should only try once
         assert mockReputationClient.checkDomain.call_count == 1
+        assert result is not None
 
 
 # =============================================================================
@@ -542,7 +540,7 @@ class TestReputationContextManager:
         async with ReputationChecker(
             client=mockClientClean,
             sources=[ReputationSource.INTERNAL]
-        ) as checker:
+        ):
             pass
         
         mockClientClean.close.assert_called_once()
@@ -607,10 +605,10 @@ class TestLookupReputationFunction:
     @pytest.mark.asyncio
     async def test_lookupReputationFunction(self):
         """Test lookupReputation convenience function exists."""
-        from osint.reputationChecker import lookupReputation
+        from osint.reputationChecker import lookupReputation as lookupReputationFunc
         
         # Verify function exists and is callable
-        assert callable(lookupReputation)
+        assert callable(lookupReputationFunc)
 
 
 # =============================================================================
@@ -635,6 +633,7 @@ class TestMultipleSources:
         result = await checker.lookup("example.com")
         
         assert mockReputationClient.checkDomain.call_count == 2
+        assert result is not None
     
     @pytest.mark.asyncio
     async def test_combinesResultsFromSources(self, mockReputationClient):

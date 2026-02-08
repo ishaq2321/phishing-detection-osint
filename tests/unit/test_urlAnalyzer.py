@@ -25,7 +25,7 @@ from backend.ml.urlAnalyzer import (
     detectUrlObfuscation,
     getUrlRiskLevel,
 )
-from backend.ml.schemas import SuspiciousPattern, UrlAnalysisResult
+from backend.ml.schemas import UrlAnalysisResult
 
 
 # =============================================================================

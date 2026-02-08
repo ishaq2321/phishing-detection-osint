@@ -34,14 +34,14 @@ async def lifespan(app: FastAPI):
     initializing connections, etc.
     """
     # Startup
-    print(f"🚀 Starting Phishing Detection API v1.0.0")
+    print("🚀 Starting Phishing Detection API v1.0.0")
     print(f"📊 Analyzer Engine: {settings.analyzerEngine.value}")
     print(f"🌍 Environment: {settings.environment.value}")
     
     yield
     
     # Shutdown
-    print(f"👋 Shutting down Phishing Detection API")
+    print("👋 Shutting down Phishing Detection API")
 
 
 # =============================================================================

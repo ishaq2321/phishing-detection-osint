@@ -15,8 +15,6 @@ from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, status
 
-from backend.config import settings
-
 from .orchestrator import AnalysisOrchestrator
 from .schemas import (
     AnalysisResponse,

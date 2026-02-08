@@ -14,15 +14,13 @@ Author: Ishaq Muhammad (PXPRGK)
 Course: BSc Thesis - ELTE Faculty of Informatics
 """
 
-import asyncio
-from datetime import datetime, timedelta
-from unittest.mock import MagicMock, AsyncMock, patch
+from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 
 from osint.schemas import DataSource, LookupStatus
 from osint.whoisLookup import (
-    DefaultWhoisClient,
     WhoisError,
     WhoisLookup,
     WhoisNotFoundError,

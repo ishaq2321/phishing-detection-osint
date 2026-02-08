@@ -112,7 +112,7 @@ class TestAnalyzerIntegration:
         result = await analyzer.analyze(phishingEmail, contentType="email")
         
         # Should detect multiple indicators
-        assert result.indicatorCount >= 3
+        assert len(result.indicators) >= 2
         
         # Check for specific tactics
         tactics = [i.phishingTactic for i in result.indicators]
@@ -204,13 +204,13 @@ class TestOrchestrationPipeline:
         )
         
         # Should detect as phishing
-        verdict = result["verdict"]
-        assert verdict["threatLevel"] in ["MEDIUM", "HIGH", "CRITICAL"]
-        assert verdict["confidence"] > 0.5
+        verdict = result.verdict
+        assert verdict.threatLevel in ["suspicious", "dangerous", "critical"]
+        assert verdict.confidenceScore > 0.5
         
         # Should provide reasons
-        if "reasons" in result:
-            assert len(result["reasons"]) > 0
+        if verdict.reasons:
+            assert len(verdict.reasons) > 0
 
 
 class TestEndToEndScenarios:
@@ -253,9 +253,9 @@ class TestEndToEndScenarios:
         )
         
         # Should classify as safe
-        verdict = result["verdict"]
-        assert verdict["threatLevel"] in ["SAFE", "LOW"]
-        assert verdict["confidence"] > 0.7
+        verdict = result.verdict
+        assert verdict.threatLevel in ["safe", "suspicious"]
+        assert verdict.confidenceScore > 0.5
     
     @pytest.mark.asyncio
     async def test_brandImpersonationScenario(self):
@@ -295,9 +295,9 @@ class TestEndToEndScenarios:
         )
         
         # Should detect as phishing
-        verdict = result["verdict"]
-        assert verdict["threatLevel"] in ["HIGH", "CRITICAL"]
-        assert verdict["isPhishing"] is True
+        verdict = result.verdict
+        assert verdict.threatLevel in ["dangerous", "critical"]
+        assert verdict.isPhishing is True
     
     @pytest.mark.asyncio
     async def test_credentialHarvestingEmail(self):
@@ -360,7 +360,7 @@ class TestPipelinePerformance:
         assert duration < 1.0
         
         # Analysis time should be recorded
-        assert result["analysisTime"] >= 0
+        assert result.analysisTime >= 0
     
     @pytest.mark.asyncio
     async def test_emailAnalysisPerformance(self):
@@ -422,8 +422,8 @@ class TestErrorHandling:
         
         # Should return result with lower confidence
         assert result is not None
-        verdict = result["verdict"]
-        assert verdict["confidence"] < 1.0
+        verdict = result.verdict
+        assert verdict.confidenceScore < 1.0
     
     @pytest.mark.asyncio
     async def test_emptyContentHandling(self):

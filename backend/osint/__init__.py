@@ -54,6 +54,25 @@ from osint.whoisLookup import (
     WhoisTimeoutError,
     lookupWhois,
 )
+from osint.dnsChecker import (
+    DefaultDnsResolver,
+    DnsChecker,
+    DnsError,
+    DnsNotFoundError,
+    DnsResolverProtocol,
+    DnsTimeoutError,
+    lookupDns,
+)
+from osint.reputationChecker import (
+    DefaultReputationClient,
+    ReputationChecker,
+    ReputationClientProtocol,
+    ReputationError,
+    ReputationApiError,
+    ReputationRateLimitError,
+    ReputationTimeoutError,
+    lookupReputation,
+)
 
 __all__ = [
     # Schemas
@@ -81,5 +100,22 @@ __all__ = [
     "WhoisParseError",
     "WhoisTimeoutError",
     "lookupWhois",
+    # DNS
+    "DefaultDnsResolver",
+    "DnsChecker",
+    "DnsError",
+    "DnsNotFoundError",
+    "DnsResolverProtocol",
+    "DnsTimeoutError",
+    "lookupDns",
+    # Reputation
+    "DefaultReputationClient",
+    "ReputationChecker",
+    "ReputationClientProtocol",
+    "ReputationError",
+    "ReputationApiError",
+    "ReputationRateLimitError",
+    "ReputationTimeoutError",
+    "lookupReputation",
 ]
 

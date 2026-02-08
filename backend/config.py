@@ -140,6 +140,13 @@ class Settings(BaseSettings):
         description="DNS resolution timeout in seconds"
     )
     
+    reputationTimeout: int = Field(
+        default=10,
+        ge=1,
+        le=60,
+        description="Reputation API request timeout in seconds"
+    )
+    
     httpTimeout: int = Field(
         default=10,
         ge=1,

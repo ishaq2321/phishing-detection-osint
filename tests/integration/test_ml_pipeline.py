@@ -43,6 +43,7 @@ from osint import (
 def legitOsintData():
     """OSINT data for a legitimate, established domain."""
     return OsintData(
+        url="https://google.com",
         domain="google.com",
         whois=WhoisResult(
             domain="google.com",
@@ -57,8 +58,8 @@ def legitOsintData():
             domain="google.com",
             status=LookupStatus.SUCCESS,
             records=[
-                DnsRecord(type=DnsRecordType.A, value="142.250.185.46", ttl=300),
-                DnsRecord(type=DnsRecordType.MX, value="smtp.google.com", ttl=3600),
+                DnsRecord(recordType=DnsRecordType.A, value="142.250.185.46", ttl=300),
+                DnsRecord(recordType=DnsRecordType.MX, value="smtp.google.com", ttl=3600),
             ]
         ),
         reputation=ReputationResult(
@@ -74,6 +75,7 @@ def legitOsintData():
 def suspiciousOsintData():
     """OSINT data for a suspicious, newly registered domain."""
     return OsintData(
+        url="http://paypal-verify.tk/login",
         domain="paypal-verify.tk",
         whois=WhoisResult(
             domain="paypal-verify.tk",
@@ -88,7 +90,7 @@ def suspiciousOsintData():
             domain="paypal-verify.tk",
             status=LookupStatus.SUCCESS,
             records=[
-                DnsRecord(type=DnsRecordType.A, value="185.220.101.45", ttl=300),
+                DnsRecord(recordType=DnsRecordType.A, value="185.220.101.45", ttl=300),
             ]
         ),
         reputation=ReputationResult(
@@ -174,8 +176,8 @@ class TestFeatureExtractionPipeline:
         assert features.urlFeatures.isHttps is True
         
         # OSINT features should be defaults
-        assert features.osintFeatures.domainAgeDays == -1
-        assert features.osintFeatures.reputationScore == -1.0
+        assert features.osintFeatures.domainAgeDays is None
+        assert features.osintFeatures.reputationScore == 0.0
         
         # Incomplete data
         assert features.hasCompleteData is False
@@ -199,7 +201,7 @@ class TestUrlAnalysisIntegration:
         # URL analysis should detect brand impersonation
         assert urlAnalysis.patternCount > 0
         brandPatterns = [p for p in urlAnalysis.suspiciousPatterns 
-                        if "paypal" in p.pattern.lower()]
+                        if "paypal" in p.matchedValue.lower()]
         assert len(brandPatterns) > 0
         
         # Features should reflect suspicious patterns
@@ -215,7 +217,7 @@ class TestUrlAnalysisIntegration:
         features = extractFeatures(highRiskUrl)
         
         # Both should indicate high risk
-        assert analysis.structuralRiskScore > 0.5
+        assert analysis.structuralScore > 0.5
         assert features.urlFeatures.hasIpAddress is True
         assert features.urlFeatures.hasAtSymbol is True
         assert features.urlFeatures.suspiciousFeatureCount >= 3
@@ -240,7 +242,7 @@ class TestScoringPipeline:
         riskScore = scorer.score(features)
         
         # Should have low risk
-        assert riskScore.totalScore < 0.3
+        assert riskScore.finalScore < 0.3
         assert riskScore.riskLevel in [RiskLevel.SAFE, RiskLevel.LOW]
         assert riskScore.confidence > 0.7
         
@@ -261,7 +263,7 @@ class TestScoringPipeline:
         riskScore = scorer.score(features)
         
         # Should have high risk
-        assert riskScore.totalScore > 0.5
+        assert riskScore.finalScore > 0.5
         assert riskScore.riskLevel in [RiskLevel.HIGH, RiskLevel.CRITICAL]
         assert riskScore.confidence > 0.6
         
@@ -280,7 +282,7 @@ class TestScoringPipeline:
         suspiciousScore = scoreUrl(suspiciousUrl)
         
         # Legit should score lower
-        assert legitScore.totalScore < suspiciousScore.totalScore
+        assert legitScore.finalScore < suspiciousScore.finalScore
         assert legitScore.riskLevel.value < suspiciousScore.riskLevel.value
 
 
@@ -310,6 +312,7 @@ class TestFeatureSetAggregation:
         
         # With OSINT (mocked)
         osintData = OsintData(
+            url="https://example.com",
             domain="example.com",
             whois=WhoisResult(
                 domain="example.com",
@@ -343,7 +346,7 @@ class TestEndToEndMLPipeline:
         
         # 1. Analyze URL structure
         urlAnalysis = analyzeUrl(url)
-        assert urlAnalysis.structuralRiskScore < 0.3
+        assert urlAnalysis.structuralScore < 0.3
         
         # 2. Extract features
         features = extractFeatures(url, osintData=legitOsintData)
@@ -352,7 +355,7 @@ class TestEndToEndMLPipeline:
         # 3. Score
         riskScore = scoreUrl(features)
         assert riskScore.riskLevel in [RiskLevel.SAFE, RiskLevel.LOW]
-        assert riskScore.totalScore < 0.4
+        assert riskScore.finalScore < 0.4
         
         # 4. Verify component breakdown
         assert riskScore.componentBreakdown["urlStructure"] < 0.3
@@ -364,7 +367,7 @@ class TestEndToEndMLPipeline:
         
         # 1. Analyze URL structure
         urlAnalysis = analyzeUrl(url)
-        assert urlAnalysis.structuralRiskScore > 0.5
+        assert urlAnalysis.structuralScore > 0.5
         assert urlAnalysis.patternCount > 0
         
         # 2. Extract features
@@ -374,7 +377,7 @@ class TestEndToEndMLPipeline:
         # 3. Score
         riskScore = scoreUrl(features)
         assert riskScore.riskLevel in [RiskLevel.HIGH, RiskLevel.CRITICAL]
-        assert riskScore.totalScore > 0.5
+        assert riskScore.finalScore > 0.5
         
         # 4. Verify reasons provided
         assert len(riskScore.reasons) > 0

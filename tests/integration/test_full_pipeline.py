@@ -29,6 +29,7 @@ from osint import OsintData, WhoisResult, DnsResult, ReputationResult, LookupSta
 def mockOsintData():
     """Mock OSINT data for testing."""
     return OsintData(
+        url="https://example.com",
         domain="example.com",
         whois=WhoisResult(
             domain="example.com",
@@ -57,7 +58,8 @@ def mockOsintData():
 class TestAnalyzerIntegration:
     """Test NLP analyzer integration with ML pipeline."""
     
-    def test_nlpAnalyzerWithUrlExtraction(self):
+    @pytest.mark.asyncio
+    async def test_nlpAnalyzerWithUrlExtraction(self):
         """Test NLP analyzer extracts URLs and ML can analyze them."""
         email = """
         Dear customer,
@@ -70,7 +72,7 @@ class TestAnalyzerIntegration:
         
         # NLP analysis
         analyzer = NlpAnalyzer()
-        nlpResult = analyzer.analyze(email, contentType="email")
+        nlpResult = await analyzer.analyze(email, contentType="email")
         
         # Should detect threat
         assert nlpResult.threatLevel in [ThreatLevel.SUSPICIOUS, 
@@ -94,7 +96,8 @@ class TestAnalyzerIntegration:
                                            RiskLevel.HIGH,
                                            RiskLevel.CRITICAL]
     
-    def test_nlpDetectsPhishingIndicators(self):
+    @pytest.mark.asyncio
+    async def test_nlpDetectsPhishingIndicators(self):
         """Test NLP detects key phishing indicators."""
         phishingEmail = """
         URGENT: Your account will be closed!
@@ -106,7 +109,7 @@ class TestAnalyzerIntegration:
         """
         
         analyzer = NlpAnalyzer()
-        result = analyzer.analyze(phishingEmail, contentType="email")
+        result = await analyzer.analyze(phishingEmail, contentType="email")
         
         # Should detect multiple indicators
         assert result.indicatorCount >= 3
@@ -132,10 +135,13 @@ class TestOrchestrationPipeline:
         async def mockCollectOsint(url):
             return mockOsintData
         
-        orchestrator.collectOsintData = mockCollectOsint
+        orchestrator._collectOsintData = mockCollectOsint
         
         # Analyze URL
-        result = await orchestrator.analyzeUrl("https://example.com/test")
+        result = await orchestrator.analyze(
+            content="https://example.com/test",
+            contentType="url"
+        )
         
         # Should return complete analysis
         assert result is not None
@@ -146,7 +152,7 @@ class TestOrchestrationPipeline:
         # Verdict should have required fields
         verdict = result["verdict"]
         assert "isPhishing" in verdict
-        assert "riskLevel" in verdict
+        assert "threatLevel" in verdict
         assert "confidence" in verdict
     
     @pytest.mark.asyncio
@@ -162,7 +168,10 @@ class TestOrchestrationPipeline:
         """
         
         # Analyze email
-        result = await orchestrator.analyzeEmail(email)
+        result = await orchestrator.analyze(
+            content=email,
+            contentType="email"
+        )
         
         # Should complete analysis
         assert result is not None
@@ -171,7 +180,7 @@ class TestOrchestrationPipeline:
         
         # Legitimate email should score safe
         verdict = result["verdict"]
-        assert verdict["riskLevel"] in ["SAFE", "LOW"]
+        assert verdict["threatLevel"] in ["SAFE", "LOW"]
     
     @pytest.mark.asyncio
     async def test_orchestratePhishingEmail(self):
@@ -188,11 +197,14 @@ class TestOrchestrationPipeline:
         """
         
         # Analyze phishing email
-        result = await orchestrator.analyzeEmail(phishing)
+        result = await orchestrator.analyze(
+            content=phishing,
+            contentType="email"
+        )
         
         # Should detect as phishing
         verdict = result["verdict"]
-        assert verdict["riskLevel"] in ["MEDIUM", "HIGH", "CRITICAL"]
+        assert verdict["threatLevel"] in ["MEDIUM", "HIGH", "CRITICAL"]
         assert verdict["confidence"] > 0.5
         
         # Should provide reasons
@@ -231,14 +243,17 @@ class TestEndToEndScenarios:
                 )
             )
         
-        orchestrator.collectOsintData = mockCollectOsint
+        orchestrator._collectOsintData = mockCollectOsint
         
         # Analyze legitimate URL
-        result = await orchestrator.analyzeUrl("https://www.google.com/search")
+        result = await orchestrator.analyze(
+            content="https://www.google.com/search",
+            contentType="url"
+        )
         
         # Should classify as safe
         verdict = result["verdict"]
-        assert verdict["riskLevel"] in ["SAFE", "LOW"]
+        assert verdict["threatLevel"] in ["SAFE", "LOW"]
         assert verdict["confidence"] > 0.7
     
     @pytest.mark.asyncio
@@ -270,14 +285,17 @@ class TestEndToEndScenarios:
                 )
             )
         
-        orchestrator.collectOsintData = mockCollectOsint
+        orchestrator._collectOsintData = mockCollectOsint
         
         # Analyze phishing URL
-        result = await orchestrator.analyzeUrl("http://paypal-verify.tk/login")
+        result = await orchestrator.analyze(
+            content="http://paypal-verify.tk/login",
+            contentType="url"
+        )
         
         # Should detect as phishing
         verdict = result["verdict"]
-        assert verdict["riskLevel"] in ["HIGH", "CRITICAL"]
+        assert verdict["threatLevel"] in ["HIGH", "CRITICAL"]
         assert verdict["isPhishing"] is True
     
     @pytest.mark.asyncio
@@ -301,7 +319,7 @@ class TestEndToEndScenarios:
         
         # Should detect credential harvesting
         verdict = result["verdict"]
-        assert verdict["riskLevel"] in ["MEDIUM", "HIGH", "CRITICAL"]
+        assert verdict["threatLevel"] in ["MEDIUM", "HIGH", "CRITICAL"]
         
         # Content analysis should detect urgency and credential requests
         if "contentAnalysis" in result:
@@ -321,12 +339,15 @@ class TestPipelinePerformance:
         async def mockCollectOsint(url):
             return mockOsintData
         
-        orchestrator.collectOsintData = mockCollectOsint
+        orchestrator._collectOsintData = mockCollectOsint
         
         startTime = datetime.now()
         
         # Run full analysis
-        result = await orchestrator.analyzeUrl("https://example.com")
+        result = await orchestrator.analyze(
+            content="https://example.com",
+            contentType="url"
+        )
         
         endTime = datetime.now()
         duration = (endTime - startTime).total_seconds()
@@ -345,7 +366,10 @@ class TestPipelinePerformance:
         email = "This is a test email with some content."
         
         startTime = datetime.now()
-        result = await orchestrator.analyzeEmail(email)
+        result = await orchestrator.analyze(
+            content=email,
+            contentType="email"
+        )
         endTime = datetime.now()
         
         duration = (endTime - startTime).total_seconds()
@@ -384,10 +408,13 @@ class TestErrorHandling:
                 )
             )
         
-        orchestrator.collectOsintData = mockCollectOsintFailing
+        orchestrator._collectOsintData = mockCollectOsintFailing
         
         # Should still complete analysis
-        result = await orchestrator.analyzeUrl("https://example.com")
+        result = await orchestrator.analyze(
+            content="https://example.com",
+            contentType="url"
+        )
         
         # Should return result with lower confidence
         assert result is not None
@@ -401,8 +428,8 @@ class TestErrorHandling:
         
         # Empty email should raise or return error
         with pytest.raises(Exception):
-            await orchestrator.analyzeEmail("")
+            await orchestrator.analyze(content="", contentType="email")
         
         # Empty URL should raise or return error
         with pytest.raises(Exception):
-            await orchestrator.analyzeUrl("")
+            await orchestrator.analyze(content="", contentType="url")

@@ -39,8 +39,8 @@ from osint import (
 @pytest.fixture
 def mockWhoisClient():
     """Mock WHOIS client returning valid data."""
-    client = AsyncMock()
-    client.lookup.return_value = {
+    client = MagicMock()
+    client.lookup = AsyncMock(return_value={
         "domain_name": "example.com",
         "registrar": "Example Registrar",
         "creation_date": datetime.now() - timedelta(days=365),
@@ -48,7 +48,7 @@ def mockWhoisClient():
         "registrant_name": "John Doe",
         "registrant_email": "john@example.com",
         "name_servers": ["ns1.example.com", "ns2.example.com"],
-    }
+    })
     return client
 
 
@@ -56,28 +56,28 @@ def mockWhoisClient():
 def mockDnsResolver():
     """Mock DNS resolver returning A records."""
     resolver = MagicMock()
-    resolver.resolve.return_value = [
-        MagicMock(address="93.184.216.34")
-    ]
+    mockAnswer = MagicMock()
+    mockAnswer.address = "93.184.216.34"
+    resolver.resolve.return_value = [mockAnswer]
     return resolver
 
 
 @pytest.fixture
 def mockReputationClient():
     """Mock reputation client returning clean result."""
-    client = AsyncMock()
-    client.checkDomain.return_value = ReputationCheck(
+    client = MagicMock()
+    client.checkDomain = AsyncMock(return_value=ReputationCheck(
         source=ReputationSource.INTERNAL,
         isMalicious=False,
         confidence=0.95,
         category="clean"
-    )
-    client.checkIp.return_value = ReputationCheck(
+    ))
+    client.checkIp = AsyncMock(return_value=ReputationCheck(
         source=ReputationSource.INTERNAL,
         isMalicious=False,
         confidence=0.95,
         category="clean"
-    )
+    ))
     return client
 
 
@@ -230,7 +230,7 @@ class TestOsintDataAggregation:
             status=LookupStatus.SUCCESS,
             records=[
                 DnsRecord(
-                    type=DnsRecordType.A,
+                    recordType=DnsRecordType.A,
                     value="1.2.3.4",
                     ttl=300
                 )
@@ -273,14 +273,14 @@ class TestOsintErrorHandling:
     async def test_allSourcesFailGracefully(self):
         """Test behavior when all OSINT sources fail."""
         # All failing clients
-        failingWhoisClient = AsyncMock()
-        failingWhoisClient.lookup.side_effect = Exception("WHOIS error")
+        failingWhoisClient = MagicMock()
+        failingWhoisClient.lookup = AsyncMock(side_effect=Exception("WHOIS error"))
         
         failingResolver = MagicMock()
         failingResolver.resolve.side_effect = Exception("DNS error")
         
-        failingReputationClient = AsyncMock()
-        failingReputationClient.checkDomain.side_effect = Exception("API error")
+        failingReputationClient = MagicMock()
+        failingReputationClient.checkDomain = AsyncMock(side_effect=Exception("API error"))
         
         whoisLookup = WhoisLookup(client=failingWhoisClient, maxRetries=0)
         dnsChecker = DnsChecker(resolver=failingResolver, maxRetries=0)

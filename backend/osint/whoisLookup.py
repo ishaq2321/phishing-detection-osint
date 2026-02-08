@@ -31,7 +31,6 @@ Course: BSc Thesis - ELTE Faculty of Informatics
 import asyncio
 import logging
 import time
-from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Optional, Protocol
 

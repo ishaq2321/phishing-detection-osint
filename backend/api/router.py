@@ -80,7 +80,7 @@ async def healthCheck() -> HealthResponse:
     
     return HealthResponse(
         status=status_value,
-        version=settings.API_VERSION,
+        version="1.0.0",
         timestamp=datetime.now(),
         services=services
     )
@@ -271,7 +271,7 @@ async def root() -> dict:
     """
     return {
         "name": "Phishing Detection API",
-        "version": settings.API_VERSION,
+        "version": "1.0.0",
         "docs": "/docs",
         "health": "/api/health",
         "endpoints": {

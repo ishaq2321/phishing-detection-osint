@@ -27,7 +27,7 @@ Author: Ishaq Muhammad (PXPRGK)
 Course: BSc Thesis - ELTE Faculty of Informatics
 """
 
-from osint.schemas import (
+from .schemas import (
     DataSource,
     DnsRecord,
     DnsRecordType,
@@ -42,7 +42,7 @@ from osint.schemas import (
     WhoisContact,
     WhoisResult,
 )
-from osint.whoisLookup import (
+from .whoisLookup import (
     DefaultWhoisClient,
     WhoisClientProtocol,
     WhoisError,
@@ -54,7 +54,7 @@ from osint.whoisLookup import (
     WhoisTimeoutError,
     lookupWhois,
 )
-from osint.dnsChecker import (
+from .dnsChecker import (
     DefaultDnsResolver,
     DnsChecker,
     DnsError,
@@ -63,7 +63,7 @@ from osint.dnsChecker import (
     DnsTimeoutError,
     lookupDns,
 )
-from osint.reputationChecker import (
+from .reputationChecker import (
     DefaultReputationClient,
     ReputationChecker,
     ReputationClientProtocol,

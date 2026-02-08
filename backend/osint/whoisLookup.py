@@ -37,7 +37,7 @@ from typing import Any, Optional, Protocol
 import whois
 
 from config import settings
-from osint.schemas import (
+from .schemas import (
     DataSource,
     LookupStatus,
     WhoisContact,

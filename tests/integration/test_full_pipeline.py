@@ -114,10 +114,10 @@ class TestAnalyzerIntegration:
         # Should detect multiple indicators
         assert len(result.indicators) >= 2
         
-        # Check for specific tactics
-        tactics = [i.phishingTactic for i in result.indicators]
-        assert any("URGENCY" in str(t) for t in tactics)
-        assert any("CREDENTIAL" in str(t) for t in tactics)
+        # Check for specific categories
+        categories = [i.category.upper() for i in result.indicators]
+        assert any("URGENCY" in cat for cat in categories)
+        assert any("CREDENTIAL" in cat for cat in categories)
         
         # High threat level
         assert result.threatLevel.value >= ThreatLevel.DANGEROUS.value

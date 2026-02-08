@@ -152,7 +152,7 @@ class TestFeatureExtractionPipeline:
         # URL features should show suspicious characteristics
         assert features.urlFeatures.isHttps is False  # No HTTPS
         assert features.urlFeatures.hasSuspiciousTld is True  # .tk TLD
-        assert features.urlFeatures.suspiciousKeywordCount > 0  # "login", "update"
+        assert features.urlFeatures.hasSuspiciousKeywords is True
         assert features.urlFeatures.suspiciousFeatureCount >= 3
         
         # OSINT features should show new domain

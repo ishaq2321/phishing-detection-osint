@@ -78,11 +78,11 @@ class TestAnalyzerIntegration:
         assert nlpResult.threatLevel in [ThreatLevel.SUSPICIOUS, 
                                          ThreatLevel.DANGEROUS,
                                          ThreatLevel.CRITICAL]
-        assert nlpResult.indicatorCount > 0
+        assert len(nlpResult.indicators) > 0
         
         # Should extract URLs
-        extractedUrls = [i.value for i in nlpResult.indicators 
-                        if "url" in i.type.lower()]
+        extractedUrls = [i.evidence for i in nlpResult.indicators 
+                        if i.category.lower() == "url" and i.evidence]
         assert len(extractedUrls) > 0
         
         # ML can analyze extracted URL
@@ -145,15 +145,16 @@ class TestOrchestrationPipeline:
         
         # Should return complete analysis
         assert result is not None
-        assert "verdict" in result
-        assert "features" in result
-        assert "analysisTime" in result
+        assert result.success is not None
+        assert result.verdict is not None
+        assert result.features is not None
+        assert result.analysisTime is not None
         
         # Verdict should have required fields
-        verdict = result["verdict"]
-        assert "isPhishing" in verdict
-        assert "threatLevel" in verdict
-        assert "confidence" in verdict
+        verdict = result.verdict
+        assert verdict.isPhishing is not None
+        assert verdict.threatLevel is not None
+        assert verdict.confidenceScore is not None
     
     @pytest.mark.asyncio
     async def test_orchestrateEmailAnalysis(self):
@@ -175,12 +176,12 @@ class TestOrchestrationPipeline:
         
         # Should complete analysis
         assert result is not None
-        assert "verdict" in result
-        assert "contentAnalysis" in result
+        assert result.success is True
+        assert result.verdict is not None
         
         # Legitimate email should score safe
-        verdict = result["verdict"]
-        assert verdict["threatLevel"] in ["SAFE", "LOW"]
+        verdict = result.verdict
+        assert verdict.threatLevel in ["safe", "suspicious"]
     
     @pytest.mark.asyncio
     async def test_orchestratePhishingEmail(self):
@@ -315,11 +316,14 @@ class TestEndToEndScenarios:
         If you don't verify within 24 hours, your account will be suspended.
         """
         
-        result = await orchestrator.analyzeEmail(phishing)
+        result = await orchestrator.analyze(
+            content=phishing,
+            contentType="email"
+        )
         
         # Should detect credential harvesting
-        verdict = result["verdict"]
-        assert verdict["threatLevel"] in ["MEDIUM", "HIGH", "CRITICAL"]
+        verdict = result.verdict
+        assert verdict.threatLevel in ["suspicious", "dangerous", "critical"]
         
         # Content analysis should detect urgency and credential requests
         if "contentAnalysis" in result:

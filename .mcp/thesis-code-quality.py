@@ -453,11 +453,24 @@ def main():
     for line in sys.stdin:
         try:
             request = json.loads(line)
+            method = request.get("method")
             
-            if request.get("method") == "tools/list":
+            if method == "initialize":
+                send_response({
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {
+                        "tools": {}
+                    },
+                    "serverInfo": {
+                        "name": "thesis-code-quality",
+                        "version": "1.0.0"
+                    }
+                })
+            
+            elif method == "tools/list":
                 send_response({"tools": TOOLS})
             
-            elif request.get("method") == "tools/call":
+            elif method == "tools/call":
                 tool_name = request["params"]["name"]
                 params = request["params"].get("arguments", {})
                 result = handle_tool_call(tool_name, params)

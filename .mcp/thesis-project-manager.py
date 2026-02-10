@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 MCP Server: Thesis Project Manager
-Provides tools for issue tracking, milestone management, and commits.
+Issue tracking, milestone management, and commits.
 """
 
 import json
@@ -9,418 +9,253 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
-
-# Simple MCP protocol implementation
-def send_response(result: Any):
-    """Send MCP response."""
-    response = {"jsonrpc": "2.0", "result": result}
-    print(json.dumps(response), flush=True)
 
 
-def send_error(code: int, message: str):
-    """Send MCP error response."""
-    error = {"jsonrpc": "2.0", "error": {"code": code, "message": message}}
-    print(json.dumps(error), flush=True)
+PROJECT_ROOT = "/home/ishaq2321/Desktop/Thesis"
+ISSUES_FILE = f"{PROJECT_ROOT}/.mcp/issues.json"
 
 
-def run_git_command(args: list[str]) -> tuple[bool, str]:
-    """Run git command and return success status and output."""
+def send_response(request_id, result):
+    msg = json.dumps({"jsonrpc": "2.0", "id": request_id, "result": result})
+    sys.stdout.write(msg + "\n")
+    sys.stdout.flush()
+
+
+def send_error(request_id, code, message):
+    msg = json.dumps({"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}})
+    sys.stdout.write(msg + "\n")
+    sys.stdout.flush()
+
+
+def run_git(args):
     try:
-        result = subprocess.run(
-            ["git"] + args,
-            cwd="/home/ishaq2321/Desktop/Thesis",
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
-        return result.returncode == 0, result.stdout + result.stderr
+        r = subprocess.run(["git"] + args, cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30)
+        return r.returncode == 0, (r.stdout + r.stderr).strip()
     except Exception as e:
         return False, str(e)
 
 
+def load_issues():
+    p = Path(ISSUES_FILE)
+    if p.exists():
+        with open(p) as f:
+            return json.load(f)
+    return []
+
+
+def save_issues(issues):
+    with open(ISSUES_FILE, "w") as f:
+        json.dump(issues, f, indent=2)
+
+
 # =============================================================================
-# Milestone Management
+# Milestones
 # =============================================================================
 
 MILESTONES = {
-    "milestone-1": {
-        "title": "Milestone 1: Planning & Design",
-        "deadline": "2025-12-20",
-        "deliverables": [
-            "Finalize topic & plan",
-            "Background research",
-            "System design diagrams",
-            "GitLab setup",
-            "Initial prototype"
-        ]
-    },
-    "milestone-2": {
-        "title": "Milestone 2: Core Implementation",
-        "deadline": "2026-02-20",
-        "deliverables": [
-            "Core algorithm/model implementation",
-            "Backend integration",
-            "Dataset collection & preprocessing",
-            "Preliminary tests"
-        ]
-    },
-    "milestone-3": {
-        "title": "Milestone 3: Integration & Testing",
-        "deadline": "2026-03-25",
-        "deliverables": [
-            "UI development & integration",
-            "Performance improvements",
-            "Solid test coverage",
-            "Methodology & results draft"
-        ]
-    },
-    "milestone-4": {
-        "title": "Milestone 4: Finalization",
-        "deadline": "2026-04-15",
-        "deliverables": [
-            "Final implementation",
-            "Complete documentation",
-            "User guide",
-            "Developer docs",
-            "Full thesis draft"
-        ]
-    },
-    "final-submission": {
-        "title": "Final Submission",
-        "deadline": "2026-05-01",
-        "deliverables": [
-            "Official thesis submission",
-            "Minor corrections only"
-        ]
-    }
+    "milestone-1": {"title": "Milestone 1: Planning & Design", "deadline": "2025-12-20",
+        "deliverables": ["Finalize topic & plan", "Background research", "System design diagrams", "GitLab setup", "Initial prototype"]},
+    "milestone-2": {"title": "Milestone 2: Core Implementation", "deadline": "2026-02-20",
+        "deliverables": ["Core algorithm/model implementation", "Backend integration", "Dataset collection & preprocessing", "Preliminary tests"]},
+    "milestone-3": {"title": "Milestone 3: Integration & Testing", "deadline": "2026-03-25",
+        "deliverables": ["UI development & integration", "Performance improvements", "Solid test coverage", "Methodology & results draft"]},
+    "milestone-4": {"title": "Milestone 4: Finalization", "deadline": "2026-04-15",
+        "deliverables": ["Final implementation", "Complete documentation", "User guide", "Developer docs", "Full thesis draft"]},
+    "final-submission": {"title": "Final Submission", "deadline": "2026-05-01",
+        "deliverables": ["Official thesis submission", "Minor corrections only"]}
 }
 
 
-def get_current_milestone() -> dict:
-    """Determine current milestone based on date."""
+def get_current_milestone():
     today = datetime.now().date()
-    
-    for milestone_id, data in MILESTONES.items():
-        deadline = datetime.strptime(data["deadline"], "%Y-%m-%d").date()
-        if today <= deadline:
-            days_remaining = (deadline - today).days
-            return {
-                "id": milestone_id,
-                "title": data["title"],
-                "deadline": data["deadline"],
-                "daysRemaining": days_remaining,
-                "deliverables": data["deliverables"]
-            }
-    
-    return {
-        "id": "overdue",
-        "title": "Project Overdue",
-        "deadline": "2026-05-01",
-        "daysRemaining": -1,
-        "deliverables": []
-    }
+    for mid, data in MILESTONES.items():
+        dl = datetime.strptime(data["deadline"], "%Y-%m-%d").date()
+        if today <= dl:
+            return {"id": mid, "title": data["title"], "deadline": data["deadline"],
+                    "daysRemaining": (dl - today).days, "deliverables": data["deliverables"]}
+    return {"id": "overdue", "title": "All milestones passed", "daysRemaining": -1}
 
 
-def list_milestones() -> dict:
-    """List all thesis milestones with status."""
+def list_milestones():
     today = datetime.now().date()
     result = []
-    
-    for milestone_id, data in MILESTONES.items():
-        deadline = datetime.strptime(data["deadline"], "%Y-%m-%d").date()
-        days_remaining = (deadline - today).days
-        
-        if days_remaining < 0:
-            status = "overdue" if milestone_id != "final-submission" else "past"
-        elif days_remaining == 0:
-            status = "due-today"
-        elif days_remaining <= 7:
-            status = "urgent"
-        else:
-            status = "upcoming"
-        
-        result.append({
-            "id": milestone_id,
-            "title": data["title"],
-            "deadline": data["deadline"],
-            "daysRemaining": days_remaining,
-            "status": status,
-            "deliverables": data["deliverables"]
-        })
-    
+    for mid, data in MILESTONES.items():
+        dl = datetime.strptime(data["deadline"], "%Y-%m-%d").date()
+        days = (dl - today).days
+        status = "completed" if days < 0 else ("due-today" if days == 0 else ("urgent" if days <= 7 else "upcoming"))
+        result.append({"id": mid, "title": data["title"], "deadline": data["deadline"],
+                       "daysRemaining": days, "status": status, "deliverables": data["deliverables"]})
     return {"milestones": result, "current": get_current_milestone()}
 
 
 # =============================================================================
-# Issue Management
+# Issues
 # =============================================================================
 
-def list_issues(milestone: str = None, status: str = "open") -> dict:
-    """List GitHub/GitLab issues."""
-    # For GitHub
-    args = ["log", "--all", "--grep=^Issue", "--oneline", "-20"]
-    success, output = run_git_command(args)
-    
-    issues = []
-    if success and output:
-        for line in output.strip().split("\n"):
-            if line:
-                parts = line.split(" ", 1)
-                if len(parts) == 2:
-                    issues.append({
-                        "commit": parts[0],
-                        "message": parts[1]
-                    })
-    
-    return {
-        "milestone": milestone,
-        "status": status,
-        "count": len(issues),
-        "issues": issues[:10]  # Return first 10
-    }
+def list_issues(milestone=None, status="open"):
+    issues = load_issues()
+    if milestone:
+        issues = [i for i in issues if i.get("milestone") == milestone]
+    if status != "all":
+        issues = [i for i in issues if i.get("status") == status]
+    return {"count": len(issues), "issues": issues}
 
 
-def create_issue(title: str, description: str, milestone: str = None, labels: list = None) -> dict:
-    """Create a new issue (tracked in issues.json)."""
-    issues_file = Path("/home/ishaq2321/Desktop/Thesis/.mcp/issues.json")
-    
-    # Load existing issues
-    issues = []
-    if issues_file.exists():
-        with open(issues_file) as f:
-            issues = json.load(f)
-    
-    # Create new issue
-    issue_number = len(issues) + 1
-    new_issue = {
-        "number": issue_number,
-        "title": title,
-        "description": description,
-        "milestone": milestone or get_current_milestone()["id"],
-        "labels": labels or [],
-        "status": "open",
-        "created": datetime.now().isoformat(),
-        "closed": None
-    }
-    
-    issues.append(new_issue)
-    
-    # Save issues
-    with open(issues_file, "w") as f:
-        json.dump(issues, f, indent=2)
-    
-    return {
-        "success": True,
-        "issue": new_issue,
-        "message": f"Created issue #{issue_number}: {title}"
-    }
+def create_issue(title, description="", milestone=None, labels=None):
+    issues = load_issues()
+    num = max([i["number"] for i in issues], default=0) + 1
+    issue = {"number": num, "title": title, "description": description,
+             "milestone": milestone or get_current_milestone()["id"],
+             "labels": labels or [], "status": "open",
+             "created": datetime.now().isoformat(), "closed": None}
+    issues.append(issue)
+    save_issues(issues)
+    return {"success": True, "issue": issue}
 
 
-def bulk_create_issues(issues_data: list[dict]) -> dict:
-    """Create multiple issues at once."""
+def bulk_create_issues(items):
     results = []
-    
-    for issue_data in issues_data:
-        result = create_issue(
-            title=issue_data["title"],
-            description=issue_data.get("description", ""),
-            milestone=issue_data.get("milestone"),
-            labels=issue_data.get("labels", [])
-        )
-        results.append(result)
-    
-    return {
-        "success": True,
-        "created": len(results),
-        "issues": results
-    }
+    for item in items:
+        r = create_issue(item["title"], item.get("description", ""),
+                         item.get("milestone"), item.get("labels"))
+        results.append(r["issue"])
+    return {"success": True, "created": len(results), "issues": results}
 
 
-def close_issue(issue_number: int, comment: str = None) -> dict:
-    """Close an issue."""
-    issues_file = Path("/home/ishaq2321/Desktop/Thesis/.mcp/issues.json")
-    
-    if not issues_file.exists():
-        return {"success": False, "error": "No issues file found"}
-    
-    with open(issues_file) as f:
-        issues = json.load(f)
-    
-    # Find and close issue
-    found = False
+def close_issue(issue_number, comment=None):
+    issues = load_issues()
     for issue in issues:
         if issue["number"] == issue_number:
             issue["status"] = "closed"
             issue["closed"] = datetime.now().isoformat()
             if comment:
                 issue["closeComment"] = comment
-            found = True
-            break
-    
-    if not found:
-        return {"success": False, "error": f"Issue #{issue_number} not found"}
-    
-    # Save issues
-    with open(issues_file, "w") as f:
-        json.dump(issues, f, indent=2)
-    
-    return {
-        "success": True,
-        "message": f"Closed issue #{issue_number}",
-        "comment": comment
-    }
+            save_issues(issues)
+            return {"success": True, "message": f"Closed issue #{issue_number}"}
+    return {"success": False, "error": f"Issue #{issue_number} not found"}
 
 
-def commit_with_issue(issue_number: int, message: str, files: list = None) -> dict:
-    """Commit changes and reference issue."""
-    # Stage files
+def commit_with_issue(issue_number, message, files=None):
     if files:
-        for file in files:
-            success, _ = run_git_command(["add", file])
-            if not success:
-                return {"success": False, "error": f"Failed to stage {file}"}
+        for f in files:
+            run_git(["add", f])
     else:
-        run_git_command(["add", "-A"])
-    
-    # Commit with issue reference
+        run_git(["add", "-A"])
     commit_msg = f"Issue #{issue_number}: {message}"
-    success, output = run_git_command(["commit", "-m", commit_msg])
-    
-    if success:
-        # Get commit hash
-        _, hash_output = run_git_command(["rev-parse", "HEAD"])
-        commit_hash = hash_output.strip()[:7]
-        
-        return {
-            "success": True,
-            "commit": commit_hash,
-            "message": commit_msg,
-            "issue": issue_number
-        }
-    else:
-        return {"success": False, "error": output}
+    ok, out = run_git(["commit", "-m", commit_msg])
+    if ok:
+        _, h = run_git(["rev-parse", "--short", "HEAD"])
+        return {"success": True, "commit": h, "message": commit_msg}
+    return {"success": False, "error": out}
 
 
 # =============================================================================
-# MCP Tool Handlers
+# Tool definitions (MCP spec with inputSchema)
 # =============================================================================
 
-TOOLS = {
-    "get_current_milestone": {
-        "description": "Get the current thesis milestone based on today's date (Feb 8, 2026)",
-        "parameters": {}
-    },
-    "list_milestones": {
-        "description": "List all thesis milestones with deadlines and status",
-        "parameters": {}
-    },
-    "list_issues": {
-        "description": "List project issues with optional milestone filter",
-        "parameters": {
-            "milestone": {"type": "string", "description": "Filter by milestone ID"},
-            "status": {"type": "string", "description": "Filter by status (open/closed)"}
-        }
-    },
-    "create_issue": {
-        "description": "Create a new issue for the thesis project",
-        "parameters": {
-            "title": {"type": "string", "required": True},
-            "description": {"type": "string", "required": True},
-            "milestone": {"type": "string"},
-            "labels": {"type": "array"}
-        }
-    },
-    "bulk_create_issues": {
-        "description": "Create multiple issues at once from a list",
-        "parameters": {
-            "issues": {"type": "array", "required": True}
-        }
-    },
-    "close_issue": {
-        "description": "Close an issue with optional comment",
-        "parameters": {
-            "issue_number": {"type": "integer", "required": True},
-            "comment": {"type": "string"}
-        }
-    },
-    "commit_with_issue": {
-        "description": "Commit changes with issue reference (e.g., 'Issue #5: Fix bug')",
-        "parameters": {
-            "issue_number": {"type": "integer", "required": True},
-            "message": {"type": "string", "required": True},
-            "files": {"type": "array"}
-        }
+TOOLS = [
+    {"name": "get_current_milestone", "description": "Get the current thesis milestone based on today's date. Returns milestone title, deadline, days remaining, and deliverables.",
+     "inputSchema": {"type": "object", "properties": {}}},
+    {"name": "list_milestones", "description": "List all 5 thesis milestones with deadlines, status, and deliverables.",
+     "inputSchema": {"type": "object", "properties": {}}},
+    {"name": "list_issues", "description": "List project issues. Filter by milestone or status.",
+     "inputSchema": {"type": "object", "properties": {
+         "milestone": {"type": "string", "description": "Filter by milestone ID (e.g. milestone-2)"},
+         "status": {"type": "string", "enum": ["open", "closed", "all"], "description": "Filter by status", "default": "open"}}}},
+    {"name": "create_issue", "description": "Create a new thesis project issue.",
+     "inputSchema": {"type": "object", "properties": {
+         "title": {"type": "string", "description": "Issue title"},
+         "description": {"type": "string", "description": "Issue description"},
+         "milestone": {"type": "string", "description": "Milestone ID"},
+         "labels": {"type": "array", "items": {"type": "string"}, "description": "Labels"}},
+         "required": ["title"]}},
+    {"name": "bulk_create_issues", "description": "Create multiple issues at once from an array.",
+     "inputSchema": {"type": "object", "properties": {
+         "issues": {"type": "array", "items": {"type": "object", "properties": {
+             "title": {"type": "string"}, "description": {"type": "string"},
+             "milestone": {"type": "string"}, "labels": {"type": "array", "items": {"type": "string"}}},
+             "required": ["title"]}, "description": "Array of issues"}},
+         "required": ["issues"]}},
+    {"name": "close_issue", "description": "Close an issue with optional comment.",
+     "inputSchema": {"type": "object", "properties": {
+         "issue_number": {"type": "integer", "description": "Issue number to close"},
+         "comment": {"type": "string", "description": "Closing comment"}},
+         "required": ["issue_number"]}},
+    {"name": "commit_with_issue", "description": "Git commit referencing an issue number.",
+     "inputSchema": {"type": "object", "properties": {
+         "issue_number": {"type": "integer", "description": "Issue number"},
+         "message": {"type": "string", "description": "Commit message"},
+         "files": {"type": "array", "items": {"type": "string"}, "description": "Files to stage"}},
+         "required": ["issue_number", "message"]}}
+]
+
+
+# =============================================================================
+# Tool dispatcher
+# =============================================================================
+
+def call_tool(name, args):
+    dispatch = {
+        "get_current_milestone": lambda: get_current_milestone(),
+        "list_milestones": lambda: list_milestones(),
+        "list_issues": lambda: list_issues(args.get("milestone"), args.get("status", "open")),
+        "create_issue": lambda: create_issue(args["title"], args.get("description", ""), args.get("milestone"), args.get("labels")),
+        "bulk_create_issues": lambda: bulk_create_issues(args["issues"]),
+        "close_issue": lambda: close_issue(args["issue_number"], args.get("comment")),
+        "commit_with_issue": lambda: commit_with_issue(args["issue_number"], args["message"], args.get("files")),
     }
-}
-
-
-def handle_tool_call(tool_name: str, params: dict) -> dict:
-    """Handle MCP tool call."""
-    if tool_name == "get_current_milestone":
-        return get_current_milestone()
-    elif tool_name == "list_milestones":
-        return list_milestones()
-    elif tool_name == "list_issues":
-        return list_issues(params.get("milestone"), params.get("status", "open"))
-    elif tool_name == "create_issue":
-        return create_issue(
-            params["title"],
-            params["description"],
-            params.get("milestone"),
-            params.get("labels")
-        )
-    elif tool_name == "bulk_create_issues":
-        return bulk_create_issues(params["issues"])
-    elif tool_name == "close_issue":
-        return close_issue(params["issue_number"], params.get("comment"))
-    elif tool_name == "commit_with_issue":
-        return commit_with_issue(
-            params["issue_number"],
-            params["message"],
-            params.get("files")
-        )
-    else:
-        return {"error": f"Unknown tool: {tool_name}"}
+    fn = dispatch.get(name)
+    if fn:
+        return fn()
+    raise ValueError(f"Unknown tool: {name}")
 
 
 # =============================================================================
-# Main MCP Server Loop
+# MCP Server main loop
 # =============================================================================
 
 def main():
-    """MCP server main loop."""
     for line in sys.stdin:
+        line = line.strip()
+        if not line:
+            continue
         try:
-            request = json.loads(line)
-            method = request.get("method")
-            
+            req = json.loads(line)
+            rid = req.get("id")
+            method = req.get("method")
+
             if method == "initialize":
-                send_response({
+                send_response(rid, {
                     "protocolVersion": "2024-11-05",
-                    "capabilities": {
-                        "tools": {}
-                    },
-                    "serverInfo": {
-                        "name": "thesis-project-manager",
-                        "version": "1.0.0"
-                    }
+                    "capabilities": {"tools": {}},
+                    "serverInfo": {"name": "thesis-project-manager", "version": "1.0.0"}
                 })
-            
+
+            elif method == "notifications/initialized":
+                pass  # No response for notifications
+
             elif method == "tools/list":
-                send_response({"tools": TOOLS})
-            
+                send_response(rid, {"tools": TOOLS})
+
             elif method == "tools/call":
-                tool_name = request["params"]["name"]
-                params = request["params"].get("arguments", {})
-                result = handle_tool_call(tool_name, params)
-                send_response(result)
-            
+                name = req["params"]["name"]
+                args = req["params"].get("arguments", {})
+                result = call_tool(name, args)
+                send_response(rid, {"content": [{"type": "text", "text": json.dumps(result, indent=2, default=str)}]})
+
+            elif method == "ping":
+                send_response(rid, {})
+
             else:
-                send_error(-32601, "Method not found")
-        
+                send_error(rid, -32601, f"Method not found: {method}")
+
         except Exception as e:
-            send_error(-32603, f"Internal error: {str(e)}")
+            rid_val = None
+            try:
+                rid_val = req.get("id")
+            except Exception:
+                pass
+            send_error(rid_val, -32603, str(e))
 
 
 if __name__ == "__main__":

@@ -121,8 +121,9 @@ class TestAnalyzerIntegration:
             assert any("URGENCY" in cat or "CREDENTIAL" in cat or "THREAT" in cat 
                       for cat in categories)
         
-        # Should indicate some threat level
-        assert result.threatLevel.value >= ThreatLevel.SUSPICIOUS.value
+        # Should indicate some threat level (at least suspicious)
+        threatOrder = {"safe": 0, "suspicious": 1, "dangerous": 2, "critical": 3}
+        assert threatOrder.get(result.threatLevel.value, 0) >= threatOrder["suspicious"]
 
 
 class TestOrchestrationPipeline:

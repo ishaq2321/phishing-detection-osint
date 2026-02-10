@@ -120,7 +120,99 @@ Publicly available information collected from open sources to enrich threat inte
 
 ---
 
-## 5. Existing Solutions & Baseline Comparisons
+## 5. NLP-Based Phishing Analysis (Implemented in M2)
+
+### Approach: spaCy Rule-Based NLP
+
+Our system uses spaCy's rule-based NLP components rather than a trained ML classifier for the initial implementation. This provides:
+- **Deterministic results** — same input always produces same output
+- **Explainable detections** — every detection maps to a specific rule
+- **No training data needed** — works immediately with curated patterns
+- **Easy to extend** — add new patterns without retraining
+
+### Architecture
+
+```
+Input Text → spaCy Pipeline → Pattern Matchers → Score Aggregation → Verdict
+                 │
+                 ├── PhraseMatcher (urgency, threats, credentials)
+                 ├── EntityRuler (brand detection)
+                 └── Token Matcher (suspicious request patterns)
+```
+
+### Phishing Indicator Categories
+
+| # | Category | Detection Method | Example Patterns | Count |
+|---|----------|-----------------|-------------------|-------|
+| 1 | Urgency Keywords | PhraseMatcher | "act now", "immediately", "within 24 hours" | 15+ |
+| 2 | Threat Phrases | PhraseMatcher | "account suspended", "unauthorized access" | 20+ |
+| 3 | Authority Impersonation | EntityRuler | "IT Department", "Security Team", "PayPal" | 30+ |
+| 4 | Suspicious Requests | Token Matcher | "verify password", "confirm SSN" | 15+ |
+| 5 | Credential Harvesting | PhraseMatcher | "click here to login", "enter your details" | 15+ |
+| 6 | Fear Tactics | PhraseMatcher | "your account will be closed", "legal action" | 15+ |
+
+### Feature Extraction Methodology
+
+Features are extracted at two levels:
+
+**URL Features (10 indicators):**
+| Feature | Type | Scoring Logic |
+|---------|------|--------------|
+| urlLength | int | >75 chars → suspicious |
+| domainLength | int | >25 chars → suspicious |
+| subdomainCount | int | >2 → suspicious |
+| hasIpAddress | bool | True → high risk |
+| hasAtSymbol | bool | True → redirect trick |
+| hasDashInDomain | bool | True → impersonation indicator |
+| digitRatio | float | >0.3 → suspicious |
+| specialCharCount | int | >3 → suspicious |
+| isHttps | bool | False → no encryption |
+| pathDepth | int | >4 → suspicious |
+
+**OSINT Features (enrichment):**
+| Feature | Source | Scoring Logic |
+|---------|--------|--------------|
+| domainAgeDays | WHOIS | <30 days → high risk |
+| isPrivate | WHOIS | True → hides identity |
+| hasValidDns | DNS | False → infrastructure issues |
+| reputationScore | Multi-source | >0.5 → suspicious |
+| inBlacklists | Reputation | True → known malicious |
+
+### Scoring Algorithm
+
+Final risk score combines three weighted components:
+```
+finalScore = (textAnalysisScore × 0.40) + (urlFeatureScore × 0.25) + (osintScore × 0.35)
+```
+
+| Score Range | Threat Level | Action |
+|-------------|-------------|--------|
+| 0.0 – 0.4 | Safe | Proceed normally |
+| 0.4 – 0.6 | Suspicious | Verify source |
+| 0.6 – 0.8 | Dangerous | Do not interact |
+| 0.8 – 1.0 | Critical | Report immediately |
+
+### Comparison: Rule-Based NLP vs ML Classification
+
+| Aspect | Rule-Based (Current) | ML Classifier (Future) |
+|--------|---------------------|----------------------|
+| Training data | Not needed | Requires labeled dataset |
+| Accuracy | ~85-90% (estimated) | ~95%+ (with good data) |
+| Explainability | High (each rule traceable) | Low-Medium (SHAP needed) |
+| New patterns | Manual addition | Automatic learning |
+| False positives | Controllable | Data-dependent |
+| Latency | <100ms | ~200-500ms |
+
+### Future: LLM Integration Path
+
+The analyzer module uses an abstract base class (`BaseAnalyzer`), enabling easy swapping:
+1. Current: `NlpAnalyzer` — spaCy rule-based
+2. Future: `LlmAnalyzer` — Ollama/vLLM with structured output
+3. Switch via: `ANALYZER_ENGINE=llm` in `.env`
+
+---
+
+## 6. Existing Solutions & Baseline Comparisons
 
 ### Academic Research
 
@@ -230,4 +322,4 @@ Publicly available information collected from open sources to enrich threat inte
 ---
 
 *Research compiled for BSc Thesis: Phishing Detection Using OSINT-Enhanced Features*
-*ELTE Faculty of Informatics - December 2025*
+*ELTE Faculty of Informatics - Updated February 2026*

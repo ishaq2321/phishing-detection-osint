@@ -11,6 +11,8 @@ Author: Ishaq Muhammad (PXPRGK)
 Course: BSc Thesis - ELTE Faculty of Informatics
 """
 
+import asyncio
+import re
 import time
 from typing import Optional
 from urllib.parse import urlparse
@@ -90,7 +92,7 @@ class AnalysisOrchestrator:
             # Collect OSINT data (if domain available)
             osintData: Optional[OsintData] = None
             if domain:
-                osintData = await self._collectOsintData(domain)
+                osintData = await self._collectOsintData(domain, url=content)
             
             # Extract ML features
             featureSet: FeatureSet = extractFeatures(content, osintData)
@@ -144,14 +146,14 @@ class AnalysisOrchestrator:
     
     def _detectContentType(self, content: str) -> str:
         """Auto-detect content type from content."""
-        content_lower = content.lower().strip()
+        contentLower = content.lower().strip()
         
         # Check if it's a URL
-        if content_lower.startswith(("http://", "https://", "www.")):
+        if contentLower.startswith(("http://", "https://", "www.")):
             return "url"
         
         # Check if it has email headers
-        if any(header in content_lower for header in ["from:", "subject:", "to:"]):
+        if any(header in contentLower for header in ["from:", "subject:", "to:"]):
             return "email"
         
         # Default to text
@@ -166,7 +168,6 @@ class AnalysisOrchestrator:
                 return parsed.netloc.lower().replace("www.", "")
             
             # Try extracting from email content
-            import re
             # Look for URLs in content
             urlPattern = r'https?://(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}'
             urls = re.findall(urlPattern, content)
@@ -185,16 +186,24 @@ class AnalysisOrchestrator:
         except Exception:
             return None
     
-    async def _collectOsintData(self, domain: str) -> Optional[OsintData]:
-        """Collect OSINT data for domain."""
+    async def _collectOsintData(self, domain: str, url: str = "") -> Optional[OsintData]:
+        """Collect OSINT data for domain using parallel execution.
+        
+        Args:
+            domain: Domain name to collect OSINT data for
+            url: Original URL being analyzed
+        """
         try:
-            # Collect data from all OSINT sources
-            whoisResult = await lookupWhois(domain)
-            dnsResult = await lookupDns(domain)
-            reputationResult = await lookupReputation(domain)
+            # Collect data from all OSINT sources in parallel
+            whoisResult, dnsResult, reputationResult = await asyncio.gather(
+                lookupWhois(domain),
+                lookupDns(domain),
+                lookupReputation(domain),
+            )
             
             # Build OsintData object
             return OsintData(
+                url=url or f"https://{domain}",
                 domain=domain,
                 whois=whoisResult if whoisResult.status == "success" else None,
                 dns=dnsResult if dnsResult.status == "success" else None,

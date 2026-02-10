@@ -135,7 +135,7 @@ class TestOrchestrationPipeline:
         orchestrator = AnalysisOrchestrator()
         
         # Mock OSINT collection
-        async def mockCollectOsint(url):
+        async def mockCollectOsint(domain, url=""):
             return mockOsintData
         
         orchestrator._collectOsintData = mockCollectOsint
@@ -225,8 +225,9 @@ class TestEndToEndScenarios:
         orchestrator = AnalysisOrchestrator()
         
         # Mock OSINT to return safe data
-        async def mockCollectOsint(url):
+        async def mockCollectOsint(domain, url=""):
             return OsintData(
+                url=url or "https://google.com",
                 domain="google.com",
                 whois=WhoisResult(
                     domain="google.com",
@@ -266,8 +267,9 @@ class TestEndToEndScenarios:
         orchestrator = AnalysisOrchestrator()
         
         # Mock OSINT to return suspicious data
-        async def mockCollectOsint(url):
+        async def mockCollectOsint(domain, url=""):
             return OsintData(
+                url=url or "http://paypal-verify.tk/login",
                 domain="paypal-verify.tk",
                 whois=WhoisResult(
                     domain="paypal-verify.tk",
@@ -343,7 +345,7 @@ class TestPipelinePerformance:
         orchestrator = AnalysisOrchestrator()
         
         # Mock OSINT to avoid real network calls
-        async def mockCollectOsint(url):
+        async def mockCollectOsint(domain, url=""):
             return mockOsintData
         
         orchestrator._collectOsintData = mockCollectOsint
@@ -395,8 +397,9 @@ class TestErrorHandling:
         orchestrator = AnalysisOrchestrator()
         
         # Mock OSINT to fail
-        async def mockCollectOsintFailing(url):
+        async def mockCollectOsintFailing(domain, url=""):
             return OsintData(
+                url=url or "https://example.com",
                 domain="example.com",
                 whois=WhoisResult(
                     domain="example.com",

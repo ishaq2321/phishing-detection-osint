@@ -234,7 +234,7 @@ class AnalysisOrchestrator:
         
         # Add URL score if available
         if urlScore:
-            combinedScore += urlScore.overallScore * 0.25
+            combinedScore += urlScore.finalScore * 0.25
         else:
             # Use feature set indicators if no URL score
             featureScore = min(featureSet.totalRiskIndicators / 10, 1.0)
@@ -251,7 +251,7 @@ class AnalysisOrchestrator:
                 osintScore = 0.0
                 if osintData.whois.domainAgeDays and osintData.whois.domainAgeDays < 30:
                     osintScore += 0.3
-                if osintData.whois.isPrivate:
+                if osintData.whois.isPrivacyProtected:
                     osintScore += 0.2
                 combinedScore += osintScore
         
@@ -278,7 +278,7 @@ class AnalysisOrchestrator:
         if osintData:
             if osintData.whois and osintData.whois.domainAgeDays and osintData.whois.domainAgeDays < 30:
                 reasons.append(f"Domain registered recently ({osintData.whois.domainAgeDays} days ago)")
-            if osintData.whois and osintData.whois.isPrivate:
+            if osintData.whois and osintData.whois.isPrivacyProtected:
                 reasons.append("WHOIS privacy protection enabled")
             if osintData.reputation and osintData.reputation.maliciousCount > 0:
                 reasons.append(f"Found in {osintData.reputation.maliciousCount} blacklists")
@@ -314,7 +314,7 @@ class AnalysisOrchestrator:
             domain=domain or osintData.domain,
             domainAgeDays=osintData.whois.domainAgeDays if osintData.whois else None,
             registrar=osintData.whois.registrar if osintData.whois else None,
-            isPrivate=osintData.whois.isPrivate if osintData.whois else False,
+            isPrivate=osintData.whois.isPrivacyProtected if osintData.whois else False,
             hasValidDns=bool(osintData.dns and osintData.dns.hasIpAddresses) if osintData.dns else False,
             reputationScore=osintData.reputation.aggregateScore if osintData.reputation else 0.5,
             inBlacklists=osintData.reputation.maliciousCount > 0 if osintData.reputation else False

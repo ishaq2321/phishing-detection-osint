@@ -59,7 +59,7 @@ def isolatedEnvironment(monkeypatch):
     monkeypatch.setenv("LOG_LEVEL", "DEBUG")
     
     # Clear any cached settings
-    from config import getSettings
+    from backend.config import getSettings
     getSettings.cache_clear()
     
     yield
@@ -71,7 +71,7 @@ def isolatedEnvironment(monkeypatch):
 @pytest.fixture
 def testSettings():
     """Get settings configured for testing."""
-    from config import Settings, Environment
+    from backend.config import Settings, Environment
     
     return Settings(
         environment=Environment.TESTING,

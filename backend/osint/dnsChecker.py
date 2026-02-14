@@ -272,7 +272,7 @@ class DnsChecker:
             retryDelay: Delay between retry attempts
             resolver: Custom resolver for dependency injection
         """
-        from config import getSettings
+        from backend.config import getSettings
         settings = getSettings()
         
         self._timeout = timeout or settings.dnsTimeout

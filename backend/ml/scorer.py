@@ -455,12 +455,52 @@ class PhishingScorer:
                 reasons=["Empty URL provided"],
             )
         
-        # Extract features
+        # Extract features and analyze URL
         features = self._featureExtractor.extract(url, osintData)
-        
-        # Analyze URL
         urlAnalysis = self._urlAnalyzer.analyze(url)
         
+        return self._calculateScore(features, urlAnalysis)
+    
+    def scoreWithFeatures(
+        self,
+        features: FeatureSet,
+        urlAnalysis: Optional[UrlAnalysisResult] = None,
+    ) -> RiskScore:
+        """
+        Calculate score from pre-extracted features.
+        
+        Useful when features have already been extracted elsewhere.
+        
+        Args:
+            features: Pre-extracted feature set
+            urlAnalysis: Optional pre-computed URL analysis
+            
+        Returns:
+            RiskScore: Complete risk assessment
+        """
+        if urlAnalysis is None:
+            urlAnalysis = self._urlAnalyzer.analyze(features.url)
+        
+        return self._calculateScore(features, urlAnalysis)
+    
+    def _calculateScore(
+        self,
+        features: FeatureSet,
+        urlAnalysis: UrlAnalysisResult,
+    ) -> RiskScore:
+        """
+        Core scoring logic shared by score() and scoreWithFeatures().
+        
+        Combines URL structure, OSINT, and feature-based scores
+        into a final weighted risk assessment.
+        
+        Args:
+            features: Extracted feature set
+            urlAnalysis: URL structural analysis result
+            
+        Returns:
+            RiskScore: Complete risk assessment with component breakdown
+        """
         # Calculate component scores
         urlScore, urlFactors = calculateUrlStructureScore(
             features.urlFeatures,
@@ -507,86 +547,6 @@ class PhishingScorer:
         confidence = calculateConfidence(features, urlAnalysis)
         
         # Compile all reasons (sorted by severity)
-        allFactors = urlFactors + osintFactors + featureFactors
-        reasons = self._prioritizeReasons(allFactors, riskLevel)
-        
-        return RiskScore(
-            url=url,
-            domain=features.domain,
-            finalScore=finalScore,
-            riskLevel=riskLevel,
-            confidence=confidence,
-            components=components,
-            reasons=reasons,
-        )
-    
-    def scoreWithFeatures(
-        self,
-        features: FeatureSet,
-        urlAnalysis: Optional[UrlAnalysisResult] = None,
-    ) -> RiskScore:
-        """
-        Calculate score from pre-extracted features.
-        
-        Useful when features have already been extracted elsewhere.
-        
-        Args:
-            features: Pre-extracted feature set
-            urlAnalysis: Optional pre-computed URL analysis
-            
-        Returns:
-            RiskScore: Complete risk assessment
-        """
-        # Use provided analysis or create new one
-        if urlAnalysis is None:
-            urlAnalysis = self._urlAnalyzer.analyze(features.url)
-        
-        # Calculate component scores
-        urlScore, urlFactors = calculateUrlStructureScore(
-            features.urlFeatures,
-            urlAnalysis,
-        )
-        
-        osintScore, osintFactors = calculateOsintScore(features.osintFeatures)
-        
-        featureScore, featureFactors = calculateFeatureScore(features)
-        
-        # Create score components
-        components = [
-            ScoreComponent(
-                name="URL Structure",
-                rawScore=urlScore,
-                weight=self._weights.urlStructure,
-                category=FeatureCategory.URL_STRUCTURE,
-                factors=urlFactors,
-            ),
-            ScoreComponent(
-                name="OSINT Analysis",
-                rawScore=osintScore,
-                weight=self._weights.osintDerived,
-                category=FeatureCategory.OSINT_DERIVED,
-                factors=osintFactors,
-            ),
-            ScoreComponent(
-                name="Feature Analysis",
-                rawScore=featureScore,
-                weight=self._weights.featureBased,
-                category=FeatureCategory.DOMAIN_ANALYSIS,
-                factors=featureFactors,
-            ),
-        ]
-        
-        # Calculate weighted final score
-        finalScore = sum(comp.weightedScore for comp in components)
-        finalScore = min(max(finalScore, 0.0), 1.0)
-        
-        # Determine risk level
-        riskLevel = determineRiskLevel(finalScore)
-        
-        # Calculate confidence
-        confidence = calculateConfidence(features, urlAnalysis)
-        
-        # Compile all reasons
         allFactors = urlFactors + osintFactors + featureFactors
         reasons = self._prioritizeReasons(allFactors, riskLevel)
         

@@ -56,7 +56,7 @@ async def healthCheck() -> HealthResponse:
         Response:
         {
             "status": "healthy",
-            "version": "0.2.0",
+            "version": "1.0.0",
             "timestamp": "2026-02-08T12:00:00",
             "services": {
                 "osint": true,
@@ -262,7 +262,7 @@ async def root() -> dict:
         Response:
         {
             "name": "Phishing Detection API",
-            "version": "0.2.0",
+            "version": "1.0.0",
             "docs": "/docs",
             "health": "/api/health"
         }

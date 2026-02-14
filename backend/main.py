@@ -11,6 +11,7 @@ Author: Ishaq Muhammad (PXPRGK)
 Course: BSc Thesis - ELTE Faculty of Informatics
 """
 
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -19,6 +20,8 @@ from fastapi.responses import JSONResponse
 
 from backend.api import router
 from backend.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 # =============================================================================
@@ -34,14 +37,14 @@ async def lifespan(app: FastAPI):
     initializing connections, etc.
     """
     # Startup
-    print("🚀 Starting Phishing Detection API v1.0.0")
-    print(f"📊 Analyzer Engine: {settings.analyzerEngine.value}")
-    print(f"🌍 Environment: {settings.environment.value}")
+    logger.info("Starting Phishing Detection API v1.0.0")
+    logger.info("Analyzer Engine: %s", settings.analyzerEngine.value)
+    logger.info("Environment: %s", settings.environment.value)
     
     yield
     
     # Shutdown
-    print("👋 Shutting down Phishing Detection API")
+    logger.info("Shutting down Phishing Detection API")
 
 
 # =============================================================================

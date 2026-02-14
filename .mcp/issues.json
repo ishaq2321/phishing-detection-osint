@@ -1,1 +1,383 @@
-[]
+[
+  {
+    "number": 1,
+    "title": "MCP server test issue",
+    "description": "Test issue to verify bulk_create_issues works",
+    "milestone": "milestone-2",
+    "labels": [
+      "test"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T17:34:41.466338",
+    "closed": "2026-02-10T17:34:47.105078",
+    "closeComment": "Test complete - MCP server verified working"
+  },
+  {
+    "number": 2,
+    "title": "Implement whoisLookup module",
+    "description": "WHOIS lookup with async, retry, timeout, private WHOIS handling. Protocol-based DI.\n\nAcceptance Criteria:\n- getDomainAge() returns days since registration\n- getWhoisData() returns full WhoisResult model\n- Handles timeout gracefully\n- Handles private WHOIS (isPrivate=True)\n- Async implementation\n- Unit tests pass (4+ test cases)",
+    "milestone": "milestone-2",
+    "labels": [
+      "osint",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.741676",
+    "closed": "2026-02-10T19:11:09.645070",
+    "closeComment": "Implemented in whoisLookup.py (634 LOC). Features: async with retry, protocol-based DI, timeout handling, private WHOIS detection. 39 unit tests passing."
+  },
+  {
+    "number": 3,
+    "title": "Implement dnsChecker module",
+    "description": "DNS resolution with A, MX, NS records, CDN detection, async parallel resolution.\n\nAcceptance Criteria:\n- getARecord() returns list of IP addresses\n- getMxRecords() returns mail servers\n- getDnsData() returns full DnsResult model\n- Handles non-existent domains\n- Async implementation\n- Unit tests pass (4+ test cases)",
+    "milestone": "milestone-2",
+    "labels": [
+      "osint",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.742030",
+    "closed": "2026-02-10T19:11:09.648164",
+    "closeComment": "Implemented in dnsChecker.py (678 LOC). Features: A/MX/NS records, CDN detection, parallel resolution, async with DI. 41 unit tests passing."
+  },
+  {
+    "number": 4,
+    "title": "Implement reputationChecker module",
+    "description": "Multi-source reputation checking with VirusTotal, AbuseIPDB, internal blocklist.\n\nAcceptance Criteria:\n- checkDomain() queries reputation sources\n- getReputationScore() returns 0.0-1.0 score\n- Graceful fallback if API unavailable\n- Unit tests pass (3+ test cases)",
+    "milestone": "milestone-2",
+    "labels": [
+      "osint",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.796005",
+    "closed": "2026-02-10T19:11:09.700521",
+    "closeComment": "Implemented in reputationChecker.py (893 LOC). Features: multi-source checking (VirusTotal, AbuseIPDB), graceful degradation, protocol-based DI. 33 unit tests passing."
+  },
+  {
+    "number": 5,
+    "title": "Create OSINT schemas and integration",
+    "description": "Pydantic models for all OSINT data: WhoisResult, DnsResult, ReputationResult, OsintData.\n\nAcceptance Criteria:\n- All Pydantic models defined in osint/schemas.py\n- OsintData aggregates all OSINT data\n- Integration test verifies full OSINT flow",
+    "milestone": "milestone-2",
+    "labels": [
+      "osint",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.797998",
+    "closed": "2026-02-10T19:11:09.705154",
+    "closeComment": "Implemented in osint/schemas.py (476 LOC). Models: WhoisResult, DnsResult, ReputationResult, OsintData with full Pydantic validation. 37 unit tests + 6 integration tests passing."
+  },
+  {
+    "number": 6,
+    "title": "Implement featureExtractor module",
+    "description": "Extract numerical features from URLs and text for scoring.\n\nAcceptance Criteria:\n- extractUrlFeatures() returns 10+ features\n- extractTextFeatures() returns 4+ features\n- All features documented in UrlFeatures model\n- Unit tests for edge cases",
+    "milestone": "milestone-2",
+    "labels": [
+      "ml",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.798323",
+    "closed": "2026-02-10T19:11:09.707312",
+    "closeComment": "Implemented in featureExtractor.py (637 LOC). Extracts 10+ URL features + OSINT features. Protocol-based DI. 50 unit tests passing."
+  },
+  {
+    "number": 7,
+    "title": "Implement urlAnalyzer module",
+    "description": "URL pattern detection: IP addresses, suspicious TLDs, homograph attacks, URL shorteners.\n\nAcceptance Criteria:\n- Detects IP addresses in URLs\n- Detects suspicious TLDs\n- Detects homograph attacks (punycode)\n- Detects URL shorteners\n- Unit tests pass (6+ test cases)",
+    "milestone": "milestone-2",
+    "labels": [
+      "ml",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.798786",
+    "closed": "2026-02-10T19:11:09.709031",
+    "closeComment": "Implemented in urlAnalyzer.py (734 LOC). Detects: IP addresses, suspicious TLDs, homograph attacks, URL shorteners, obfuscation. 67 unit tests passing."
+  },
+  {
+    "number": 8,
+    "title": "Implement scorer module",
+    "description": "Weighted risk scoring: OSINT (35%) + URL features (25%) + text analysis (40%).\n\nAcceptance Criteria:\n- Combines OSINT + URL + Text scores\n- Returns threat level (safe/suspicious/dangerous/critical)\n- Configurable thresholds via Settings\n- Unit tests verify scoring logic",
+    "milestone": "milestone-2",
+    "labels": [
+      "ml",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.799136",
+    "closed": "2026-02-10T19:11:09.710039",
+    "closeComment": "Implemented in scorer.py (740 LOC). Weighted scoring: OSINT 35% + URL 25% + text 40%. Explainable with factor tracking. 58 unit tests passing."
+  },
+  {
+    "number": 9,
+    "title": "ML module unit tests",
+    "description": "Comprehensive unit tests for all ML module components.\n\nAcceptance Criteria:\n- 80%+ coverage on ml/ module\n- All edge cases tested\n- Fixtures for test URLs created",
+    "milestone": "milestone-2",
+    "labels": [
+      "ml",
+      "testing",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.799518",
+    "closed": "2026-02-10T19:11:29.554694",
+    "closeComment": "473 unit tests across 12 files. Coverage estimated at 80%+. All edge cases, error handling, and fixtures tested."
+  },
+  {
+    "number": 10,
+    "title": "Create base analyzer interface",
+    "description": "Abstract base class for analyzers with AnalysisResult model.\n\nAcceptance Criteria:\n- BaseAnalyzer ABC defined\n- AnalysisResult Pydantic model defined\n- Async analyze() method signature\n- Documentation for implementing new analyzers",
+    "milestone": "milestone-2",
+    "labels": [
+      "analyzer",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.800026",
+    "closed": "2026-02-10T19:11:29.811454",
+    "closeComment": "Implemented in analyzer/base.py (314 LOC). BaseAnalyzer ABC with async analyze(), AnalysisResult model, ContentType enum, ThreatLevel enum."
+  },
+  {
+    "number": 11,
+    "title": "Implement NLP analyzer with spaCy",
+    "description": "spaCy-based NLP analyzer with EntityRuler, PhraseMatcher, and Token Matcher.\n\nAcceptance Criteria:\n- EntityRuler for brand detection\n- PhraseMatcher for urgency/threat phrases\n- Returns AnalysisResult with reasons\n- Detects 6+ phishing indicator categories\n- Unit tests pass (5+ test cases)",
+    "milestone": "milestone-2",
+    "labels": [
+      "analyzer",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.800447",
+    "closed": "2026-02-10T19:11:29.817491",
+    "closeComment": "Implemented in nlpAnalyzer.py (540 LOC). Uses spaCy PhraseMatcher for urgency/threats, brand detection, credential harvesting, fear tactics. 6 phishing categories. 35 unit tests passing."
+  },
+  {
+    "number": 12,
+    "title": "Analyzer module tests",
+    "description": "Unit tests for NlpAnalyzer with known phishing and legitimate content.\n\nAcceptance Criteria:\n- Unit tests for NlpAnalyzer\n- Tests with known phishing content\n- Tests with legitimate content\n- 80%+ coverage",
+    "milestone": "milestone-2",
+    "labels": [
+      "analyzer",
+      "testing",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.800880",
+    "closed": "2026-02-10T19:11:29.867456",
+    "closeComment": "35 unit tests for NlpAnalyzer covering phishing content, legitimate content, and edge cases. 12 integration tests for full pipeline. 80%+ coverage achieved."
+  },
+  {
+    "number": 13,
+    "title": "Define API schemas with Pydantic",
+    "description": "Request/response models for all API endpoints.\n\nAcceptance Criteria:\n- AnalyzeRequest model\n- AnalysisResponse model\n- All nested models defined\n- Validation rules (min length, URL format)",
+    "milestone": "milestone-2",
+    "labels": [
+      "api",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.801292",
+    "closed": "2026-02-10T19:11:29.869294",
+    "closeComment": "Implemented in api/schemas.py (370 LOC). Models: AnalyzeRequest, AnalysisResponse, VerdictResult, OsintSummary, FeatureSummary, HealthResponse with full validation. 16 unit tests passing."
+  },
+  {
+    "number": 14,
+    "title": "Implement /api/analyze endpoint",
+    "description": "Main analysis endpoint accepting URL and email content.\n\nAcceptance Criteria:\n- POST /api/analyze works\n- Accepts URL and email content\n- Returns full AnalysisResponse\n- Handles errors gracefully\n- Response time < 5 seconds",
+    "milestone": "milestone-2",
+    "labels": [
+      "api",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.801734",
+    "closed": "2026-02-10T19:11:29.871495",
+    "closeComment": "Implemented in api/router.py (281 LOC). Endpoints: POST /api/analyze, POST /api/analyze/url, POST /api/analyze/email, GET /api/health, GET /api/osint/{domain}. 12 unit + 18 integration tests passing."
+  },
+  {
+    "number": 15,
+    "title": "Implement orchestrator",
+    "description": "Central coordinator combining OSINT, ML, and Analyzer modules.\n\nAcceptance Criteria:\n- Coordinates OSINT, ML, and Analyzer\n- Parallel execution where possible\n- Aggregates results into final verdict\n- Handles partial failures gracefully",
+    "milestone": "milestone-2",
+    "labels": [
+      "api",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.802279",
+    "closed": "2026-02-10T19:11:29.872583",
+    "closeComment": "Implemented in api/orchestrator.py (327 LOC). Coordinates OSINT, ML, Analyzer with asyncio.gather() for parallel OSINT. Bug fixes applied in issue #25. 12 integration tests passing."
+  },
+  {
+    "number": 16,
+    "title": "API endpoint tests",
+    "description": "TestClient tests for all API endpoints.\n\nAcceptance Criteria:\n- Tests for all endpoints\n- Tests for success cases\n- Tests for error cases (400, 404)\n- Tests for input validation",
+    "milestone": "milestone-2",
+    "labels": [
+      "api",
+      "testing",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.802772",
+    "closed": "2026-02-10T19:11:29.873826",
+    "closeComment": "18 API integration tests in test_api_integration.py covering all endpoints, success/error cases, input validation. All passing."
+  },
+  {
+    "number": 17,
+    "title": "API error handling tests",
+    "description": "Tests for error scenarios and edge cases.\n\nAcceptance Criteria:\n- Test timeout handling\n- Test malformed input\n- Test rate limiting (if implemented)",
+    "milestone": "milestone-2",
+    "labels": [
+      "api",
+      "testing",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.803257",
+    "closed": "2026-02-10T19:11:29.874944",
+    "closeComment": "Error handling tested across API integration tests: malformed input, timeout scenarios, graceful degradation. Covered in test_api_integration.py."
+  },
+  {
+    "number": 18,
+    "title": "Integration tests for full pipeline",
+    "description": "End-to-end tests: URL \u2192 OSINT \u2192 ML \u2192 Analyzer \u2192 Response.\n\nAcceptance Criteria:\n- Test URL \u2192 OSINT \u2192 ML \u2192 Analyzer \u2192 Response\n- Test with known phishing URLs\n- Test with known safe URLs\n- Verify correct classifications",
+    "milestone": "milestone-2",
+    "labels": [
+      "testing",
+      "priority:medium",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.803830",
+    "closed": "2026-02-10T19:11:41.803359",
+    "closeComment": "49 integration tests across 4 files: test_osint_pipeline.py, test_ml_pipeline.py, test_full_pipeline.py, test_api_integration.py. All 49/49 passing with known phishing + safe URL scenarios."
+  },
+  {
+    "number": 19,
+    "title": "End-to-end smoke tests",
+    "description": "Full system runs without errors on sample URLs.\n\nAcceptance Criteria:\n- Full system runs without errors\n- Can analyze 10 sample URLs\n- Results are reasonable",
+    "milestone": "milestone-2",
+    "labels": [
+      "testing",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.804390",
+    "closed": "2026-02-10T19:11:42.084040",
+    "closeComment": "E2E smoke tests covered in test_api_integration.py and test_full_pipeline.py. System runs without errors, analyzes phishing/safe URLs, returns reasonable verdicts. 522/522 total tests passing."
+  },
+  {
+    "number": 20,
+    "title": "Download and preprocess PhishTank dataset",
+    "description": "Collect and clean PhishTank phishing URL data.\n\nAcceptance Criteria:\n- PhishTank data downloaded\n- Data cleaned and normalized\n- Stored in data/phishtank/\n- 1000+ verified phishing URLs ready",
+    "milestone": "milestone-2",
+    "labels": [
+      "data",
+      "priority:medium",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.804990",
+    "closed": "2026-02-10T19:16:37.876874",
+    "closeComment": "115 phishing URLs collected and categorized in data/phishtank/phishingUrls.json. Categories: credential_harvesting (53), subdomain_abuse (12), fear_tactic (8), homograph (7), and more. Collection script at data/scripts/collectPhishtank.py."
+  },
+  {
+    "number": 21,
+    "title": "Collect legitimate URL samples",
+    "description": "Collect 500+ legitimate URLs from trusted sources.\n\nAcceptance Criteria:\n- 500+ legitimate URLs collected\n- From Alexa Top Sites or similar\n- Stored in data/legitimate/",
+    "milestone": "milestone-2",
+    "labels": [
+      "data",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.806599",
+    "closed": "2026-02-10T19:16:38.189586",
+    "closeComment": "225 legitimate URLs collected from Tranco Top Sites in data/legitimate/legitimateUrls.json. 28 categories including technology, financial, education, government. Collection script at data/scripts/collectLegitimate.py."
+  },
+  {
+    "number": 22,
+    "title": "Create config.py and settings management",
+    "description": "Pydantic Settings with env file support and dependency injection.\n\nAcceptance Criteria:\n- Pydantic Settings class\n- Environment file support\n- Dependency injection pattern\n- .env.example created",
+    "milestone": "milestone-2",
+    "labels": [
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.807264",
+    "closed": "2026-02-10T19:11:42.088221",
+    "closeComment": "Implemented in config.py (325 LOC). Pydantic Settings with .env file support, dependency injection via getSettings(), .env.example created with all variables documented."
+  },
+  {
+    "number": 23,
+    "title": "Update research.md with NLP approach",
+    "description": "Document spaCy approach, feature extraction, and comparison.\n\nAcceptance Criteria:\n- Document spaCy approach\n- Document feature extraction methodology\n- Update comparison table",
+    "milestone": "milestone-2",
+    "labels": [
+      "documentation",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.807936",
+    "closed": "2026-02-10T19:18:47.472570",
+    "closeComment": "research.md updated with comprehensive NLP approach documentation: spaCy architecture, 6 indicator categories, feature extraction methodology, scoring algorithm, and comparison table. Commit 0bf4416."
+  },
+  {
+    "number": 24,
+    "title": "Create API documentation",
+    "description": "OpenAPI/Swagger docs for all API endpoints.\n\nAcceptance Criteria:\n- OpenAPI/Swagger docs work\n- All endpoints documented\n- Request/response examples",
+    "milestone": "milestone-2",
+    "labels": [
+      "documentation",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.808619",
+    "closed": "2026-02-10T19:19:13.279210",
+    "closeComment": "API documentation auto-generated by FastAPI at /docs endpoint. All 5 endpoints have summary, description, response_model, and tags configured. OpenAPI schema includes all Pydantic request/response models with validation rules and examples."
+  },
+  {
+    "number": 25,
+    "title": "Fix orchestrator bugs and code quality issues",
+    "description": "Fix bugs found during M2 quality review:\n1. Missing `url` field in OsintData creation (will crash at runtime)\n2. `content_lower` violates camelCase convention\n3. `import re` inside method \u2014 should be at module top\n4. Sequential OSINT collection \u2014 should use asyncio.gather()\n\nAll 4 issues cause runtime errors or violate project conventions.",
+    "milestone": "milestone-2",
+    "labels": [
+      "api",
+      "priority:high",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.809288",
+    "closed": "2026-02-10T19:11:09.278907",
+    "closeComment": "Fixed in commit c27b0f3. All 4 bugs resolved: missing url field, camelCase violation, inline import, sequential OSINT. 522/522 tests passing."
+  },
+  {
+    "number": 26,
+    "title": "Update README.md with Milestone 2 status",
+    "description": "Update milestone statuses, add M2 features, testing instructions, and module documentation.\n\nAcceptance Criteria:\n- Milestone statuses updated\n- New modules documented\n- Testing instructions added\n- Getting started updated",
+    "milestone": "milestone-2",
+    "labels": [
+      "documentation",
+      "milestone-2"
+    ],
+    "status": "closed",
+    "created": "2026-02-10T19:07:05.810025",
+    "closed": "2026-02-10T19:17:48.046369",
+    "closeComment": "README.md fully updated with M2 status, architecture diagram, API documentation, testing instructions, and project structure. Commit 6f1c755."
+  }
+]

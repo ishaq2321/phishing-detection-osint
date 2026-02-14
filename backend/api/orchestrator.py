@@ -30,6 +30,20 @@ from .schemas import (
 
 
 # =============================================================================
+# Scoring Constants
+# =============================================================================
+
+TEXT_ANALYSIS_WEIGHT = 0.40
+URL_SCORE_WEIGHT = 0.25
+OSINT_SCORE_WEIGHT = 0.35
+PHISHING_THRESHOLD = 0.6
+THREAT_SAFE_UPPER = 0.4
+THREAT_SUSPICIOUS_UPPER = 0.6
+THREAT_DANGEROUS_UPPER = 0.8
+RECENT_DOMAIN_AGE_DAYS = 30
+
+
+# =============================================================================
 # Orchestrator Class
 # =============================================================================
 
@@ -230,40 +244,40 @@ class AnalysisOrchestrator:
         - OSINT data: 35%
         """
         # Start with text analysis score
-        combinedScore = textAnalysis.confidenceScore * 0.4
+        combinedScore = textAnalysis.confidenceScore * TEXT_ANALYSIS_WEIGHT
         
         # Add URL score if available
         if urlScore:
-            combinedScore += urlScore.finalScore * 0.25
+            combinedScore += urlScore.finalScore * URL_SCORE_WEIGHT
         else:
             # Use feature set indicators if no URL score
             featureScore = min(featureSet.totalRiskIndicators / 10, 1.0)
-            combinedScore += featureScore * 0.25
+            combinedScore += featureScore * URL_SCORE_WEIGHT
         
         # Add OSINT score if available
         if osintData and osintData.reputation:
             # Reputation score is 0-1 where 1 is good, so we invert it
             osintScore = 1.0 - osintData.reputation.aggregateScore
-            combinedScore += osintScore * 0.35
+            combinedScore += osintScore * OSINT_SCORE_WEIGHT
         else:
             # Use domain age and privacy as fallback
             if osintData and osintData.whois:
                 osintScore = 0.0
-                if osintData.whois.domainAgeDays and osintData.whois.domainAgeDays < 30:
+                if osintData.whois.domainAgeDays and osintData.whois.domainAgeDays < RECENT_DOMAIN_AGE_DAYS:
                     osintScore += 0.3
                 if osintData.whois.isPrivacyProtected:
                     osintScore += 0.2
                 combinedScore += osintScore
         
         # Determine if phishing
-        isPhishing = combinedScore >= 0.6
+        isPhishing = combinedScore >= PHISHING_THRESHOLD
         
         # Determine threat level
-        if combinedScore < 0.4:
+        if combinedScore < THREAT_SAFE_UPPER:
             threatLevel = "safe"
-        elif combinedScore < 0.6:
+        elif combinedScore < THREAT_SUSPICIOUS_UPPER:
             threatLevel = "suspicious"
-        elif combinedScore < 0.8:
+        elif combinedScore < THREAT_DANGEROUS_UPPER:
             threatLevel = "dangerous"
         else:
             threatLevel = "critical"
@@ -276,7 +290,7 @@ class AnalysisOrchestrator:
             reasons.extend(urlScore.reasons[:3])  # Top 3 from URL
         
         if osintData:
-            if osintData.whois and osintData.whois.domainAgeDays and osintData.whois.domainAgeDays < 30:
+            if osintData.whois and osintData.whois.domainAgeDays and osintData.whois.domainAgeDays < RECENT_DOMAIN_AGE_DAYS:
                 reasons.append(f"Domain registered recently ({osintData.whois.domainAgeDays} days ago)")
             if osintData.whois and osintData.whois.isPrivacyProtected:
                 reasons.append("WHOIS privacy protection enabled")

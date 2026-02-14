@@ -544,7 +544,7 @@ class ReputationChecker:
             client: Custom client for dependency injection
             sources: Sources to query (defaults to all configured)
         """
-        from config import getSettings
+        from backend.config import getSettings
         settings = getSettings()
         
         self._timeout = timeout or settings.reputationTimeout

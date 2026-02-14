@@ -345,7 +345,7 @@ class HealthResponse(BaseModel):
     Example:
         >>> health = HealthResponse(
         ...     status="healthy",
-        ...     version="0.2.0",
+        ...     version="1.0.0",
         ...     timestamp=datetime.now(),
         ...     services={"osint": True, "analyzer": True, "ml": True}
         ... )

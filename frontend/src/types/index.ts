@@ -3,13 +3,14 @@
  */
 export type {
   ThreatLevel,
+  ContentType,
+  HealthStatus,
   VerdictResult,
   OsintSummary,
   FeatureSummary,
   AnalysisResponse,
   HealthResponse,
-  ServiceStatus,
-  AnalyzeTextRequest,
+  AnalyzeRequest,
   AnalyzeUrlRequest,
   AnalyzeEmailRequest,
 } from "./analysis";

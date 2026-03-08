@@ -68,28 +68,28 @@ export interface AnalysisResponse {
 /*  Health                                                            */
 /* ------------------------------------------------------------------ */
 
-/** Service status inside the health response. */
-export interface ServiceStatus {
-  status: string;
-  details?: string;
-}
+/** Health-status discriminator. */
+export type HealthStatus = "healthy" | "degraded" | "unhealthy";
 
 /** Response from `GET /api/health`. */
 export interface HealthResponse {
-  status: string;
+  status: HealthStatus;
   version: string;
   timestamp: string;
-  services: Record<string, ServiceStatus>;
+  services: Record<string, boolean>;
 }
 
 /* ------------------------------------------------------------------ */
 /*  Request payloads                                                  */
 /* ------------------------------------------------------------------ */
 
-/** Payload for `POST /api/analyze` (raw text). */
-export interface AnalyzeTextRequest {
+/** Content-type discriminator accepted by the generic analyse endpoint. */
+export type ContentType = "auto" | "url" | "email" | "text";
+
+/** Payload for `POST /api/analyze` (generic content). */
+export interface AnalyzeRequest {
   content: string;
-  contentType?: string;
+  contentType?: ContentType;
 }
 
 /** Payload for `POST /api/analyze/url`. */
@@ -99,7 +99,7 @@ export interface AnalyzeUrlRequest {
 
 /** Payload for `POST /api/analyze/email`. */
 export interface AnalyzeEmailRequest {
-  subject: string;
-  sender: string;
-  body: string;
+  content: string;
+  subject?: string;
+  sender?: string;
 }

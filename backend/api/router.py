@@ -13,8 +13,9 @@ Course: BSc Thesis - ELTE Faculty of Informatics
 
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 
+from .historyStore import HistoryEntry, HistoryListResponse, historyStore
 from .orchestrator import AnalysisOrchestrator
 from .schemas import (
     AnalysisResponse,
@@ -136,6 +137,11 @@ async def analyzeContent(request: AnalyzeRequest) -> AnalysisResponse:
             content=request.content,
             contentType=request.contentType
         )
+        historyStore.add(
+            content=request.content,
+            contentType=request.contentType,
+            response=response,
+        )
         return response
     except Exception as e:
         raise HTTPException(
@@ -177,6 +183,11 @@ async def analyzeUrl(request: UrlRequest) -> AnalysisResponse:
         response = await orchestrator.analyze(
             content=request.url,
             contentType="url"
+        )
+        historyStore.add(
+            content=request.url,
+            contentType="url",
+            response=response,
         )
         return response
     except Exception as e:
@@ -229,12 +240,79 @@ async def analyzeEmail(request: EmailRequest) -> AnalysisResponse:
             content=fullContent,
             contentType="email"
         )
+        historyStore.add(
+            content=request.content,
+            contentType="email",
+            response=response,
+        )
         return response
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Email analysis failed: {str(e)}"
         )
+
+
+# =============================================================================
+# History Endpoints
+# =============================================================================
+
+@router.get(
+    "/history",
+    response_model=HistoryListResponse,
+    summary="List History",
+    description="Return the most recent analyses (newest first)",
+)
+async def listHistory(
+    limit: int = Query(default=100, ge=1, le=100, description="Max entries to return"),
+    offset: int = Query(default=0, ge=0, description="Pagination offset"),
+) -> HistoryListResponse:
+    """Return paginated history entries."""
+    return historyStore.list(limit=limit, offset=offset)
+
+
+@router.get(
+    "/history/{entryId}",
+    response_model=HistoryEntry,
+    summary="Get History Entry",
+    description="Retrieve a single history entry by ID",
+)
+async def getHistoryEntry(entryId: str) -> HistoryEntry:
+    """Get a single history entry by UUID."""
+    entry = historyStore.get(entryId)
+    if entry is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"History entry {entryId} not found",
+        )
+    return entry
+
+
+@router.delete(
+    "/history/{entryId}",
+    summary="Delete History Entry",
+    description="Delete a single history entry by ID",
+)
+async def deleteHistoryEntry(entryId: str) -> dict:
+    """Delete a single history entry."""
+    deleted = historyStore.delete(entryId)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"History entry {entryId} not found",
+        )
+    return {"deleted": True, "id": entryId}
+
+
+@router.delete(
+    "/history",
+    summary="Clear History",
+    description="Delete all history entries",
+)
+async def clearHistoryEndpoint() -> dict:
+    """Delete all history entries."""
+    count = historyStore.clear()
+    return {"deleted": True, "count": count}
 
 
 # =============================================================================
@@ -275,6 +353,7 @@ async def root() -> dict:
         "endpoints": {
             "analyze": "/api/analyze",
             "analyzeUrl": "/api/analyze/url",
-            "analyzeEmail": "/api/analyze/email"
+            "analyzeEmail": "/api/analyze/email",
+            "history": "/api/history"
         }
     }

@@ -1,11 +1,12 @@
 "use client";
 
 /**
- * ShareActions — copy-to-clipboard and print buttons for results.
+ * ShareActions — copy-to-clipboard, share link, and print buttons
+ * for analysis results.
  */
 
 import { useState, useCallback } from "react";
-import { Copy, Check, Printer, FileJson } from "lucide-react";
+import { Copy, Check, Printer, FileJson, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -13,7 +14,28 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { AnalysisResponse } from "@/types";
-import { showSuccess } from "@/lib/toast";
+import { showSuccess, showError } from "@/lib/toast";
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                           */
+/* ------------------------------------------------------------------ */
+
+/** Clipboard write with fallback for older browsers. */
+async function writeToClipboard(text: string): Promise<void> {
+  if (navigator.clipboard) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  /* Fallback: hidden textarea + execCommand */
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+}
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                           */
@@ -57,20 +79,40 @@ interface ShareActionsProps {
 export function ShareActions({ result, content }: ShareActionsProps) {
   const [copiedText, setCopiedText] = useState(false);
   const [copiedJson, setCopiedJson] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const copyText = useCallback(async () => {
-    await navigator.clipboard.writeText(buildTextSummary(result, content));
-    setCopiedText(true);
-    showSuccess("Summary copied to clipboard");
-    setTimeout(() => setCopiedText(false), 2000);
+    try {
+      await writeToClipboard(buildTextSummary(result, content));
+      setCopiedText(true);
+      showSuccess("Summary copied to clipboard");
+      setTimeout(() => setCopiedText(false), 2000);
+    } catch {
+      showError("Failed to copy", "Your browser may not support clipboard access.");
+    }
   }, [result, content]);
 
   const copyJson = useCallback(async () => {
-    await navigator.clipboard.writeText(JSON.stringify(result, null, 2));
-    setCopiedJson(true);
-    showSuccess("JSON copied to clipboard");
-    setTimeout(() => setCopiedJson(false), 2000);
+    try {
+      await writeToClipboard(JSON.stringify(result, null, 2));
+      setCopiedJson(true);
+      showSuccess("JSON copied to clipboard");
+      setTimeout(() => setCopiedJson(false), 2000);
+    } catch {
+      showError("Failed to copy", "Your browser may not support clipboard access.");
+    }
   }, [result]);
+
+  const copyLink = useCallback(async () => {
+    try {
+      await writeToClipboard(window.location.href);
+      setCopiedLink(true);
+      showSuccess("Link copied to clipboard");
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch {
+      showError("Failed to copy link");
+    }
+  }, []);
 
   const handlePrint = useCallback(() => {
     window.print();
@@ -118,6 +160,27 @@ export function ShareActions({ result, content }: ShareActionsProps) {
           {copiedJson ? "Copied!" : "Copy JSON"}
         </TooltipTrigger>
         <TooltipContent>Copy raw API response as JSON</TooltipContent>
+      </Tooltip>
+
+      {/* Copy link */}
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={copyLink}
+            />
+          }
+        >
+          {copiedLink ? (
+            <Check className="mr-1.5 h-3.5 w-3.5 text-green-500 dark:text-green-400" />
+          ) : (
+            <Link2 className="mr-1.5 h-3.5 w-3.5" />
+          )}
+          {copiedLink ? "Copied!" : "Copy Link"}
+        </TooltipTrigger>
+        <TooltipContent>Copy shareable link to this page</TooltipContent>
       </Tooltip>
 
       {/* Print */}

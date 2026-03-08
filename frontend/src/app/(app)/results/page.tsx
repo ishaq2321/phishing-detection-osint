@@ -16,6 +16,7 @@ import {
   ReasonsList,
   ContentPreview,
   ShareActions,
+  OsintCards,
 } from "@/components/results";
 import { useResult } from "@/lib/resultsContext";
 import {
@@ -103,6 +104,15 @@ export default function ResultsPage() {
           analyzedAt={response.analyzedAt}
           analysisTime={response.analysisTime}
         />
+      </div>
+
+      {/* OSINT intelligence cards */}
+      <Separator />
+      <div>
+        <h2 className="mb-4 text-lg font-semibold tracking-tight">
+          OSINT Intelligence
+        </h2>
+        <OsintCards osint={response.osint} />
       </div>
     </div>
   );

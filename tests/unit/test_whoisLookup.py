@@ -232,6 +232,7 @@ class TestWhoisLookup:
         
         assert result.hasFailed is True
         assert result.status == LookupStatus.ERROR
+        assert result.errorMessage is not None
         assert "WHOIS server unavailable" in result.errorMessage
     
     @pytest.mark.asyncio
@@ -461,6 +462,7 @@ class TestEdgeCases:
         
         # Should return error status due to empty domain
         assert result.status == LookupStatus.ERROR
+        assert result.errorMessage is not None
         assert "empty" in result.errorMessage.lower()
     
     @pytest.mark.asyncio

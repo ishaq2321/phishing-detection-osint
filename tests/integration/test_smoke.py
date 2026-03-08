@@ -49,12 +49,10 @@ def suspiciousMockOsint():
             status=LookupStatus.SUCCESS,
             registrar="Freenom",
             creationDate=datetime.now() - timedelta(days=3),
-            registrantName="REDACTED FOR PRIVACY",
         ),
         dns=DnsResult(
             domain="paypal-login-verify.tk",
             status=LookupStatus.SUCCESS,
-            records=[],
         ),
         reputation=ReputationResult(
             domain="paypal-login-verify.tk",
@@ -187,7 +185,6 @@ class TestBatchUrlAnalysis:
             dns=DnsResult(
                 domain=domain,
                 status=LookupStatus.SUCCESS,
-                records=[],
             ),
             reputation=ReputationResult(
                 domain=domain,
@@ -291,7 +288,6 @@ class TestBatchEmailAnalysis:
             dns=DnsResult(
                 domain=domain,
                 status=LookupStatus.SUCCESS,
-                records=[],
             ),
             reputation=ReputationResult(
                 domain=domain,
@@ -400,7 +396,7 @@ class TestResponseFormatConsistency:
                 domain=d,
                 whois=WhoisResult(domain=d, status=LookupStatus.SUCCESS, registrar="Test",
                                   creationDate=datetime.now() - timedelta(days=365)),
-                dns=DnsResult(domain=d, status=LookupStatus.SUCCESS, records=[]),
+                dns=DnsResult(domain=d, status=LookupStatus.SUCCESS),
                 reputation=ReputationResult(domain=d, status=LookupStatus.SUCCESS, checks=[], aggregateScore=0.1),
             )
 
@@ -432,7 +428,7 @@ class TestResponseFormatConsistency:
                 url=url or f"https://{domain}", domain=domain,
                 whois=WhoisResult(domain=domain, status=LookupStatus.SUCCESS, registrar="Test",
                                   creationDate=datetime.now() - timedelta(days=365)),
-                dns=DnsResult(domain=domain, status=LookupStatus.SUCCESS, records=[]),
+                dns=DnsResult(domain=domain, status=LookupStatus.SUCCESS),
                 reputation=ReputationResult(domain=domain, status=LookupStatus.SUCCESS, checks=[], aggregateScore=0.1),
             )
 
@@ -441,6 +437,8 @@ class TestResponseFormatConsistency:
             new_callable=AsyncMock,
             side_effect=mockCollect,
         ):
+            data: dict = {}
+            email: dict = {}
             for email in SAMPLE_EMAILS[:3]:
                 data = client.post("/api/analyze/email", json=email).json()
 
@@ -461,7 +459,7 @@ class TestResponseFormatConsistency:
                 url=url or f"https://{domain}", domain=domain,
                 whois=WhoisResult(domain=domain, status=LookupStatus.SUCCESS, registrar="Test",
                                   creationDate=datetime.now() - timedelta(days=365)),
-                dns=DnsResult(domain=domain, status=LookupStatus.SUCCESS, records=[]),
+                dns=DnsResult(domain=domain, status=LookupStatus.SUCCESS),
                 reputation=ReputationResult(domain=domain, status=LookupStatus.SUCCESS, checks=[], aggregateScore=0.1),
             )
 
@@ -502,7 +500,7 @@ class TestPerformance:
                 url=url or f"https://{d}", domain=d,
                 whois=WhoisResult(domain=d, status=LookupStatus.SUCCESS, registrar="Test",
                                   creationDate=datetime.now() - timedelta(days=365)),
-                dns=DnsResult(domain=d, status=LookupStatus.SUCCESS, records=[]),
+                dns=DnsResult(domain=d, status=LookupStatus.SUCCESS),
                 reputation=ReputationResult(domain=d, status=LookupStatus.SUCCESS, checks=[], aggregateScore=0.1),
             )
 
@@ -532,7 +530,7 @@ class TestPerformance:
                 url=url or f"https://{domain}", domain=domain,
                 whois=WhoisResult(domain=domain, status=LookupStatus.SUCCESS, registrar="Test",
                                   creationDate=datetime.now() - timedelta(days=365)),
-                dns=DnsResult(domain=domain, status=LookupStatus.SUCCESS, records=[]),
+                dns=DnsResult(domain=domain, status=LookupStatus.SUCCESS),
                 reputation=ReputationResult(domain=domain, status=LookupStatus.SUCCESS, checks=[], aggregateScore=0.1),
             )
 

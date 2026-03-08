@@ -311,6 +311,7 @@ class TestDnsErrorHandling:
         
         assert result.status == LookupStatus.NOT_FOUND
         assert not result.isSuccess
+        assert result.errorMessage is not None
         assert "not found" in result.errorMessage.lower()
     
     @pytest.mark.asyncio
@@ -342,7 +343,7 @@ class TestDnsErrorHandling:
         result = await checker.lookup("")
         
         assert result.status == LookupStatus.ERROR
-        assert "invalid" in result.errorMessage.lower()
+        assert "invalid" in result.errorMessage.lower()  # type: ignore[union-attr]
     
     @pytest.mark.asyncio
     async def test_whitespaceDomainReturnsError(self, mockResolverWithData):

@@ -15,7 +15,7 @@ import pytest
 from unittest.mock import AsyncMock
 from datetime import datetime, timedelta
 
-from backend.analyzer import NlpAnalyzer, ThreatLevel
+from backend.analyzer import NlpAnalyzer, ThreatLevel, ContentType
 from backend.api.orchestrator import AnalysisOrchestrator
 from backend.ml import extractFeatures, scoreUrl, RiskLevel
 from osint import OsintData, WhoisResult, DnsResult, ReputationResult, LookupStatus
@@ -40,7 +40,6 @@ def mockOsintData():
         dns=DnsResult(
             domain="example.com",
             status=LookupStatus.SUCCESS,
-            records=[]
         ),
         reputation=ReputationResult(
             domain="example.com",
@@ -72,7 +71,7 @@ class TestAnalyzerIntegration:
         
         # NLP analysis
         analyzer = NlpAnalyzer()
-        nlpResult = await analyzer.analyze(email, contentType="email")
+        nlpResult = await analyzer.analyze(email, contentType=ContentType.EMAIL)
         
         # Should detect threat
         assert nlpResult.threatLevel in [ThreatLevel.SUSPICIOUS, 
@@ -109,7 +108,7 @@ class TestAnalyzerIntegration:
         """
         
         analyzer = NlpAnalyzer()
-        result = await analyzer.analyze(phishingEmail, contentType="email")
+        result = await analyzer.analyze(phishingEmail, contentType=ContentType.EMAIL)
         
         # Should detect multiple indicators
         assert len(result.indicators) >= 1  # Lowered from 2
@@ -238,7 +237,6 @@ class TestEndToEndScenarios:
                 dns=DnsResult(
                     domain="google.com",
                     status=LookupStatus.SUCCESS,
-                    records=[]
                 ),
                 reputation=ReputationResult(
                     domain="google.com",
@@ -276,12 +274,10 @@ class TestEndToEndScenarios:
                     status=LookupStatus.SUCCESS,
                     registrar="Freenom",
                     creationDate=datetime.now() - timedelta(days=3),
-                    registrantName="REDACTED FOR PRIVACY"
                 ),
                 dns=DnsResult(
                     domain="paypal-verify.tk",
                     status=LookupStatus.SUCCESS,
-                    records=[]
                 ),
                 reputation=ReputationResult(
                     domain="paypal-verify.tk",
@@ -331,9 +327,9 @@ class TestEndToEndScenarios:
         assert verdict.threatLevel in ["suspicious", "dangerous", "critical"]
         
         # Content analysis should detect urgency and credential requests
-        if "contentAnalysis" in result:
-            content = result["contentAnalysis"]
-            assert content["indicatorCount"] >= 3
+        if hasattr(result, "contentAnalysis") and result.contentAnalysis is not None:  # type: ignore[attr-defined]
+            content = result.contentAnalysis  # type: ignore[attr-defined]
+            assert content.indicatorCount >= 3  # type: ignore[union-attr]
 
 
 class TestPipelinePerformance:

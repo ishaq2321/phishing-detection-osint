@@ -23,7 +23,7 @@ from backend.api.schemas import (
 
 def _makeResponse(**overrides) -> AnalysisResponse:
     """Build a minimal valid AnalysisResponse."""
-    defaults = dict(
+    defaults: dict = dict(
         success=True,
         verdict=VerdictResult(
             isPhishing=False,
@@ -37,7 +37,7 @@ def _makeResponse(**overrides) -> AnalysisResponse:
         analyzedAt=datetime.now(),
     )
     defaults.update(overrides)
-    return AnalysisResponse(**defaults)
+    return AnalysisResponse(**defaults)  # type: ignore[arg-type]
 
 
 @pytest.fixture()

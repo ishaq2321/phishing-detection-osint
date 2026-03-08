@@ -51,16 +51,11 @@ def legitOsintData():
             registrar="MarkMonitor Inc.",
             creationDate=datetime.now() - timedelta(days=7300),  # 20 years old
             expirationDate=datetime.now() + timedelta(days=365),
-            registrantName="Google LLC",
             nameServers=["ns1.google.com", "ns2.google.com"]
         ),
         dns=DnsResult(
             domain="google.com",
             status=LookupStatus.SUCCESS,
-            records=[
-                DnsRecord(recordType=DnsRecordType.A, value="142.250.185.46", ttl=300),
-                DnsRecord(recordType=DnsRecordType.MX, value="smtp.google.com", ttl=3600),
-            ]
         ),
         reputation=ReputationResult(
             domain="google.com",
@@ -83,15 +78,11 @@ def suspiciousOsintData():
             registrar="Unknown Registrar",
             creationDate=datetime.now() - timedelta(days=5),  # 5 days old
             expirationDate=datetime.now() + timedelta(days=30),
-            registrantName="REDACTED FOR PRIVACY",
             nameServers=["ns1.freenom.com"]
         ),
         dns=DnsResult(
             domain="paypal-verify.tk",
             status=LookupStatus.SUCCESS,
-            records=[
-                DnsRecord(recordType=DnsRecordType.A, value="185.220.101.45", ttl=300),
-            ]
         ),
         reputation=ReputationResult(
             domain="paypal-verify.tk",
@@ -313,7 +304,6 @@ class TestFeatureSetAggregation:
             dns=DnsResult(
                 domain="example.com",
                 status=LookupStatus.SUCCESS,
-                records=[]
             ),
             reputation=ReputationResult(
                 domain="example.com",

@@ -135,7 +135,7 @@ class TestOsintSummary:
     def test_requiredDomainField(self):
         """Domain field is required."""
         with pytest.raises(ValidationError):
-            OsintSummary()
+            OsintSummary()  # type: ignore[call-arg]
 
 
 class TestFeatureSummary:

@@ -190,7 +190,7 @@ class DefaultDnsResolver:
             answer = resolver.resolve(domain, rdtype)
             
             records = []
-            for rdata in answer:
+            for rdata in answer:  # type: ignore[union-attr]
                 record = {
                     "value": self._extractValue(rdata, recordType),
                     "ttl": answer.ttl,

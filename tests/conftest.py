@@ -22,7 +22,7 @@ import asyncio
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import Any, Generator
+from typing import Any, Generator, Optional
 from unittest.mock import MagicMock
 
 import pytest
@@ -296,7 +296,7 @@ def assertApproxEqual():
 @pytest.fixture
 def createMockResponse():
     """Factory for creating mock HTTP responses."""
-    def _create(status: int = 200, json: dict = None, text: str = None):
+    def _create(status: int = 200, json: "Optional[dict]" = None, text: "Optional[str]" = None):
         mock = MagicMock()
         mock.status_code = status
         mock.json.return_value = json or {}

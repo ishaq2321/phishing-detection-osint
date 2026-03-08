@@ -318,6 +318,7 @@ class TestReputationErrorHandling:
         result = await checker.lookup("")
         
         assert result.status == LookupStatus.ERROR
+        assert result.errorMessage is not None
         assert "invalid" in result.errorMessage.lower()
     
     @pytest.mark.asyncio

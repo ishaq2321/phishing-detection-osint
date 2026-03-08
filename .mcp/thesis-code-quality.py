@@ -203,6 +203,7 @@ def main():
         line = line.strip()
         if not line:
             continue
+        req: dict = {}
         try:
             req = json.loads(line)
             rid = req.get("id")

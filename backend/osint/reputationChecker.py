@@ -850,7 +850,7 @@ class ReputationChecker:
     async def close(self) -> None:
         """Close the underlying HTTP client."""
         if hasattr(self._client, "close"):
-            await self._client.close()
+            await self._client.close()  # type: ignore[union-attr]
     
     async def __aenter__(self) -> "ReputationChecker":
         """Async context manager entry."""

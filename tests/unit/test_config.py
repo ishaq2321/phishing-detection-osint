@@ -30,7 +30,7 @@ class TestSettingsDefaults:
         """Default environment should be development."""
         # Clear env var set by autouse fixture
         monkeypatch.delenv("ENVIRONMENT", raising=False)
-        settings = Settings(_env_file=None)  # Skip .env file
+        settings = Settings(_env_file=None)  # type: ignore[call-arg]  # Skip .env file
         assert settings.environment == Environment.DEVELOPMENT
     
     def test_defaultAnalyzerEngine(self):

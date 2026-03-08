@@ -46,7 +46,6 @@ def mockOsintData():
         dns=DnsResult(
             domain="example.com",
             status=LookupStatus.SUCCESS,
-            records=[]
         ),
         reputation=ReputationResult(
             domain="example.com",
@@ -129,12 +128,10 @@ class TestAnalyzeEndpointIntegration:
                 status=LookupStatus.SUCCESS,
                 registrar="Freenom",
                 creationDate=datetime.now() - timedelta(days=3),
-                registrantName="REDACTED FOR PRIVACY"
             ),
             dns=DnsResult(
                 domain="paypal-verify.tk",
                 status=LookupStatus.SUCCESS,
-                records=[]
             ),
             reputation=ReputationResult(
                 domain="paypal-verify.tk",

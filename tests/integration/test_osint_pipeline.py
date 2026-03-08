@@ -231,13 +231,7 @@ class TestOsintDataAggregation:
         dnsResult = DnsResult(
             domain="example.com",
             status=LookupStatus.SUCCESS,
-            records=[
-                DnsRecord(
-                    recordType=DnsRecordType.A,
-                    value="1.2.3.4",
-                    ttl=300
-                )
-            ]
+            aRecords=["1.2.3.4"],
         )
         reputationResult = ReputationResult(
             domain="example.com",

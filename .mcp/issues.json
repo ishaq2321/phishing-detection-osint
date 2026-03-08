@@ -143,8 +143,8 @@
     ],
     "status": "closed",
     "created": "2026-02-10T19:07:05.800026",
-    "closed": "2026-02-10T19:11:29.811454",
-    "closeComment": "Implemented in analyzer/base.py (314 LOC). BaseAnalyzer ABC with async analyze(), AnalysisResult model, ContentType enum, ThreatLevel enum."
+    "closed": "2026-02-16T22:18:41.668858",
+    "closeComment": "\u2705 Implemented SHAP and LIME explainability modules.\n\n**SHAP module** (`src/explainability/shap_explainer.py`):\n- TreeSHAP for RandomForest, KernelSHAP fallback for XGBoost, LinearSHAP for LR\n- `explain_prediction()` \u2192 structured dict with top positive/negative contributions, risk level\n- `get_global_importance()` \u2192 DataFrame of mean |SHAP| feature importance\n- Plot functions: waterfall, summary (beeswarm), bar importance\n- Handles SHAP 0.49 3D output format\n\n**LIME module** (`src/explainability/lime_explainer.py`):\n- `LimeExplainerWrapper` class for model-agnostic local explanations\n- Consistent API with SHAP module for easy comparison\n\nCommit: 940570e"
   },
   {
     "number": 11,
@@ -158,8 +158,8 @@
     ],
     "status": "closed",
     "created": "2026-02-10T19:07:05.800447",
-    "closed": "2026-02-10T19:11:29.817491",
-    "closeComment": "Implemented in nlpAnalyzer.py (540 LOC). Uses spaCy PhraseMatcher for urgency/threats, brand detection, credential harvesting, fear tactics. 6 phishing categories. 35 unit tests passing."
+    "closed": "2026-02-16T22:21:45.592688",
+    "closeComment": "\u2705 Implemented prediction module and Flask backend.\n\n**Prediction module** (`src/prediction/`):\n- `predictor.py` \u2014 `CreditRiskPredictor` class: validate \u2192 transform \u2192 predict \u2192 explain\n- `input_validator.py` \u2014 validates 20 features (range checks, category validation)\n- Singleton pattern for efficient web serving (model loaded once)\n\n**Flask endpoints** (`web/app.py`):\n- `POST /predict` \u2014 full prediction with SHAP explanation\n- `GET /schema` \u2014 dynamic form schema for frontend\n- `GET /models` \u2014 list available trained models\n- `GET /health` \u2014 health check\n\nCommit: 93dcc57"
   },
   {
     "number": 12,
@@ -173,8 +173,8 @@
     ],
     "status": "closed",
     "created": "2026-02-10T19:07:05.800880",
-    "closed": "2026-02-10T19:11:29.867456",
-    "closeComment": "35 unit tests for NlpAnalyzer covering phishing content, legitimate content, and edge cases. 12 integration tests for full pipeline. 80%+ coverage achieved."
+    "closed": "2026-02-16T22:29:31.763466",
+    "closeComment": "\u2705 Comprehensive unit test suite implemented.\n\n**Stats**: 103 tests, 84% code coverage (target was \u226570%)\n\n**Test files:**\n- `test_data_loader.py` \u2014 18 tests (data loading, columns, categories, splits)\n- `test_preprocessor.py` \u2014 14 tests (pipeline, SMOTE, persistence)\n- `test_training.py` \u2014 15 tests (builders, training, evaluation, CV, serialization)\n- `test_explainability.py` \u2014 14 tests (SHAP, LIME, global importance)\n- `test_prediction.py` \u2014 14 tests (validation, predictor, schema, singleton)\n- `test_app.py` \u2014 8 tests (Flask endpoints)\n- `test_coverage_extra.py` \u2014 20 tests (plots, XGB fallback, comparison tables)\n\nCommit: c2f4e2f"
   },
   {
     "number": 13,
@@ -188,8 +188,8 @@
     ],
     "status": "closed",
     "created": "2026-02-10T19:07:05.801292",
-    "closed": "2026-02-10T19:11:29.869294",
-    "closeComment": "Implemented in api/schemas.py (370 LOC). Models: AnalyzeRequest, AnalysisResponse, VerdictResult, OsintSummary, FeatureSummary, HealthResponse with full validation. 16 unit tests passing."
+    "closed": "2026-02-16T22:30:49.897364",
+    "closeComment": "\u2705 Documentation updated and Milestone 1 closed on GitHub.\n\n- Updated README.md with API endpoints, model performance table, full usage guide\n- Updated ARCHITECTURE.md with implemented modules table\n- Updated DEVELOPMENT.md with completed milestone checklists\n- Milestone 1 closed on GitHub via API\n\nCommit: 83d43fb"
   },
   {
     "number": 14,
@@ -379,5 +379,474 @@
     "created": "2026-02-10T19:07:05.810025",
     "closed": "2026-02-10T19:17:48.046369",
     "closeComment": "README.md fully updated with M2 status, architecture diagram, API documentation, testing instructions, and project structure. Commit 6f1c755."
+  },
+  {
+    "number": 27,
+    "title": "Initialize Next.js 15 + TypeScript + Tailwind CSS + shadcn/ui project",
+    "description": "Set up the frontend as a modern Next.js 15 App Router project with TypeScript, Tailwind CSS v4, and shadcn/ui component library.\n\nTech Stack:\n- Next.js 15 (App Router, Server Components)\n- TypeScript (strict mode)\n- Tailwind CSS v4 (utility-first styling)\n- shadcn/ui (accessible, beautiful components)\n- Lucide React (icons)\n- next-themes (dark/light mode)\n\nAcceptance Criteria:\n- `npx create-next-app@latest` with TypeScript + Tailwind + App Router\n- shadcn/ui initialized with `npx shadcn@latest init`\n- next-themes configured for dark/light mode\n- Folder structure: app/, components/, lib/, hooks/, types/\n- ESLint + Prettier configured\n- Base components installed: Button, Card, Input, Badge, Tabs\n- Runs on `http://localhost:3000`\n- Old placeholder frontend/ files removed or archived",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "setup",
+      "priority:critical",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:32.963252",
+    "closed": null
+  },
+  {
+    "number": 28,
+    "title": "Create API client service layer with TypeScript types",
+    "description": "Build a type-safe API client that connects the Next.js frontend to the FastAPI backend.\n\nAcceptance Criteria:\n- `lib/api/client.ts` \u2014 Axios or fetch wrapper with base URL config\n- `lib/api/types.ts` \u2014 Full TypeScript interfaces matching backend Pydantic models:\n  - AnalyzeRequest, UrlRequest, EmailRequest\n  - AnalysisResponse, VerdictResult, OsintSummary, FeatureSummary\n  - HealthResponse\n- `lib/api/endpoints.ts` \u2014 Functions: analyzeContent(), analyzeUrl(), analyzeEmail(), checkHealth()\n- Proper error handling with typed error responses\n- Request/response interceptors for loading states\n- Environment variable for API base URL (NEXT_PUBLIC_API_URL)\n- Unit tests for API client",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "api",
+      "priority:critical",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:32.964416",
+    "closed": null
+  },
+  {
+    "number": 29,
+    "title": "Build app shell layout with sidebar navigation and header",
+    "description": "Create the main application shell with a responsive sidebar navigation and top header bar.\n\nComponents:\n- `app/layout.tsx` \u2014 Root layout with ThemeProvider, fonts, metadata\n- `components/layout/sidebar.tsx` \u2014 Collapsible sidebar with navigation links\n- `components/layout/header.tsx` \u2014 Top bar with logo, theme toggle, health status indicator\n- `components/layout/footer.tsx` \u2014 Footer with ELTE branding\n\nNavigation Links:\n- \ud83c\udfe0 Dashboard (home)\n- \ud83d\udd0d Analyze (URL/email input)\n- \ud83d\udcca History (past analyses)\n- \ud83d\udcd6 How It Works (methodology)\n- \u2699\ufe0f Settings (API config)\n\nAcceptance Criteria:\n- shadcn/ui Sidebar component used\n- Fully responsive (mobile hamburger menu)\n- Active route highlighting\n- Smooth transitions between pages\n- Dark/light mode toggle in header\n- ELTE/thesis branding in footer\n- Keyboard navigation support (a11y)",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ui",
+      "priority:critical",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.020878",
+    "closed": null
+  },
+  {
+    "number": 30,
+    "title": "Implement Dashboard home page with hero section and quick analysis",
+    "description": "Build the main dashboard landing page \u2014 the first thing users see.\n\nSections:\n1. **Hero Section** \u2014 Title, subtitle, brief description of what the tool does\n2. **Quick Analysis Input** \u2014 URL input field with analyze button (fast path)\n3. **System Status Card** \u2014 Shows API health, services status (live from /api/health)\n4. **Statistics Summary** \u2014 Cards showing: Total Analyses, Threats Detected, Average Score, Uptime\n5. **Recent Analyses** \u2014 Last 5 analyses in a compact card list\n\nAcceptance Criteria:\n- `app/page.tsx` (dashboard)\n- Hero with gradient background and animated shield icon\n- Quick analysis input with real-time URL validation\n- Health status fetched from backend on page load\n- Skeleton loading states while data loads\n- Fully responsive layout\n- Smooth entrance animations (Framer Motion or CSS)",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ui",
+      "priority:critical",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.023130",
+    "closed": null
+  },
+  {
+    "number": 31,
+    "title": "Build URL Analysis page with input form and content type tabs",
+    "description": "Create the main analysis input page where users submit URLs or email content.\n\nFeatures:\n- **Tabbed Interface** (shadcn Tabs): URL | Email | Free Text\n- **URL Tab**: Single URL input with validation, paste detection, auto-detect\n- **Email Tab**: Subject field, sender field, large email body textarea\n- **Free Text Tab**: Large textarea for any suspicious content\n- **Submit Button**: With loading spinner, disabled during analysis\n- **Input Validation**: Real-time feedback (red borders, error messages)\n\nAcceptance Criteria:\n- `app/analyze/page.tsx`\n- React Hook Form + Zod for form validation\n- shadcn Input, Textarea, Button, Tabs, Alert components\n- Loading state with animated spinner during API call\n- Error handling with toast notifications\n- Redirects to results page after successful analysis\n- Keyboard shortcut: Ctrl+Enter to submit\n- Remembers last used tab (localStorage)",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ui",
+      "priority:critical",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.024289",
+    "closed": null
+  },
+  {
+    "number": 32,
+    "title": "Build Analysis Results page with verdict display",
+    "description": "Create the results page that displays the full analysis output \u2014 the crown jewel of the UI.\n\nSections:\n1. **Verdict Banner** \u2014 Large, color-coded (green/yellow/orange/red) banner showing:\n   - isPhishing (YES/NO with icon)\n   - threatLevel badge (safe/suspicious/dangerous/critical)\n   - confidenceScore as percentage\n   - recommendation text\n\n2. **Reasons List** \u2014 Each reason as a card/list item with appropriate icon\n   - Urgency \u2192 \u26a1 icon\n   - Brand impersonation \u2192 \ud83c\udfad icon\n   - Credential harvesting \u2192 \ud83d\udd11 icon\n   - Suspicious URL \u2192 \ud83d\udd17 icon\n   - OSINT red flag \u2192 \ud83c\udf10 icon\n\n3. **Analyzed Content Preview** \u2014 Shows what was analyzed (URL or text snippet)\n\nAcceptance Criteria:\n- `app/results/[id]/page.tsx` (dynamic route) OR `app/results/page.tsx` with state\n- Color scheme: safe=green, suspicious=yellow, dangerous=orange, critical=red\n- Animated confidence score counter (counts up from 0)\n- Responsive card grid layout\n- Print-friendly version\n- Share/copy results button\n- Back to analyze button",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ui",
+      "priority:critical",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.025525",
+    "closed": null
+  },
+  {
+    "number": 33,
+    "title": "Build OSINT data display cards for results page",
+    "description": "Display the OSINT intelligence data in beautiful, informative cards on the results page.\n\nCards:\n1. **Domain Info Card**\n   - Domain name with favicon\n   - Domain age (days + human readable: '3 days ago' vs '5 years ago')\n   - Registrar name\n   - Privacy protection status (\ud83d\udd12 icon if private)\n\n2. **DNS Status Card**\n   - Has valid DNS (\u2705 / \u274c)\n   - Visual indicator of DNS health\n\n3. **Reputation Card**\n   - Reputation score as progress bar (0.0 - 1.0)\n   - Color-coded (red to green gradient)\n   - Blacklist status with icon\n\nAcceptance Criteria:\n- `components/results/osintCards.tsx`\n- shadcn Card, Badge, Progress components\n- Handles null OSINT data gracefully (shows 'Not available')\n- Tooltip explanations for each metric\n- Icons from Lucide React\n- Responsive grid (3 columns \u2192 2 \u2192 1)",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ui",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.026839",
+    "closed": null
+  },
+  {
+    "number": 34,
+    "title": "Build feature extraction display with detected tactics",
+    "description": "Display the ML feature extraction results and detected phishing tactics.\n\nSections:\n1. **Feature Counts Card**\n   - URL Features count with icon\n   - Text Features count with icon\n   - OSINT Features count with icon\n   - Total Risk Indicators (highlighted if high)\n\n2. **Detected Tactics Tags**\n   - Each tactic as a colored badge/tag:\n     - urgency \u2192 orange\n     - brand_impersonation \u2192 purple\n     - credential_harvesting \u2192 red\n     - fear_tactic \u2192 dark red\n     - suspicious_url \u2192 yellow\n     - generic_phishing \u2192 gray\n   - Click on tag shows explanation tooltip\n\nAcceptance Criteria:\n- `components/results/featureCards.tsx`\n- shadcn Badge, Card, Tooltip components\n- Animated count-up for feature numbers\n- Responsive layout\n- Empty state when no tactics detected ('No suspicious tactics found \u2705')",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ui",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.029360",
+    "closed": null
+  },
+  {
+    "number": 35,
+    "title": "Implement score breakdown visualization with charts",
+    "description": "Create data visualizations showing how the final phishing score was calculated.\n\nCharts (using Recharts):\n1. **Score Breakdown Donut Chart** \u2014 Shows the three score components:\n   - Text Analysis (40%) \u2014 blue\n   - URL Features (25%) \u2014 orange\n   - OSINT Score (35%) \u2014 green\n   With the final score in the center\n\n2. **Threat Level Gauge** \u2014 Semi-circular gauge meter:\n   - Needle pointing to the current score\n   - Color zones: green (0-0.4), yellow (0.4-0.6), orange (0.6-0.8), red (0.8-1.0)\n\n3. **Confidence Bar** \u2014 Horizontal progress bar showing confidence score\n\nAcceptance Criteria:\n- `components/charts/scoreBreakdown.tsx`\n- `components/charts/threatGauge.tsx`\n- `components/charts/confidenceBar.tsx`\n- Recharts library for donut chart\n- CSS/SVG for gauge meter\n- Animated on mount\n- Responsive sizing\n- Accessible (screen reader alt text)\n- Themed for dark/light mode",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "charts",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.031838",
+    "closed": null
+  },
+  {
+    "number": 36,
+    "title": "Build analysis history page with data table",
+    "description": "Create a history page that stores and displays past analysis results.\n\nFeatures:\n- **Data Table** (shadcn DataTable + TanStack Table):\n  - Columns: #, Content (truncated), Type, Threat Level, Score, Date, Actions\n  - Sortable columns (click header)\n  - Filterable by threat level (dropdown)\n  - Searchable by content/domain\n  - Pagination (10/25/50 per page)\n\n- **Storage**: localStorage for client-side persistence (no backend DB needed)\n  - Max 100 entries, FIFO eviction\n  - Export to CSV/JSON button\n  - Clear history button with confirmation dialog\n\n- **Row Actions**:\n  - View full results\n  - Re-analyze\n  - Delete entry\n\nAcceptance Criteria:\n- `app/history/page.tsx`\n- `lib/storage/historyStore.ts` \u2014 localStorage CRUD operations\n- `components/history/historyTable.tsx`\n- shadcn Table, DropdownMenu, AlertDialog, Button\n- TanStack Table for sorting/filtering/pagination\n- Empty state illustration when no history\n- Responsive (cards view on mobile, table on desktop)",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ui",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.033720",
+    "closed": null
+  },
+  {
+    "number": 37,
+    "title": "Create 'How It Works' methodology page",
+    "description": "Build an informative page explaining the phishing detection methodology \u2014 essential for thesis demonstration.\n\nSections:\n1. **Architecture Overview** \u2014 Visual diagram showing the 3-layer pipeline:\n   Input \u2192 Text Analysis (40%) + URL Features (25%) + OSINT (35%) \u2192 Final Score \u2192 Verdict\n\n2. **Text Analysis Explained** \u2014 How spaCy NLP detects:\n   - Urgency patterns\n   - Credential harvesting\n   - Brand impersonation\n   - Fear tactics\n   - Suspicious formatting\n   - Generic phishing language\n\n3. **OSINT Layer Explained** \u2014 What gets checked:\n   - WHOIS domain age & registrar\n   - DNS record validation\n   - Reputation scoring (VirusTotal, AbuseIPDB)\n   - Blacklist checking\n\n4. **URL Feature Analysis** \u2014 What gets extracted:\n   - Suspicious TLDs\n   - IP addresses in URL\n   - Subdomain depth\n   - Homograph attacks\n   - URL shorteners\n\n5. **Scoring Algorithm** \u2014 Formula with visual weights\n\n6. **Threat Levels** \u2014 Table with thresholds and recommended actions\n\nAcceptance Criteria:\n- `app/methodology/page.tsx`\n- Clean typography with shadcn prose styles\n- Visual diagrams (SVG or component-based)\n- Accordion sections for expandable details\n- Responsive\n- Good for thesis demo screenshots",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ui",
+      "documentation",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.037718",
+    "closed": null
+  },
+  {
+    "number": 38,
+    "title": "Implement dark/light mode with theme persistence",
+    "description": "Full dark/light mode theming using next-themes and shadcn/ui CSS variables.\n\nFeatures:\n- System preference detection (auto)\n- Manual toggle (sun/moon button in header)\n- Theme persisted in localStorage\n- Smooth CSS transition between themes\n- All components properly themed\n- Charts themed for both modes\n\nAcceptance Criteria:\n- `components/ui/themeToggle.tsx`\n- next-themes ThemeProvider in root layout\n- All shadcn components use CSS variables (automatic)\n- Custom components also use theme variables\n- Charts (Recharts) colors adjust for dark/light\n- No flash of wrong theme on page load (SSR-safe)\n- Accessible toggle button with aria-label",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ui",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.042278",
+    "closed": null
+  },
+  {
+    "number": 39,
+    "title": "Add loading states, skeletons, and error boundaries",
+    "description": "Implement proper loading UX and error handling throughout the app.\n\nLoading States:\n- `app/loading.tsx` \u2014 Global loading fallback\n- `components/ui/skeleton.tsx` \u2014 Skeleton components for:\n  - Dashboard cards\n  - Analysis results\n  - History table rows\n  - OSINT data cards\n- Animated pulse effect on skeletons\n\nError Handling:\n- `app/error.tsx` \u2014 Global error boundary\n- `app/not-found.tsx` \u2014 Custom 404 page\n- Toast notifications for API errors (shadcn Sonner/Toast)\n- Retry buttons on failed requests\n- Graceful degradation when backend is down\n\nAcceptance Criteria:\n- Every async operation has a loading state\n- Every API call has error handling with user feedback\n- No blank screens ever \u2014 always show something meaningful\n- Toast for success/error notifications\n- 404 page with 'Go Home' button\n- Error boundary catches React crashes gracefully",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ux",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.045246",
+    "closed": null
+  },
+  {
+    "number": 40,
+    "title": "Add animations and micro-interactions with Framer Motion",
+    "description": "Polish the UI with smooth animations and delightful micro-interactions.\n\nAnimations:\n- Page transitions (fade + slide)\n- Card entrance animations (stagger)\n- Score counter animation (count up from 0 to final score)\n- Threat gauge needle animation\n- Button hover/press effects\n- Sidebar open/close animation\n- Toast slide-in/out\n- Loading spinner (custom shield animation)\n- Result verdict reveal (dramatic reveal effect)\n\nAcceptance Criteria:\n- Framer Motion installed and configured\n- `components/ui/animations.tsx` \u2014 Reusable animation wrappers\n- Animations respect `prefers-reduced-motion` (a11y)\n- No janky or laggy animations\n- 60fps on mid-range hardware\n- Animations enhance UX, never block interaction",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ux",
+      "polish",
+      "priority:medium",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.048236",
+    "closed": null
+  },
+  {
+    "number": 41,
+    "title": "Implement responsive design for mobile and tablet",
+    "description": "Ensure the entire application works beautifully on all screen sizes.\n\nBreakpoints:\n- Mobile: < 640px (single column, hamburger menu, stacked cards)\n- Tablet: 640px - 1024px (2-column grid, collapsible sidebar)\n- Desktop: > 1024px (full sidebar, 3-column grids, spacious layout)\n\nMobile-specific:\n- Hamburger menu replaces sidebar\n- Swipe gestures for tabs\n- Touch-friendly button sizes (min 44px)\n- Bottom navigation bar option\n- Full-width cards\n- Simplified charts\n\nAcceptance Criteria:\n- Every page tested at 375px, 768px, 1024px, 1440px widths\n- No horizontal scrolling at any breakpoint\n- Touch targets \u2265 44x44px\n- Text remains readable without zooming\n- Charts resize properly\n- Forms are usable on mobile keyboards\n- Tailwind responsive utilities used consistently",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ux",
+      "responsive",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.051681",
+    "closed": null
+  },
+  {
+    "number": 42,
+    "title": "Add accessibility (WCAG 2.1 AA) compliance",
+    "description": "Ensure the application meets WCAG 2.1 AA accessibility standards \u2014 important for thesis quality.\n\nRequirements:\n- Keyboard navigation: All interactive elements focusable and operable\n- Screen reader support: Proper ARIA labels, roles, and live regions\n- Color contrast: All text meets 4.5:1 ratio (AA)\n- Focus indicators: Visible focus rings on all interactive elements\n- Alt text: All images and icons have descriptive alt text\n- Semantic HTML: Proper heading hierarchy, landmarks, lists\n- Form labels: All inputs have associated labels\n- Error announcements: Form errors announced to screen readers\n- Skip navigation link\n- Reduced motion support\n\nAcceptance Criteria:\n- `components/ui/skipNav.tsx` \u2014 Skip to main content link\n- Lighthouse accessibility score \u2265 90\n- All shadcn components already have built-in a11y (verify)\n- Custom components tested with screen reader\n- Color-blind safe color palette (not relying on color alone)\n- Keyboard shortcut help dialog (?)",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "a11y",
+      "priority:medium",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.056331",
+    "closed": null
+  },
+  {
+    "number": 43,
+    "title": "Configure FastAPI CORS for frontend integration",
+    "description": "Update the FastAPI backend to allow requests from the Next.js frontend.\n\nChanges:\n- Update `backend/main.py` CORS middleware:\n  - Allow origin: `http://localhost:3000` (dev)\n  - Allow methods: GET, POST, OPTIONS\n  - Allow headers: Content-Type, Authorization\n  - Allow credentials: true\n- Add CORS_ORIGINS to config.py Settings (env variable)\n- Add health check response headers\n\nAcceptance Criteria:\n- Frontend can call all 5 API endpoints without CORS errors\n- CORS origins configurable via environment variable\n- Preflight OPTIONS requests handled correctly\n- No wildcard (*) in production\n- Tested with actual frontend-to-backend calls",
+    "milestone": "milestone-3",
+    "labels": [
+      "backend",
+      "api",
+      "priority:critical",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.060426",
+    "closed": null
+  },
+  {
+    "number": 44,
+    "title": "Add real-time analysis progress feedback via SSE or polling",
+    "description": "Provide real-time progress updates to the user while analysis is running.\n\nApproach (choose one):\n- **Option A: Server-Sent Events (SSE)** \u2014 Backend streams progress events\n- **Option B: Polling** \u2014 Frontend polls a status endpoint every 500ms\n\nProgress Steps to Show:\n1. 'Extracting URL features...' (0-20%)\n2. 'Running OSINT checks...' (20-60%)\n3. 'Analyzing text with NLP...' (60-80%)\n4. 'Calculating final score...' (80-95%)\n5. 'Analysis complete!' (100%)\n\nAcceptance Criteria:\n- `components/analyze/progressBar.tsx` \u2014 Animated step progress\n- Progress bar with labeled steps\n- Estimated time remaining\n- Graceful fallback if progress tracking unavailable\n- Works with existing backend (minimal backend changes)\n- Cancel analysis button",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "backend",
+      "ux",
+      "priority:medium",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.064302",
+    "closed": null
+  },
+  {
+    "number": 45,
+    "title": "Build Settings page with API configuration",
+    "description": "Create a settings page for configuring the application.\n\nSettings:\n1. **API Configuration**\n   - Backend API URL input (default: http://localhost:8000)\n   - Test Connection button (calls /api/health)\n   - Connection status indicator (green/red dot)\n\n2. **Display Preferences**\n   - Theme (Light / Dark / System)\n   - Language (English \u2014 extensible)\n   - Results detail level (Simple / Detailed / Expert)\n\n3. **History Settings**\n   - Max history entries (10/25/50/100)\n   - Auto-clear after N days\n   - Clear all history button\n\n4. **About Section**\n   - App version, author, supervisor\n   - ELTE branding\n   - Link to thesis\n\nAcceptance Criteria:\n- `app/settings/page.tsx`\n- Settings persisted in localStorage\n- `lib/storage/settingsStore.ts` \u2014 Settings CRUD\n- shadcn Form, Select, Switch, Input components\n- Changes apply immediately (no save button needed)\n- Reset to defaults button",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ui",
+      "priority:medium",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.067670",
+    "closed": null
+  },
+  {
+    "number": 46,
+    "title": "Write frontend unit tests with Jest + React Testing Library",
+    "description": "Comprehensive unit tests for all frontend components.\n\nTest Files:\n- `__tests__/components/sidebar.test.tsx`\n- `__tests__/components/verdictBanner.test.tsx`\n- `__tests__/components/osintCards.test.tsx`\n- `__tests__/components/featureCards.test.tsx`\n- `__tests__/components/historyTable.test.tsx`\n- `__tests__/components/scoreBreakdown.test.tsx`\n- `__tests__/lib/apiClient.test.ts`\n- `__tests__/lib/historyStore.test.ts`\n- `__tests__/lib/settingsStore.test.ts`\n\nCoverage Targets:\n- Components: 80%+ coverage\n- API client: 90%+ coverage\n- Storage utilities: 90%+ coverage\n\nAcceptance Criteria:\n- Jest + React Testing Library configured\n- Mock API responses for component tests\n- Snapshot tests for key components\n- User interaction tests (click, type, submit)\n- Accessibility tests (screen reader assertions)\n- All tests pass in CI\n- `npm test` runs all tests",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "testing",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.070988",
+    "closed": null
+  },
+  {
+    "number": 47,
+    "title": "Write end-to-end tests with Playwright",
+    "description": "E2E tests that verify the full user journey from input to results.\n\nTest Scenarios:\n1. **URL Analysis Flow**: Enter URL \u2192 Submit \u2192 See results \u2192 Check verdict\n2. **Email Analysis Flow**: Enter email \u2192 Submit \u2192 See results\n3. **Navigation**: Click all nav links \u2192 Verify pages load\n4. **History**: Analyze URL \u2192 Go to history \u2192 See entry \u2192 Click view\n5. **Theme Toggle**: Switch dark/light \u2192 Verify persistence on reload\n6. **Settings**: Change API URL \u2192 Test connection \u2192 Verify\n7. **Error Handling**: Submit with backend down \u2192 See error toast\n8. **Responsive**: Run scenarios at mobile viewport\n9. **Keyboard Navigation**: Tab through entire app\n10. **Empty States**: Visit history with no data \u2192 See illustration\n\nAcceptance Criteria:\n- Playwright installed and configured\n- `e2e/` directory with all test files\n- Tests run against local dev server\n- Mock backend for deterministic results\n- Screenshots on failure\n- `npm run test:e2e` command\n- All 10 scenarios pass",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "testing",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.074230",
+    "closed": null
+  },
+  {
+    "number": 48,
+    "title": "Add batch URL analysis feature",
+    "description": "Allow users to analyze multiple URLs at once \u2014 a power feature for the thesis demo.\n\nFeatures:\n- **Bulk Input**: Textarea where users can paste multiple URLs (one per line)\n- **File Upload**: Upload a .txt or .csv file of URLs\n- **Batch Progress**: Show individual progress for each URL\n- **Results Table**: All results in a sortable table\n- **Summary Stats**: X safe, Y suspicious, Z dangerous, W critical\n- **Export**: Download all results as CSV or JSON\n\nBackend:\n- Use existing `/api/analyze/url` endpoint in a loop\n- Client-side concurrency: max 3 parallel requests\n- Rate limiting awareness\n\nAcceptance Criteria:\n- `app/analyze/batch/page.tsx`\n- `components/analyze/batchInput.tsx`\n- `components/analyze/batchResults.tsx`\n- Max 50 URLs per batch\n- Progress tracking per URL\n- Error handling per URL (one failure doesn't stop batch)\n- Export to CSV with all fields\n- Cancel batch button",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "feature",
+      "priority:medium",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.077455",
+    "closed": null
+  },
+  {
+    "number": 49,
+    "title": "Create custom phishing shield logo and branding assets",
+    "description": "Design a professional logo and branding for the thesis application.\n\nAssets Needed:\n- App logo (shield + magnifying glass concept) as SVG\n- Favicon (16x16, 32x32, 192x192, 512x512)\n- Open Graph image (1200x630) for link previews\n- Loading animation (animated shield)\n- Empty state illustrations (no history, no results)\n- Threat level icons (safe shield, warning triangle, danger skull, critical fire)\n\nBranding:\n- App name: 'PhishGuard' or 'OSINT Shield' (thesis branding)\n- Color palette derived from shadcn theme\n- ELTE university colors as accent\n\nAcceptance Criteria:\n- `public/` directory with all assets\n- SVG logo renders at all sizes\n- Favicon configured in Next.js metadata\n- OG image configured for social sharing\n- All icons consistent in style (Lucide-compatible)\n- Professional, thesis-worthy appearance",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "design",
+      "priority:medium",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.082065",
+    "closed": null
+  },
+  {
+    "number": 50,
+    "title": "Implement toast notification system",
+    "description": "Add a toast notification system for user feedback throughout the app.\n\nToast Types:\n- \u2705 Success (green): 'Analysis complete!', 'Settings saved'\n- \u274c Error (red): 'API connection failed', 'Analysis error'\n- \u26a0\ufe0f Warning (yellow): 'Backend is degraded', 'Rate limit approaching'\n- \u2139\ufe0f Info (blue): 'Tip: You can analyze emails too!', 'New feature available'\n\nBehavior:\n- Auto-dismiss after 5 seconds\n- Manual dismiss with X button\n- Stack multiple toasts\n- Position: bottom-right\n- Animate in/out\n\nAcceptance Criteria:\n- shadcn Sonner (toast) component installed\n- `lib/toast.ts` \u2014 Helper functions: showSuccess(), showError(), showWarning(), showInfo()\n- Used throughout the app for all user feedback\n- Non-blocking (doesn't cover important UI)\n- Accessible (announced to screen readers)",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ux",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.088863",
+    "closed": null
+  },
+  {
+    "number": 51,
+    "title": "Add copy-to-clipboard and share functionality for results",
+    "description": "Allow users to copy and share analysis results.\n\nFeatures:\n- **Copy Results** button \u2014 Copies formatted text summary to clipboard\n- **Copy JSON** button \u2014 Copies raw API response as JSON\n- **Share Link** \u2014 Generate a shareable link (URL with encoded params)\n- **Print** button \u2014 Print-optimized CSS for results page\n- **Download PDF** \u2014 Export results as a formatted PDF report\n\nAcceptance Criteria:\n- `components/results/shareActions.tsx`\n- Clipboard API with fallback for older browsers\n- Toast notification on successful copy\n- Print CSS media query for clean printout\n- PDF generation using browser print or html2canvas+jsPDF\n- Share button with copy-link functionality\n- All buttons have proper icons and tooltips",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "feature",
+      "priority:medium",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.094053",
+    "closed": null
+  },
+  {
+    "number": 52,
+    "title": "Add keyboard shortcuts throughout the application",
+    "description": "Power-user keyboard shortcuts for fast navigation and actions.\n\nShortcuts:\n- `Ctrl+K` or `/` \u2014 Focus search/URL input\n- `Ctrl+Enter` \u2014 Submit analysis form\n- `Ctrl+Shift+D` \u2014 Toggle dark mode\n- `Ctrl+H` \u2014 Go to history\n- `Ctrl+N` \u2014 New analysis\n- `?` \u2014 Show keyboard shortcuts help dialog\n- `Escape` \u2014 Close modals/dialogs\n\nAcceptance Criteria:\n- `hooks/useKeyboardShortcuts.ts` \u2014 Custom hook\n- `components/ui/shortcutsDialog.tsx` \u2014 Help dialog listing all shortcuts\n- Shortcuts don't conflict with browser defaults\n- Shortcuts disabled when typing in input fields\n- Shortcuts shown as hints on buttons (e.g., 'Analyze (Ctrl+Enter)')\n- Accessible (not relying on shortcuts for core functionality)",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "ux",
+      "priority:low",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.097874",
+    "closed": null
+  },
+  {
+    "number": 53,
+    "title": "Optimize frontend performance and bundle size",
+    "description": "Ensure the frontend is fast and optimized for production.\n\nOptimizations:\n- Next.js Image component for all images\n- Dynamic imports for heavy components (charts, tables)\n- Route-based code splitting (automatic with App Router)\n- Font optimization (next/font)\n- Metadata optimization for SEO\n- Bundle analysis with @next/bundle-analyzer\n- Lighthouse performance score \u2265 90\n\nPerformance Targets:\n- First Contentful Paint < 1.5s\n- Largest Contentful Paint < 2.5s\n- Time to Interactive < 3s\n- Bundle size < 200KB (first load JS)\n\nAcceptance Criteria:\n- `next.config.ts` optimized\n- Dynamic imports for Recharts, TanStack Table\n- Font preloading configured\n- No unnecessary re-renders (React DevTools verified)\n- Lighthouse audit \u2265 90 performance\n- Bundle analysis report generated",
+    "milestone": "milestone-3",
+    "labels": [
+      "frontend",
+      "performance",
+      "priority:medium",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.102630",
+    "closed": null
+  },
+  {
+    "number": 54,
+    "title": "Add backend analysis history endpoint with in-memory store",
+    "description": "Add a lightweight backend endpoint to store and retrieve analysis history.\n\nEndpoints:\n- `GET /api/history` \u2014 Return list of past analyses (last 100)\n- `GET /api/history/{id}` \u2014 Return single analysis by ID\n- `DELETE /api/history/{id}` \u2014 Delete single entry\n- `DELETE /api/history` \u2014 Clear all history\n\nStorage:\n- In-memory store (list) \u2014 no database needed for thesis\n- Each analysis auto-saved after completion\n- UUID for each analysis ID\n- Max 100 entries with FIFO eviction\n\nAcceptance Criteria:\n- `backend/api/historyStore.py` \u2014 In-memory CRUD\n- New routes in router.py\n- Pydantic schemas for history responses\n- Unit tests for store operations\n- Integration tests for endpoints\n- Analysis ID returned in AnalysisResponse (add field)",
+    "milestone": "milestone-3",
+    "labels": [
+      "backend",
+      "api",
+      "feature",
+      "priority:medium",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.111472",
+    "closed": null
+  },
+  {
+    "number": 55,
+    "title": "Write Milestone 3 methodology and results draft",
+    "description": "Draft the methodology and preliminary results sections of the thesis.\n\nSections to Draft:\n1. **System Architecture** \u2014 Diagram + description of 3-layer pipeline\n2. **Implementation Methodology**\n   - Technology choices and justification (Next.js, FastAPI, spaCy, etc.)\n   - Design patterns used (DI, Protocol-based, MVC)\n   - Development workflow (Git, issues, MCP servers)\n3. **NLP Feature Extraction** \u2014 spaCy pipeline details\n4. **OSINT Integration** \u2014 Data sources and enrichment process\n5. **Scoring Algorithm** \u2014 Mathematical formulation with weights\n6. **Frontend Architecture** \u2014 Component hierarchy, state management\n7. **Preliminary Results** \u2014 Test against known phishing/safe URLs:\n   - Accuracy metrics\n   - False positive/negative analysis\n   - Performance benchmarks (response times)\n8. **Evaluation Plan** \u2014 How the system will be evaluated in M4\n\nAcceptance Criteria:\n- `docs/milestones/milestone-3.md` \u2014 Updated with all work done\n- `docs/methodology-draft.md` \u2014 3-5 page draft\n- Architecture diagrams updated\n- Results tables with real test data\n- Ready for supervisor review",
+    "milestone": "milestone-3",
+    "labels": [
+      "documentation",
+      "thesis",
+      "priority:high",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.115722",
+    "closed": null
+  },
+  {
+    "number": 56,
+    "title": "Create developer setup documentation for frontend",
+    "description": "Document how to set up and run the complete project (frontend + backend).\n\nDocumentation:\n1. **Prerequisites** \u2014 Node.js, Python, npm/pnpm versions\n2. **Backend Setup** \u2014 venv, pip install, run server\n3. **Frontend Setup** \u2014 npm install, environment variables, run dev\n4. **Running Both** \u2014 Concurrent dev servers\n5. **Environment Variables** \u2014 All env vars documented\n6. **Testing** \u2014 How to run frontend + backend tests\n7. **Building for Production** \u2014 next build, deployment notes\n8. **Troubleshooting** \u2014 Common issues and solutions\n\nAcceptance Criteria:\n- README.md updated with full setup instructions\n- `frontend/README.md` \u2014 Frontend-specific docs\n- `.env.example` files for both frontend and backend\n- New developer can set up the entire project in < 10 minutes\n- All commands tested on fresh clone",
+    "milestone": "milestone-3",
+    "labels": [
+      "documentation",
+      "priority:medium",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.121423",
+    "closed": null
+  },
+  {
+    "number": 57,
+    "title": "Final integration testing \u2014 frontend \u2194 backend end-to-end",
+    "description": "Comprehensive integration testing of the complete system.\n\nTest Matrix:\n1. **URL Analysis E2E**: Frontend \u2192 POST /api/analyze/url \u2192 Display results\n2. **Email Analysis E2E**: Frontend \u2192 POST /api/analyze/email \u2192 Display results\n3. **Auto-detect E2E**: Frontend \u2192 POST /api/analyze (auto) \u2192 Correct detection\n4. **Health Check**: Frontend dashboard \u2192 GET /api/health \u2192 Show status\n5. **Error Scenarios**:\n   - Backend down \u2192 Frontend shows error gracefully\n   - Invalid URL \u2192 Frontend shows validation error\n   - Empty content \u2192 Frontend prevents submission\n   - Timeout \u2192 Frontend shows timeout message\n6. **History Flow**: Analyze \u2192 Save \u2192 View history \u2192 Click \u2192 See results\n7. **Batch Analysis**: Multiple URLs \u2192 All analyzed \u2192 Results table\n8. **Cross-browser**: Chrome, Firefox, Safari (if available)\n\nAcceptance Criteria:\n- All 8 test scenarios pass\n- Both servers running simultaneously\n- No console errors in browser\n- No unhandled promise rejections\n- Response times < 5 seconds for single analysis\n- All test results documented",
+    "milestone": "milestone-3",
+    "labels": [
+      "testing",
+      "integration",
+      "priority:critical",
+      "milestone-3"
+    ],
+    "status": "open",
+    "created": "2026-03-08T16:31:33.128909",
+    "closed": null
   }
 ]

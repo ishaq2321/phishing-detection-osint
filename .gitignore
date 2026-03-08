@@ -94,3 +94,10 @@ Thumbs.db
 data/phishtank/*.json
 data/phishtank/*.csv
 *.log
+
+# ── Frontend (Next.js) ──────────────────────────────────────────
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+frontend/.env.local
+frontend/.env*.local

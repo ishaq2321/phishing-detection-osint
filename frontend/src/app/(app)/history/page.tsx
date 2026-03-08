@@ -44,6 +44,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { HistoryTable } from "@/components/history";
 import { useResult } from "@/lib/resultsContext";
+import { PageTransition } from "@/components/ui/pageTransition";
+import { FadeIn } from "@/components/ui/animations";
 import {
   type HistoryEntry,
   getHistory,
@@ -163,9 +165,11 @@ export default function HistoryPage() {
 
   /* ── Main view ─────────────────────────────────────────────────── */
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <PageTransition>
+      <div className="space-y-6">
+        {/* Header */}
+        <FadeIn>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
             Analysis History
@@ -233,15 +237,19 @@ export default function HistoryPage() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+        </div>
+        </FadeIn>
 
-      {/* Data table */}
-      <HistoryTable
-        data={entries}
-        onView={handleView}
-        onReanalyse={handleReanalyse}
-        onDelete={handleDelete}
-      />
-    </div>
+        {/* Data table */}
+        <FadeIn delay={0.15}>
+          <HistoryTable
+            data={entries}
+            onView={handleView}
+            onReanalyse={handleReanalyse}
+            onDelete={handleDelete}
+          />
+        </FadeIn>
+      </div>
+    </PageTransition>
   );
 }

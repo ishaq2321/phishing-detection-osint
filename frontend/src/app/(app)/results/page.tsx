@@ -11,6 +11,14 @@
 import { ArrowLeft, Search } from "lucide-react";
 import { LinkButton } from "@/components/ui/linkButton";
 import { Separator } from "@/components/ui/separator";
+import { PageTransition } from "@/components/ui/pageTransition";
+import {
+  FadeIn,
+  SlideUp,
+  ScaleIn,
+  StaggerGroup,
+  StaggerItem,
+} from "@/components/ui/animations";
 import {
   VerdictBanner,
   ReasonsList,
@@ -75,78 +83,100 @@ export default function ResultsPage() {
   const { response, content, contentType } = result;
 
   return (
-    <div className="space-y-6">
-      {/* Page header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            Analysis Results
-          </h1>
-          <p className="text-muted-foreground">
-            Detailed phishing detection report
-          </p>
-        </div>
+    <PageTransition>
+      <div className="space-y-6">
+        {/* Page header */}
+        <FadeIn>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight">
+                Analysis Results
+              </h1>
+              <p className="text-muted-foreground">
+                Detailed phishing detection report
+              </p>
+            </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <ShareActions result={response} content={content} />
-          <LinkButton href="/analyze" variant="outline" size="sm">
-            <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-            New Analysis
-          </LinkButton>
-        </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <ShareActions result={response} content={content} />
+              <LinkButton href="/analyze" variant="outline" size="sm">
+                <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+                New Analysis
+              </LinkButton>
+            </div>
+          </div>
+        </FadeIn>
+
+        {/* Verdict — dramatic reveal */}
+        <ScaleIn delay={0.15} duration={0.5}>
+          <VerdictBanner verdict={response.verdict} />
+        </ScaleIn>
+
+        <Separator />
+
+        {/* Two-column grid: reasons + content */}
+        <StaggerGroup className="grid gap-6 lg:grid-cols-2">
+          <StaggerItem>
+            <ReasonsList reasons={response.verdict.reasons} />
+          </StaggerItem>
+          <StaggerItem>
+            <ContentPreview
+              content={content}
+              contentType={contentType}
+              analyzedAt={response.analyzedAt}
+              analysisTime={response.analysisTime}
+            />
+          </StaggerItem>
+        </StaggerGroup>
+
+        {/* OSINT intelligence cards */}
+        <Separator />
+        <SlideUp delay={0.1}>
+          <div>
+            <h2 className="mb-4 text-lg font-semibold tracking-tight">
+              OSINT Intelligence
+            </h2>
+            <OsintCards osint={response.osint} />
+          </div>
+        </SlideUp>
+
+        {/* Feature extraction & detected tactics */}
+        <Separator />
+        <SlideUp delay={0.15}>
+          <div>
+            <h2 className="mb-4 text-lg font-semibold tracking-tight">
+              Feature Extraction
+            </h2>
+            <FeatureCards features={response.features} />
+          </div>
+        </SlideUp>
+
+        {/* Score visualisation */}
+        <Separator />
+        <SlideUp delay={0.2}>
+          <div>
+            <h2 className="mb-4 text-lg font-semibold tracking-tight">
+              Score Visualisation
+            </h2>
+            <StaggerGroup className="grid gap-4 lg:grid-cols-3">
+              <StaggerItem>
+                <ScoreBreakdown
+                  confidenceScore={response.verdict.confidenceScore}
+                />
+              </StaggerItem>
+              <StaggerItem>
+                <ThreatGauge score={response.verdict.confidenceScore} />
+              </StaggerItem>
+              <StaggerItem>
+                <ConfidenceBar
+                  confidenceScore={response.verdict.confidenceScore}
+                  threatLevel={response.verdict.threatLevel}
+                />
+              </StaggerItem>
+            </StaggerGroup>
+          </div>
+        </SlideUp>
       </div>
-
-      {/* Verdict */}
-      <VerdictBanner verdict={response.verdict} />
-
-      <Separator />
-
-      {/* Two-column grid: reasons + content */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ReasonsList reasons={response.verdict.reasons} />
-        <ContentPreview
-          content={content}
-          contentType={contentType}
-          analyzedAt={response.analyzedAt}
-          analysisTime={response.analysisTime}
-        />
-      </div>
-
-      {/* OSINT intelligence cards */}
-      <Separator />
-      <div>
-        <h2 className="mb-4 text-lg font-semibold tracking-tight">
-          OSINT Intelligence
-        </h2>
-        <OsintCards osint={response.osint} />
-      </div>
-
-      {/* Feature extraction & detected tactics */}
-      <Separator />
-      <div>
-        <h2 className="mb-4 text-lg font-semibold tracking-tight">
-          Feature Extraction
-        </h2>
-        <FeatureCards features={response.features} />
-      </div>
-
-      {/* Score visualisation */}
-      <Separator />
-      <div>
-        <h2 className="mb-4 text-lg font-semibold tracking-tight">
-          Score Visualisation
-        </h2>
-        <div className="grid gap-4 lg:grid-cols-3">
-          <ScoreBreakdown
-            confidenceScore={response.verdict.confidenceScore}
-          />
-          <ThreatGauge score={response.verdict.confidenceScore} />
-          <ConfidenceBar
-            confidenceScore={response.verdict.confidenceScore}
-            threatLevel={response.verdict.threatLevel}
-          />
-        </div>
-      </div>
-    </div>
+    </PageTransition>
   );
 }

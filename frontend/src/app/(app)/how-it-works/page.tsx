@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/accordion";
 import { SCORING_WEIGHTS, THREAT_LEVEL_MAP } from "@/lib/constants";
 import { PipelineDiagram } from "@/components/methodology";
+import { AnimatedSection } from "@/components/ui/animatedSection";
 
 export const metadata: Metadata = {
   title: "How It Works",
@@ -211,7 +212,7 @@ export default function HowItWorksPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  1. Architecture Overview                                 */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section className="space-y-4">
+      <AnimatedSection className="space-y-4">
         <div className="flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Architecture Overview</h2>
@@ -223,14 +224,14 @@ export default function HowItWorksPage() {
           level classification.
         </p>
         <PipelineDiagram />
-      </section>
+      </AnimatedSection>
 
       <Separator />
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  2. Text Analysis                                         */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section className="space-y-4">
+      <AnimatedSection className="space-y-4">
         <div className="flex items-center gap-2">
           <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           <h2 className="text-lg font-semibold">Text Analysis</h2>
@@ -263,14 +264,14 @@ export default function HowItWorksPage() {
             );
           })}
         </Accordion>
-      </section>
+      </AnimatedSection>
 
       <Separator />
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  3. URL Feature Analysis                                  */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section className="space-y-4">
+      <AnimatedSection className="space-y-4">
         <div className="flex items-center gap-2">
           <Link2 className="h-5 w-5 text-amber-600 dark:text-amber-400" />
           <h2 className="text-lg font-semibold">URL Feature Analysis</h2>
@@ -300,14 +301,14 @@ export default function HowItWorksPage() {
             </AccordionItem>
           ))}
         </Accordion>
-      </section>
+      </AnimatedSection>
 
       <Separator />
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  4. OSINT Enrichment                                      */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section className="space-y-4">
+      <AnimatedSection className="space-y-4">
         <div className="flex items-center gap-2">
           <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
           <h2 className="text-lg font-semibold">OSINT Enrichment</h2>
@@ -338,14 +339,14 @@ export default function HowItWorksPage() {
             </AccordionItem>
           ))}
         </Accordion>
-      </section>
+      </AnimatedSection>
 
       <Separator />
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  5. Scoring Algorithm                                     */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section className="space-y-4">
+      <AnimatedSection className="space-y-4">
         <div className="flex items-center gap-2">
           <Calculator className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Scoring Algorithm</h2>
@@ -442,14 +443,14 @@ export default function HowItWorksPage() {
             </div>
           </CardContent>
         </Card>
-      </section>
+      </AnimatedSection>
 
       <Separator />
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  6. Threat Levels                                         */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <section className="space-y-4">
+      <AnimatedSection className="space-y-4">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Threat Levels</h2>
@@ -484,11 +485,11 @@ export default function HowItWorksPage() {
             );
           })}
         </div>
-      </section>
+      </AnimatedSection>
 
       {/* ── CTA ─────────────────────────────────────────────────── */}
       <Separator />
-      <section className="text-center space-y-3 pb-4">
+      <AnimatedSection className="text-center space-y-3 pb-4">
         <h2 className="text-lg font-semibold">Ready to Try It?</h2>
         <p className="text-sm text-muted-foreground">
           Submit a URL, email, or text sample and see the pipeline in action.
@@ -500,7 +501,7 @@ export default function HowItWorksPage() {
           <Search className="h-4 w-4" />
           Start Analysing
         </a>
-      </section>
+      </AnimatedSection>
     </div>
   );
 }

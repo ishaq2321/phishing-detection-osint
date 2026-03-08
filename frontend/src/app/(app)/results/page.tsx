@@ -17,6 +17,7 @@ import {
   ContentPreview,
   ShareActions,
   OsintCards,
+  FeatureCards,
 } from "@/components/results";
 import { useResult } from "@/lib/resultsContext";
 import {
@@ -113,6 +114,15 @@ export default function ResultsPage() {
           OSINT Intelligence
         </h2>
         <OsintCards osint={response.osint} />
+      </div>
+
+      {/* Feature extraction & detected tactics */}
+      <Separator />
+      <div>
+        <h2 className="mb-4 text-lg font-semibold tracking-tight">
+          Feature Extraction
+        </h2>
+        <FeatureCards features={response.features} />
       </div>
     </div>
   );

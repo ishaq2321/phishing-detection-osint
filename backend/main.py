@@ -40,6 +40,18 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Phishing Detection API v1.0.0")
     logger.info("Analyzer Engine: %s", settings.analyzerEngine.value)
     logger.info("Environment: %s", settings.environment.value)
+    logger.info(
+        "CORS: origins=%s methods=%s headers=%s",
+        settings.corsOrigins,
+        settings.corsMethods,
+        settings.corsHeaders,
+    )
+    
+    if settings.corsOrigins == "*" and settings.isProduction:
+        logger.warning(
+            "Wildcard CORS origins (*) in production is insecure — "
+            "set CORS_ORIGINS to specific origins"
+        )
     
     yield
     
@@ -89,8 +101,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.corsOriginsList,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=settings.corsMethodsList,
+    allow_headers=settings.corsHeadersList,
 )
 
 

@@ -70,9 +70,11 @@ class TestSettingsDefaults:
         assert settings.cacheTtlSeconds == 3600
     
     def test_defaultApiSettings(self):
-        """Default API settings should be permissive."""
+        """Default API settings should be secure for development."""
         settings = Settings()
-        assert settings.corsOrigins == "*"
+        assert settings.corsOrigins == "http://localhost:3000"
+        assert settings.corsMethods == "GET,POST,OPTIONS"
+        assert settings.corsHeaders == "Content-Type,Authorization"
         assert settings.apiRateLimit == 100
         assert settings.apiPrefix == "/api"
 
@@ -303,16 +305,54 @@ class TestCorsValidation:
     """Test CORS origins validation."""
     
     def test_emptyCorsOrigins(self):
-        """Empty CORS origins should default to wildcard."""
+        """Empty CORS origins should default to localhost."""
         settings = Settings(corsOrigins="")
-        assert settings.corsOrigins == "*"
+        assert settings.corsOrigins == "http://localhost:3000"
     
     def test_whitespaceCorsOrigins(self):
-        """Whitespace-only CORS origins should default to wildcard."""
+        """Whitespace-only CORS origins should default to localhost."""
         settings = Settings(corsOrigins="   ")
-        assert settings.corsOrigins == "*"
+        assert settings.corsOrigins == "http://localhost:3000"
     
     def test_validCorsOrigin(self):
         """Valid CORS origin should be preserved."""
         settings = Settings(corsOrigins="http://localhost:3000")
         assert settings.corsOrigins == "http://localhost:3000"
+    
+    def test_wildcardCorsOrigin(self):
+        """Wildcard CORS origin should be accepted."""
+        settings = Settings(corsOrigins="*")
+        assert settings.corsOriginsList == ["*"]
+    
+    def test_multipleCorsOrigins(self):
+        """Multiple CORS origins should be split into a list."""
+        settings = Settings(corsOrigins="http://localhost:3000,https://example.com")
+        assert settings.corsOriginsList == [
+            "http://localhost:3000",
+            "https://example.com",
+        ]
+    
+    def test_emptyCorsMethods(self):
+        """Empty CORS methods should default to GET,POST,OPTIONS."""
+        settings = Settings(corsMethods="")
+        assert settings.corsMethods == "GET,POST,OPTIONS"
+    
+    def test_corsMethodsList(self):
+        """CORS methods should be split into a list."""
+        settings = Settings(corsMethods="GET,POST,OPTIONS")
+        assert settings.corsMethodsList == ["GET", "POST", "OPTIONS"]
+    
+    def test_corsMethodsUppercased(self):
+        """CORS methods should be uppercased."""
+        settings = Settings(corsMethods="get,post")
+        assert settings.corsMethods == "GET,POST"
+    
+    def test_emptyCorsHeaders(self):
+        """Empty CORS headers should default to Content-Type,Authorization."""
+        settings = Settings(corsHeaders="")
+        assert settings.corsHeaders == "Content-Type,Authorization"
+    
+    def test_corsHeadersList(self):
+        """CORS headers should be split into a list."""
+        settings = Settings(corsHeaders="Content-Type,Authorization")
+        assert settings.corsHeadersList == ["Content-Type", "Authorization"]

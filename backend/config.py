@@ -192,8 +192,18 @@ class Settings(BaseSettings):
     # =========================================================================
     
     corsOrigins: str = Field(
-        default="*",
+        default="http://localhost:3000",
         description="Allowed CORS origins (comma-separated or * for all)"
+    )
+    
+    corsMethods: str = Field(
+        default="GET,POST,OPTIONS",
+        description="Allowed CORS HTTP methods (comma-separated)"
+    )
+    
+    corsHeaders: str = Field(
+        default="Content-Type,Authorization",
+        description="Allowed CORS headers (comma-separated)"
     )
     
     apiRateLimit: int = Field(
@@ -251,7 +261,23 @@ class Settings(BaseSettings):
     def validateCorsOrigins(cls, v: str) -> str:
         """Validate CORS origins format."""
         if not v or not v.strip():
-            return "*"
+            return "http://localhost:3000"
+        return v.strip()
+    
+    @field_validator("corsMethods")
+    @classmethod
+    def validateCorsMethods(cls, v: str) -> str:
+        """Validate CORS methods format."""
+        if not v or not v.strip():
+            return "GET,POST,OPTIONS"
+        return v.strip().upper()
+    
+    @field_validator("corsHeaders")
+    @classmethod
+    def validateCorsHeaders(cls, v: str) -> str:
+        """Validate CORS headers format."""
+        if not v or not v.strip():
+            return "Content-Type,Authorization"
         return v.strip()
     
     @model_validator(mode="after")
@@ -289,6 +315,16 @@ class Settings(BaseSettings):
         if self.corsOrigins == "*":
             return ["*"]
         return [origin.strip() for origin in self.corsOrigins.split(",")]
+    
+    @property
+    def corsMethodsList(self) -> list[str]:
+        """Get CORS methods as a list."""
+        return [method.strip() for method in self.corsMethods.split(",")]
+    
+    @property
+    def corsHeadersList(self) -> list[str]:
+        """Get CORS headers as a list."""
+        return [header.strip() for header in self.corsHeaders.split(",")]
     
     @property
     def hasVirusTotalKey(self) -> bool:

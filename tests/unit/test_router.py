@@ -197,3 +197,82 @@ class TestOpenApiDocs:
         """Swagger docs should be available."""
         response = client.get("/docs")
         assert response.status_code == 200
+
+
+class TestCorsMiddleware:
+    """Test CORS middleware responses."""
+
+    def test_preflightOptionsReturnsOk(self, client):
+        """OPTIONS preflight request should return 200."""
+        response = client.options(
+            "/api/health",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
+        assert response.status_code == 200
+
+    def test_preflightIncludesAllowOrigin(self, client):
+        """Preflight response should include Access-Control-Allow-Origin."""
+        response = client.options(
+            "/api/health",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
+        assert "access-control-allow-origin" in response.headers
+
+    def test_preflightIncludesAllowMethods(self, client):
+        """Preflight response should list allowed methods."""
+        response = client.options(
+            "/api/health",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "POST",
+            },
+        )
+        assert "access-control-allow-methods" in response.headers
+
+    def test_preflightIncludesAllowHeaders(self, client):
+        """Preflight response should list allowed headers."""
+        response = client.options(
+            "/api/health",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "GET",
+                "Access-Control-Request-Headers": "Content-Type",
+            },
+        )
+        assert "access-control-allow-headers" in response.headers
+
+    def test_corsAllowCredentials(self, client):
+        """CORS should allow credentials."""
+        response = client.options(
+            "/api/health",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "GET",
+            },
+        )
+        assert response.headers.get("access-control-allow-credentials") == "true"
+
+    def test_getRequestIncludesCorsHeaders(self, client):
+        """Regular GET with Origin header should include CORS response headers."""
+        response = client.get(
+            "/api/health",
+            headers={"Origin": "http://localhost:3000"},
+        )
+        assert response.status_code == 200
+        assert "access-control-allow-origin" in response.headers
+
+    def test_postRequestIncludesCorsHeaders(self, client):
+        """POST with Origin header should include CORS response headers."""
+        response = client.post(
+            "/api/analyze/url",
+            json={"url": "https://example.com"},
+            headers={"Origin": "http://localhost:3000"},
+        )
+        assert response.status_code == 200
+        assert "access-control-allow-origin" in response.headers

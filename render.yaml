@@ -1,0 +1,31 @@
+# Render.com Blueprint — PhishGuard Backend
+# ==========================================
+# Auto-deploys from the main branch.
+# Docs: https://docs.render.com/blueprint-spec
+
+services:
+  - type: web
+    name: phishguard-api
+    runtime: python
+    region: frankfurt
+    plan: free
+    branch: main
+    rootDir: .
+    buildCommand: |
+      pip install -r backend/requirements.txt &&
+      python -m spacy download en_core_web_sm
+    startCommand: >
+      uvicorn backend.main:app
+      --host 0.0.0.0
+      --port $PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHON_VERSION
+        value: "3.10.12"
+      - key: CORS_ORIGINS
+        sync: false
+      - key: VIRUSTOTAL_API_KEY
+        sync: false
+      - key: ABUSEIPDB_API_KEY
+        sync: false

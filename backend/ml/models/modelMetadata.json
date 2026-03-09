@@ -1,0 +1,70 @@
+{
+  "modelType": "XGBClassifier",
+  "objective": "binary:logistic",
+  "featureCount": 21,
+  "featureNames": [
+    "urlLength",
+    "domainLength",
+    "subdomainCount",
+    "pathDepth",
+    "hasIpAddress",
+    "hasAtSymbol",
+    "hasDoubleSlash",
+    "hasDashInDomain",
+    "hasUnderscoreInDomain",
+    "isHttps",
+    "hasPortNumber",
+    "hasSuspiciousTld",
+    "hasEncodedChars",
+    "hasSuspiciousKeywords",
+    "digitRatio",
+    "specialCharCount",
+    "queryParamCount",
+    "hasValidMx",
+    "usesCdn",
+    "dnsRecordCount",
+    "hasValidDns"
+  ],
+  "bestHyperparameters": {
+    "max_depth": 7,
+    "learning_rate": 0.17736425360114502,
+    "n_estimators": 700,
+    "subsample": 0.944661319608125,
+    "colsample_bytree": 0.8728576903058656,
+    "min_child_weight": 1,
+    "gamma": 0.197956928207658,
+    "reg_alpha": 0.00027375352319617226,
+    "reg_lambda": 0.39662396189094684
+  },
+  "metrics": {
+    "train": {
+      "accuracy": 0.9813895781637717,
+      "precision": 0.9922134733158355,
+      "recall": 0.9703944553777701,
+      "f1": 0.9811826794134187,
+      "rocAuc": 0.9987601215465989
+    },
+    "val": {
+      "accuracy": 0.9640646835695748,
+      "precision": 0.975071516142215,
+      "recall": 0.9524950099800399,
+      "f1": 0.9636510500807755,
+      "rocAuc": 0.994963188638697
+    },
+    "test": {
+      "accuracy": 0.9644639648632461,
+      "precision": 0.9786008230452675,
+      "recall": 0.9496805111821086,
+      "f1": 0.9639237940818808,
+      "rocAuc": 0.9940816450166758
+    }
+  },
+  "optuna": {
+    "nTrials": 50,
+    "nCvFolds": 5,
+    "bestTrialNumber": 43,
+    "bestTrialAuc": 0.9943236868605307
+  },
+  "randomSeed": 42,
+  "trainingTimeSeconds": 222.53
+}

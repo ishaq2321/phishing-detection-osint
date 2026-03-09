@@ -391,9 +391,10 @@
       "priority:critical",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:32.963252",
-    "closed": null
+    "closed": "2026-03-08T18:44:18.509430",
+    "closeComment": "\u2705 Already completed \u2014 duplicate of Issue #30 (closed). Frontend was initialized with Next.js 16, TypeScript, Tailwind CSS v4, and shadcn/ui in commit `8e671ad`."
   },
   {
     "number": 28,
@@ -406,9 +407,10 @@
       "priority:critical",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:32.964416",
-    "closed": null
+    "closed": "2026-03-08T18:44:18.721132",
+    "closeComment": "\u2705 Already completed \u2014 duplicate of Issue #31 (closed). API client service layer built in commit `a63e46d`."
   },
   {
     "number": 29,
@@ -421,9 +423,10 @@
       "priority:critical",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.020878",
-    "closed": null
+    "closed": "2026-03-08T18:42:14.818992",
+    "closeComment": "\u2705 Completed in commit `8bfbf23`\n\n**Deliverables:**\n\n1. **AppSidebar** (`components/layout/appSidebar.tsx`) \u2014 responsive three-tier sidebar:\n   - Desktop (\u22651024px): Full 240px sidebar with icons + labels\n   - Tablet (768\u20131023px): Collapsed 56px icon-only rail with tooltips\n   - Mobile (<768px): Hidden \u2014 opens as Sheet drawer from header hamburger button\n   - Active route highlighting with `aria-current=\"page\"`\n   - Keyboard-navigable with visible focus rings\n\n2. **AppHeader** (`components/layout/appHeader.tsx`) \u2014 sticky top bar with:\n   - Mobile hamburger menu triggering Sheet sidebar\n   - Live health status indicator (green/amber/red dot polling `/api/health` every 30s)\n   - Theme toggle (light/dark/system)\n\n3. **AppFooter** (`components/layout/appFooter.tsx`) \u2014 ELTE branding footer\n\n4. **App shell layout** (`app/(app)/layout.tsx`) \u2014 route group wrapping sidebar + header + scrollable main content + footer\n\n5. **Route pages** \u2014 Dashboard (`/`), Analyse (`/analyze`), History (`/history`), How It Works (`/how-it-works`), Settings (`/settings`)\n   - Dashboard: welcome hero, feature cards, system overview\n   - How It Works: pipeline diagram, threat level reference table\n   - Others: well-designed placeholders ready for full implementation\n\n6. **New shadcn components** \u2014 Sheet (mobile drawer) + ScrollArea (scrollable sidebar)\n\n**Verification:** 0 ESLint errors \u00b7 0 TypeScript errors \u00b7 551/551 backend tests pass \u00b7 All 6 routes pre-rendered"
   },
   {
     "number": 30,
@@ -436,9 +439,10 @@
       "priority:critical",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.023130",
-    "closed": null
+    "closed": "2026-03-08T18:22:19.806322",
+    "closeComment": "\u2705 **Issue #30 Complete \u2014 Frontend Initialized**\\n\\nCommit: `8e671ad`\\n\\n### What was delivered:\\n- **Next.js 16.1.6** with App Router, TypeScript strict mode, Tailwind CSS v4\\n- **shadcn/ui** initialized (base-nova style) with 16 base components: Button, Card, Input, Badge, Tabs, Textarea, Alert, Dialog, DropdownMenu, Separator, Select, Switch, Label, Tooltip, Skeleton, Progress, Sonner\\n- **ThemeProvider** (next-themes) with ThemeToggle dropdown (Light/Dark/System)\\n- **SkipNav** accessibility link\\n- **LinkButton** component for Server Component compatibility with base-ui\\n- **PhishGuard landing page** \u2014 hero section, 3 feature cards, footer\\n- **Error boundaries**: loading.tsx, error.tsx, not-found.tsx (custom 404)\\n- **TypeScript types** mirroring all backend Pydantic schemas\\n- **Constants** \u2014 threat level map, nav items, scoring weights, app metadata\\n- **API proxy** via next.config.ts rewrites to backend\\n- **Folder structure**: components/{layout,ui,analyze,results,charts}, lib/{api,storage}, hooks/, types/\\n\\n### Verification:\\n- \u2705 `npm run build` \u2014 zero TypeScript errors\\n- \u2705 `npm run lint` \u2014 zero ESLint warnings\\n- \u2705 551 backend tests passing (no regression)\\n- \u2705 Dev server starts on http://localhost:3000\""
   },
   {
     "number": 31,
@@ -451,9 +455,10 @@
       "priority:critical",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.024289",
-    "closed": null
+    "closed": "2026-03-08T18:31:50.956943",
+    "closeComment": "\u2705 Completed in commit `a63e46d`\n\n**Deliverables:**\n\n1. **Types aligned to backend** \u2014 Fixed `EmailRequest` (content not body, optional subject/sender), `HealthResponse.services` (Record<string, boolean>), renamed `AnalyzeTextRequest` \u2192 `AnalyzeRequest`, added `ContentType` and `HealthStatus` aliases\n\n2. **Error classes** (`lib/api/errors.ts`) \u2014 `NetworkError`, `ApiError`, `ValidationError` with `friendlyErrorMessage()` helper for user-facing strings\n\n3. **Fetch wrapper** (`lib/api/client.ts`) \u2014 `apiClient<T>()` with 30s timeout, AbortController support, JSON headers, maps fetch failures \u2192 NetworkError, 422 \u2192 ValidationError, other non-2xx \u2192 ApiError\n\n4. **Typed endpoints** (`lib/api/endpoints.ts`) \u2014 `analyzeContent()`, `analyzeUrl()`, `analyzeEmail()`, `checkHealth()`, `pingApi()` \u2014 all fully typed with request/response generics\n\n5. **React hooks** \u2014 `useAnalysis()` with run/abort/reset + discriminated union input, `useHealth()` with configurable polling interval and proper cleanup\n\n6. **Barrel exports** for `lib/api/` and `hooks/`\n\n**Verification:** 0 ESLint errors \u00b7 0 TypeScript errors \u00b7 551/551 backend tests pass"
   },
   {
     "number": 32,
@@ -466,9 +471,10 @@
       "priority:critical",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.025525",
-    "closed": null
+    "closed": "2026-03-08T18:52:46.531163",
+    "closeComment": "\u2705 Completed in commit `c718261`\n\n### Delivered\n- **VerdictBanner** \u2014 Color-coded threat-level banner with animated confidence score (rAF + easeOutCubic), phishing YES/NO label, threat level badge, and recommendation text\n- **ReasonsList** \u2014 Risk indicators with pattern-matched icons per category (urgency, brand, credentials, URL, OSINT)\n- **ContentPreview** \u2014 Analysed content display (URL as clickable link, text truncated at 500 chars), content type + timing badges, formatted timestamp\n- **ShareActions** \u2014 Copy summary, copy JSON, print buttons with clipboard feedback\n- **useCountUp** \u2014 requestAnimationFrame-based animated counter with prefers-reduced-motion support\n- **ResultsContext** \u2014 Cross-page state provider for analysis results\n- **/results route** \u2014 Full results page with empty state, responsive 2-column grid layout\n- **Print CSS** \u2014 Clean print output hiding sidebar, header, footer, toasts\n\n### Verified\n- \u2705 `npm run lint` \u2014 0 errors\n- \u2705 `npm run build` \u2014 0 TS errors, all 9 pages generated\n- \u2705 `python -m pytest tests/` \u2014 551 tests pass"
   },
   {
     "number": 33,
@@ -481,9 +487,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.026839",
-    "closed": null
+    "closed": "2026-03-08T18:59:05.896744",
+    "closeComment": "\u2705 Completed in commit `ec151ad`\n\n### Delivered\n- **DomainInfoCard** \u2014 Domain name, age with human-readable format (days/months/years) and risk-awareness badge (Very New \ud83d\udd34 / New \ud83d\udfe1 / Established \ud83d\udfe2), registrar, privacy protection (\ud83d\udd12/\ud83d\udd13)\n- **DnsStatusCard** \u2014 Large visual indicator (CheckCircle2/XCircle) with colour-coded Valid DNS / No DNS Records status and descriptive text\n- **ReputationCard** \u2014 Colour-coded Progress bar (red\u2192amber\u2192green), score percentage with label (Poor/Fair/Good), blacklist status badge (Blacklisted/Clean)\n- **InfoTooltip** \u2014 Contextual `?` icon tooltips explaining each OSINT metric\n- **OsintUnavailable** \u2014 Graceful empty state when OSINT data is null\n- **Responsive grid** \u2014 3 columns \u2192 2 \u2192 1 as viewport shrinks\n\n### Integrated\n- Results page now shows \"OSINT Intelligence\" section below reasons/content\n- Barrel export updated\n\n### Verified\n- \u2705 `npm run lint` \u2014 0 errors\n- \u2705 `npm run build` \u2014 0 TS errors, all 9 pages generated\n- \u2705 `python -m pytest tests/` \u2014 551 tests pass"
   },
   {
     "number": 34,
@@ -496,9 +503,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.029360",
-    "closed": null
+    "closed": "2026-03-08T19:05:33.649493",
+    "closeComment": "\u2705 Completed in commit `3e84120`\n\n### Delivered\n\n**Feature Counts Card** \u2014 4 animated count-up chips in a responsive 2\u00d72 grid:\n- \ud83d\udd17 URL Features (amber)\n- \ud83d\udcc4 Text Features (blue)\n- \ud83c\udf10 OSINT Features (green)\n- \u26a0\ufe0f Total Risk Indicators (red when > 0)\n\n**Detected Tactics Card** \u2014 colour-coded badges for all 10 `PhishingTactic` enum values:\n| Tactic | Colour | Icon |\n|--------|--------|------|\n| `urgency` | \ud83d\udfe0 Orange | Timer |\n| `authority_impersonation` | \ud83d\udfe3 Purple | UserX |\n| `brand_impersonation` | \ud83d\udfe3 Violet | Fingerprint |\n| `credential_request` | \ud83d\udd34 Red | KeyRound |\n| `threat_warning` | \ud83d\udd34 Rose | Siren |\n| `emotional_manipulation` | \ud83e\ude77 Pink | Heart |\n| `monetary_request` | \ud83d\udfe1 Amber | Banknote |\n| `attachment_malware` | \u2b1b Slate | Paperclip |\n| `link_manipulation` | \ud83d\udfe1 Yellow | MousePointerClick |\n| `social_proof` | \ud83d\udd35 Sky | Users |\n\nEach badge shows a tooltip with descriptive explanation on hover. Empty state: \"No suspicious tactics detected \u2705\"\n\n### Verified\n- \u2705 `npm run lint` \u2014 0 errors\n- \u2705 `npm run build` \u2014 0 TS errors, all 9 pages generated\n- \u2705 `python -m pytest tests/` \u2014 551 tests pass"
   },
   {
     "number": 35,
@@ -511,9 +519,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.031838",
-    "closed": null
+    "closed": "2026-03-08T19:31:16.614668",
+    "closeComment": "\u2705 Completed in commit `c242dd1`\n\n### Delivered\n\n**1. Score Breakdown Donut Chart** (`scoreBreakdown.tsx`)\n- Recharts `PieChart` with three segments:\n  - \ud83d\udd35 Text Analysis \u2014 40%\n  - \ud83d\udfe0 URL Features \u2014 25%  \n  - \ud83d\udfe2 OSINT Score \u2014 35%\n- Animated centre label showing final risk score percentage\n- Custom tooltip on hover showing segment name + weight\n- Colour legend below the chart\n\n**2. Threat Gauge** (`threatGauge.tsx`)\n- Pure SVG semi-circular gauge meter\n- Four colour zones: green (0\u20130.4), yellow (0.4\u20130.6), orange (0.6\u20130.8), red (0.8\u20131.0)\n- Animated needle pointing to current score\n- Score + threat level label below gauge\n- Min/max labels (0 / 100)\n\n**3. Confidence Bar** (`confidenceBar.tsx`)\n- shadcn Progress component with colour-coded indicator\n- Descriptive sentence: \"The model is X% confident in its classification\"\n- Gradient reference scale showing all four threat zone colours\n- Threat level badge\n\n### Shared Features\n- \u2728 All charts animated on mount via `useCountUp` (rAF + easeOutCubic)\n- \u267f Full accessibility: `role=\"img\"` + `aria-label` for screen readers\n- \ud83c\udf19 Dark/light mode themed\n- \ud83d\udcf1 Responsive sizing\n- \ud83c\udfc3 Respects `prefers-reduced-motion`\n\n### Verified\n- \u2705 `npm run lint` \u2014 0 errors\n- \u2705 `npm run build` \u2014 0 TS errors, all 9 pages generated\n- \u2705 `python -m pytest tests/` \u2014 551 tests pass"
   },
   {
     "number": 36,
@@ -526,9 +535,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.033720",
-    "closed": null
+    "closed": "2026-03-08T19:43:09.181882",
+    "closeComment": "\u2705 **Issue #36 \u2014 Build analysis history page with data table** completed in commit `12043db`.\\n\\n### Deliverables\\n\\n**`src/lib/storage/historyStore.ts`** \u2014 localStorage CRUD:\\n- `getHistory()` / `getEntryById()` \u2014 read entries (newest first)\\n- `addEntry()` \u2014 prepend with UUID, FIFO eviction at 100 entries\\n- `deleteEntry()` / `clearHistory()` \u2014 remove one or all\\n- `exportToCsv()` / `exportToJson()` \u2014 browser file download\\n- SSR-safe (`isClient()` guard for `window`)\\n\\n**`src/components/history/historyTable.tsx`** \u2014 TanStack Table:\\n- 7 columns: #, Content (truncated+mono), Type (badge), Threat Level (colour-coded badge), Score (%), Date, Actions (dropdown)\\n- Sortable headers with ArrowUpDown indicator\\n- Global search across content/domain\\n- Threat-level dropdown filter (All / Safe / Suspicious / Dangerous / Critical)\\n- Page-size selector (10 / 25 / 50 rows)\\n- Full pagination (first/prev/next/last with page counter)\\n- Row action dropdown: View Results, Re-analyse, Delete\\n- **Responsive**: mobile card view (`md:hidden`) with stacked layout\\n\\n**`src/app/(app)/history/page.tsx`** \u2014 Full page:\\n- Hydration-safe mounting (rAF-deferred to avoid `set-state-in-effect`)\\n- Export dropdown (CSV + JSON)\\n- Clear All with confirmation dialog (shadcn Dialog)\\n- Empty state with CTA link to Analyse page\\n- Dynamic entry count\\n\\n### Verification\\n- \u2705 ESLint: 0 errors, 0 warnings\\n- \u2705 Build: all 9 routes compiled successfully\\n- \u2705 Backend: 551 tests passing\\n- \u2705 New dependencies: `@tanstack/react-table`, shadcn `Table` component"
   },
   {
     "number": 37,
@@ -542,9 +552,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.037718",
-    "closed": null
+    "closed": "2026-03-08T19:50:01.553341",
+    "closeComment": "\u2705 **Issue #37 \u2014 Create 'How It Works' methodology page** completed in commit `a36888c`.\\n\\n### Deliverables\\n\\n**`src/components/methodology/pipelineDiagram.tsx`** \u2014 Reusable pipeline visualisation:\\n- Interactive flow: Input \u2192 Text Analysis (40%) + URL Features (25%) + OSINT (35%) \u2192 Score \u2192 Verdict\\n- Colour-coded nodes with icons per analysis layer\\n- Three detail cards below showing each layer's 6 sub-features with bullet lists\\n- Fully responsive (wraps gracefully on mobile)\\n\\n**`src/app/(app)/how-it-works/page.tsx`** \u2014 6 comprehensive sections:\\n\\n| # | Section | Content |\\n|---|---------|--------|\\n| 1 | **Architecture Overview** | Pipeline diagram + prose description |\\n| 2 | **Text Analysis** | 6 accordion panels: Urgency, Credential Harvesting, Brand Impersonation, Fear Tactics, Suspicious Formatting, Emotional Manipulation \u2014 each with icon + detailed description |\\n| 3 | **URL Feature Analysis** | 6 accordion panels: Suspicious TLDs, IP Addresses, Subdomain Depth, Homograph Attacks, URL Shorteners, Path Anomalies |\\n| 4 | **OSINT Enrichment** | 6 accordion panels: WHOIS Domain Age, Registrar Reputation, DNS Validation, VirusTotal, AbuseIPDB, Blacklists |\\n| 5 | **Scoring Algorithm** | Visual formula card with colour-coded weight bar (40% blue / 25% amber / 35% green), legend, and \\\"Why these weights?\\\" rationale |\\n| 6 | **Threat Levels** | 4 cards with ShieldCheck/ShieldAlert/ShieldX/AlertTriangle icons, score ranges, and recommended actions |\\n\\n**CTA section** at the bottom linking to /analyze.\\n\\n### New Component\\n- shadcn **Accordion** (base-ui) installed\\n\\n### Verification\\n- \u2705 ESLint: 0 errors, 0 warnings\\n- \u2705 Build: all 9 routes compiled successfully\\n- \u2705 Backend: 551 tests passing\\n- \ud83c\udf93 Thesis-demo ready \u2014 clean screenshots for the methodology chapter"
   },
   {
     "number": 38,
@@ -557,9 +568,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.042278",
-    "closed": null
+    "closed": "2026-03-08T20:02:02.351906",
+    "closeComment": "\u2705 Closed via commit `adbd920`.\n\n## What was done\n\nThe core theme infrastructure (ThemeProvider, ThemeToggle, CSS variables, dark class) was already in place from Issue #30. This issue focused on polish and completeness:\n\n### Smooth CSS transitions\n- Removed `disableTransitionOnChange` from ThemeProvider \u2014 theme toggling is now visually smooth\n- Added a universal 200ms CSS transition rule for `color`, `background-color`, `border-color`, `outline-color`, `text-decoration-color`, `fill`, and `stroke`\n\n### Theme-aware chart colours\n- **ScoreBreakdown** \u2014 donut segments now use lighter shades in dark mode (blue-400, amber-400, green-400 vs -500 in light)\n- **ThreatGauge** \u2014 SVG arc zones use -400 shades in dark mode for better contrast on dark backgrounds\n- Both components use `useTheme()` from `next-themes` with `resolvedTheme` for SSR-safe detection\n\n### Component dark mode audit & fixes\n- **ReasonsList** \u2014 5 icon colour classes gained `dark:` variants (amber, purple, red, blue)\n- **OsintCards** \u2014 reputation progress bar colours gained `dark:` variants\n- **ShareActions** \u2014 \"Copied!\" check icon gained `dark:text-green-400`\n\n### Already working (no changes needed)\n- ThemeProvider wraps root layout \u2705\n- ThemeToggle dropdown in header (Light / Dark / System) \u2705\n- `suppressHydrationWarning` prevents flash of wrong theme \u2705\n- All shadcn/ui components use CSS variables \u2014 automatic \u2705\n- PipelineDiagram, FeatureCards, VerdictBanner already had explicit `dark:` variants \u2705\n- Sidebar, Footer, Landing page all use CSS variable colours \u2705\n\n**Lint:** 0 errors \u00b7 **Build:** clean (9 routes) \u00b7 **Tests:** 551 passed"
   },
   {
     "number": 39,
@@ -572,9 +584,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.045246",
-    "closed": null
+    "closed": "2026-03-08T20:09:37.742415",
+    "closeComment": "\u2705 Closed via commit `9805881`.\n\n## What was done\n\n### Global Loading Fallback (`app/loading.tsx`)\n- Animated shield with `animate-pulse` + ping ring effect\n- `role=\"status\"` + `aria-label` for accessibility\n- \"Preparing your workspace\" subtitle\n\n### Global Error Boundary (`app/error.tsx`)\n- Card layout with `ShieldAlert` icon in destructive colour\n- Error message + optional digest display in monospace box\n- **Try Again** button (calls `reset()`) + **Go to Dashboard** link\n- Uses `LinkButton` (no `asChild` \u2014 shadcn v4 compatible)\n\n### Custom 404 Page (`app/not-found.tsx`)\n- Card layout with `ShieldOff` icon\n- Large 404 heading with description\n- **Go to Dashboard** + **Analyse Content** navigation links\n\n### App-Level Loading & Error (`app/(app)/loading.tsx` + `error.tsx`)\n- Skeleton-based loading inside the sidebar/header shell \u2014 navigation stays interactive\n- Error boundary within the app shell \u2014 sidebar + header remain usable, retry + navigation buttons\n\n### Page-Specific Skeleton Components\n- **ResultsSkeleton** \u2014 mimics verdict banner, 3 chart cards, reasons list, 4 OSINT cards\n- **HistorySkeleton** \u2014 mimics search toolbar, 7-column table header + 8 rows, pagination\n- **AnalyzeSkeleton** \u2014 mimics input mode tabs, textarea, submit button\n- **DashboardSkeleton** \u2014 mimics hero section, 3 feature cards, quick start section\n- Barrel export via `components/skeletons/index.ts`\n\n### Toast Helper Utilities (`lib/toast.ts`)\n- `showSuccess(message, description?)` \u2014 green toast\n- `showError(message, description?)` \u2014 red toast\n- `showWarning(message, description?)` \u2014 yellow toast\n- `showInfo(message, description?)` \u2014 blue toast\n- `showPromise(promise, { loading, success, error })` \u2014 loading \u2192 resolve toast\n\n**Lint:** 0 errors \u00b7 **Build:** clean (9 routes) \u00b7 **Tests:** 551 passed"
   },
   {
     "number": 40,
@@ -588,9 +601,10 @@
       "priority:medium",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.048236",
-    "closed": null
+    "closed": "2026-03-08T20:21:50.094500",
+    "closeComment": "\u2705 Issue #40 complete \u2014 Animations and micro-interactions with Framer Motion\n\n**New files created:**\n- `hooks/useReducedMotion.ts` \u2014 re-exports Motion's `useReducedMotion`, respects `prefers-reduced-motion` (a11y)\n- `components/ui/animations.tsx` \u2014 6 reusable wrappers: FadeIn, SlideUp, SlideIn, ScaleIn, StaggerGroup, StaggerItem\n- `components/ui/pageTransition.tsx` \u2014 page-level fade+slide-up entrance (0.3s)\n- `components/ui/animatedSection.tsx` \u2014 scroll-triggered `whileInView` animation (once, 0.4s)\n\n**Pages wired with animations:**\n- **Dashboard** \u2014 PageTransition, FadeIn hero, StaggerGroup+StaggerItem for capability cards\n- **Results** \u2014 dramatic ScaleIn verdict reveal, staggered SlideUp sections with progressive delays\n- **How It Works** \u2014 AnimatedSection on all 7 methodology sections (scroll-triggered)\n- **History** \u2014 PageTransition, FadeIn header + data table with staggered delay\n\n**Accessibility:** All animations gracefully degrade to instant transitions when `prefers-reduced-motion` is enabled.\n\n**Verification:** Lint \u2705 | Build \u2705 (9 routes, 0 errors) | Backend 551 tests \u2705\n**Commit:** dff2e58"
   },
   {
     "number": 41,
@@ -604,9 +618,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.051681",
-    "closed": null
+    "closed": "2026-03-08T20:34:13.912237",
+    "closeComment": "\u2705 Issue #41 complete \u2014 Responsive design for mobile and tablet\n\n**New component:** `components/layout/mobileNav.tsx` \u2014 Fixed bottom navigation bar for mobile (< 768px) with 4 primary routes\n\n**Responsive design audit results:**\n- \u2705 **Sidebar:** Three-tier (full \u2192 collapsed rail \u2192 sheet) already implemented\n- \u2705 **Bottom nav bar:** NEW \u2014 added for quick mobile navigation\n- \u2705 **Touch targets:** All nav links and buttons meet \u2265 44px minimum\n- \u2705 **Responsive grids:** All grids use progressive sm:/md:/lg: breakpoints\n- \u2705 **Data table:** Dual desktop-table/mobile-card pattern (already existed)\n- \u2705 **Typography:** All headings scale text-2xl \u2192 sm:text-3xl\n- \u2705 **Content padding:** Progressive px-4 \u2192 sm:px-6 \u2192 lg:px-8 with mobile-safe bottom padding\n- \u2705 **Print styles:** Mobile nav hidden alongside other UI chrome\n- \u2705 **No horizontal scrolling** at any breakpoint (375px, 768px, 1024px, 1440px)\n\n**Verification:** Lint \u2705 | Build \u2705 (9 routes) | Commit: cc72092"
   },
   {
     "number": 42,
@@ -619,9 +634,10 @@
       "priority:medium",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.056331",
-    "closed": null
+    "closed": "2026-03-08T20:55:44.278689",
+    "closeComment": "\u2705 Completed in commit 434c9b5\n\n**WCAG 2.1 AA accessibility audit and remediation:**\n\n### Critical Fixes\n- \u2705 `@media (prefers-reduced-motion: reduce)` \u2014 disables CSS transitions and animations\n- \u2705 `aria-label` on history table search input, threat filter, and page-size selector\n- \u2705 `aria-live=\\\"polite\\\"` on results page content and settings connection badge\n\n### Major Fixes\n- \u2705 `aria-hidden=\\\"true\\\"` on all decorative Lucide icons across 7 files (sidebar, header, dashboard, results, history, settings, mobile nav)\n- \u2705 `aria-label` on collapsed sidebar brand link for screen readers\n- \u2705 `role=\\\"status\\\"` + `sr-only` fallback text for mobile health indicator\n- \u2705 Settings added to mobile bottom nav (5 routes now)\n- \u2705 `--muted-foreground` boosted from oklch(0.556) to oklch(0.50) for \u22654.5:1 contrast\n\n### Pre-existing Features Verified \u2705\n- SkipNav \u2192 `#main-content` | `lang=\\\"en\\\"` | Semantic nav with `aria-current=\\\"page\\\"`\n- 44px+ touch targets | Focus-visible rings | Proper heading hierarchy (h1\u2192h2)\n- `useReducedMotion` in Framer Motion | Sheet with sr-only title | Dialog with title/description\n\n**Verified:** Lint \u2705 | Build \u2705 (9 routes) | 565 backend tests \u2705"
   },
   {
     "number": 43,
@@ -634,9 +650,10 @@
       "priority:critical",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.060426",
-    "closed": null
+    "closed": "2026-03-08T20:27:58.271995",
+    "closeComment": "\u2705 Issue #43 complete \u2014 FastAPI CORS configured for frontend integration\n\n**Changes:**\n- Default CORS origin: `http://localhost:3000` (no more wildcard `*` in dev)\n- Allowed methods: `GET, POST, OPTIONS` (configurable via `CORS_METHODS` env var)\n- Allowed headers: `Content-Type, Authorization` (configurable via `CORS_HEADERS` env var)\n- `allow_credentials: true` for cookie/auth support\n- Production safety warning when wildcard `*` is used\n- CORS config logged at startup for easy debugging\n\n**New config properties:** `corsMethods`, `corsHeaders`, `corsMethodsList`, `corsHeadersList`\n**New env vars:** `CORS_METHODS`, `CORS_HEADERS`\n\n**Tests:** 565 passing (14 new \u2014 7 middleware integration + 7 config unit)\n**Commit:** 40d7b05"
   },
   {
     "number": 44,
@@ -650,9 +667,10 @@
       "priority:medium",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.064302",
-    "closed": null
+    "closed": "2026-03-08T20:59:34.683814",
+    "closeComment": "\u2705 Completed in commit 993868b\n\n**Full analysis form + real-time step progress bar:**\n\n### Analysis Form\n- 3 input modes: URL (Input), Email (Textarea + subject/sender), Free-text (Textarea)\n- Mode selector (Select component with icons)\n- Submit with `analyzeUrl()` / `analyzeEmail()` / `analyzeContent()` endpoints\n- Cancel via AbortController\n- Pre-fill from query params (`?content=...&type=url`) for re-analyse from history\n- Auto-save to history on successful completion\n- Navigate to results page via ResultsContext\n\n### Progress Bar (`AnalysisProgress`)\n- 5 labelled steps: URL features \u2192 OSINT checks \u2192 NLP analysis \u2192 Final score \u2192 Complete\n- Simulated timing (1.2s \u2192 2.4s \u2192 1.8s \u2192 1s \u2192 0.5s)\n- Pauses at step 4 until real API response arrives\n- `role=\\\"status\\\"` + `aria-live=\\\"polite\\\"` + sr-only announcements\n- Loader spinner on active step, green checkmarks on completed\n- Framer Motion entrance animations\n\n### Tips card\n- Amber-styled hint card with usage guidelines\n- Hidden during submission\n\n**Verified:** Lint \u2705 | Build \u2705 (9 routes) | 565 backend tests \u2705"
   },
   {
     "number": 45,
@@ -665,9 +683,10 @@
       "priority:medium",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.067670",
-    "closed": null
+    "closed": "2026-03-08T20:47:01.589674",
+    "closeComment": "\u2705 Completed in commit 1460461\n\n**Settings page fully implemented with 4 sections:**\n\n1. **API Configuration** \u2014 URL input, Test Connection button with status badge (idle/testing/connected/failed), default display\n2. **Display Preferences** \u2014 Dark mode toggle (Switch), Results detail level selector (simple/detailed/expert)\n3. **History Management** \u2014 Max entries (10/25/50/100), auto-clear days (never/7/14/30), Clear All button with entry count\n4. **About** \u2014 App name, tagline, version badge, author, supervisor, university\n\n**Infrastructure:**\n- `settingsStore.ts` \u2014 localStorage-backed CRUD (getSettings, updateSetting, resetSettings)\n- All settings persist immediately (no save button)\n- Reset to Defaults button with warning toast\n- Animated sections with FadeIn + PageTransition\n- rAF pattern for hydration-safe state initialization\n\n**Verified:** Lint \u2705 | Build \u2705 (9 routes) | 565 backend tests \u2705"
   },
   {
     "number": 46,
@@ -680,9 +699,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.070988",
-    "closed": null
+    "closed": "2026-03-08T22:33:16.730810",
+    "closeComment": "\u2705 Frontend unit tests complete \u2014 128/128 pass across 10 suites.\n\n**Stack:** Jest 30 + ts-jest + @testing-library/react 16 + jest-environment-jsdom\n\n**Test coverage:**\n- **7 lib suites (88 tests):** apiClient, apiEndpoints, apiErrors, constants, historyStore, settingsStore, toast\n- **3 component suites (40 tests):** verdictBanner, featureCards, osintCards\n\n**Also fixed:**\n- .gitignore `lib/` rule scoped to root (`/lib/`) to avoid ignoring `__tests__/lib/`\n- Added `test`, `test:watch`, `test:coverage` npm scripts\n\nCommit: 61cae99"
   },
   {
     "number": 47,
@@ -695,9 +715,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.074230",
-    "closed": null
+    "closed": "2026-03-08T23:29:56.273940",
+    "closeComment": "\u2705 Completed: 28 Playwright E2E tests all passing (commit 8fc9c4d)\n\n**Test coverage:**\n- URL analysis flow (safe + dangerous verdicts)\n- Email analysis flow (with/without optional fields)\n- Navigation (sidebar links + dashboard CTAs)\n- History (view entry, delete entry)\n- Theme toggle (light/dark switching + persistence)\n- Settings (about info, API connection test, detail level, reset)\n- Error handling (unreachable backend, health status, empty input)\n- Responsive design (mobile nav, analysis on mobile)\n- Keyboard navigation (tab through app, form submission, focus visibility)\n- Empty states (history + results empty states with CTAs)\n\n**Key fixes applied:**\n- Mock fixtures restructured to match AnalysisResponse type\n- Custom @base-ui/react Select interactions use click-based approach (not `.selectOption()`)\n- Theme dropdown handled as menu with options (Light/Dark/System)\n- Strict mode violations resolved with aria-labels and exact matchers"
   },
   {
     "number": 48,
@@ -710,9 +731,10 @@
       "priority:medium",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.077455",
-    "closed": null
+    "closed": "2026-03-08T21:30:54.717450",
+    "closeComment": "\u2705 Batch URL analysis feature complete (4d778d3)\n\n**New components:**\n- `batchInput.tsx` \u2014 textarea for multi-URL input with file upload (.txt/.csv), URL count display, max 50 validation\n- `batchResults.tsx` \u2014 results table with threat/status badges, summary stats, CSV/JSON export\n\n**New page:**\n- `/analyze/batch` \u2014 concurrent processing (3 parallel requests), AbortController cancellation, real-time progress bar\n\n**Updated:**\n- Analyze page now includes a \"Batch Mode\" CTA card linking to the batch page\n\n**Verified:** Lint \u2705 | Build \u2705 (10 routes) | 593 backend tests \u2705"
   },
   {
     "number": 49,
@@ -725,9 +747,10 @@
       "priority:medium",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.082065",
-    "closed": null
+    "closed": "2026-03-08T21:11:08.101070",
+    "closeComment": "Implemented in 5e580d2. Custom PhishGuard branding:\\n\\n- **Logo**: Shield + magnifying glass + check mark SVG, theme-aware via CSS custom properties\\n- **Favicons**: favicon.svg (32px), icon-192.svg, icon-512.svg\\n- **OG Image**: 1200\u00d7630 social sharing card with branding\\n- **Manifest**: PWA-ready manifest.json\\n- **React Component**: `<Logo>` used in sidebar, header, and dashboard\\n- **Metadata**: metadataBase set, SVG favicon, OG tags configured"
   },
   {
     "number": 50,
@@ -740,9 +763,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.088863",
-    "closed": null
+    "closed": "2026-03-08T20:36:23.234530",
+    "closeComment": "\u2705 Issue #50 complete \u2014 Toast notification system wired throughout the app\n\n**Toast types available:** showSuccess (green), showError (red), showWarning (yellow), showInfo (blue), showPromise (async)\n\n**Wired into:**\n- History page: delete entry \u2705, clear all history \u2705, export CSV \u2705, export JSON \u2705\n- Share actions: copy summary \u2705, copy JSON \u2705\n\n**Configuration:** Sonner component with position `bottom-right`, auto-dismiss 5s, rich colours, theme-aware, accessible via `role=status` and `aria-live`.\n\n**Commit:** 35b0375"
   },
   {
     "number": 51,
@@ -755,9 +779,10 @@
       "priority:medium",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.094053",
-    "closed": null
+    "closed": "2026-03-08T20:37:53.695719",
+    "closeComment": "\u2705 Issue #51 complete \u2014 Copy/share functionality for results\n\n**Actions available in ShareActions component:**\n1. **Copy Summary** \u2014 formatted text report to clipboard \u2705\n2. **Copy JSON** \u2014 raw API response as JSON \u2705\n3. **Copy Link** \u2014 shareable URL to results page \u2705 (NEW)\n4. **Print** \u2014 print-optimized CSS output (doubles as PDF export via Save as PDF) \u2705\n\n**Improvements:**\n- Clipboard fallback for older browsers (textarea + execCommand)\n- Error handling with user-friendly toast messages on failure\n- All actions have Lucide icons + tooltip descriptions\n- Toast feedback on every action (success/error)\n\n**Commit:** a67e447"
   },
   {
     "number": 52,
@@ -770,9 +795,10 @@
       "priority:low",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.097874",
-    "closed": null
+    "closed": "2026-03-08T21:06:31.207383",
+    "closeComment": "Implemented in daadb27. Global keyboard shortcuts with help dialog:\\n\\n- **`/`** \u2014 Focus search / URL input\\n- **`Ctrl+Enter`** \u2014 Submit analysis form\\n- **`Ctrl+Shift+D`** \u2014 Toggle dark mode\\n- **`Ctrl+H`** \u2014 Navigate to History\\n- **`Ctrl+N`** \u2014 New analysis\\n- **`?`** \u2014 Show keyboard shortcuts dialog\\n- **`Escape`** \u2014 Close dialogs\\n\\nShortcuts disabled when typing in inputs. Platform-aware labels (\u2318 on Mac, Ctrl on others). Wired into app layout via KeyboardShortcutsProvider."
   },
   {
     "number": 53,
@@ -785,9 +811,10 @@
       "priority:medium",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.102630",
-    "closed": null
+    "closed": "2026-03-08T21:14:27.921610",
+    "closeComment": "Implemented in e795a7d.\\n\\n### Performance Optimisations\\n\\n**Dynamic Imports (code splitting):**\\n- `ScoreBreakdown` (Recharts PieChart) \u2014 lazy loaded on results page\\n- `ThreatGauge` (SVG gauge) \u2014 lazy loaded on results page\\n- `ConfidenceBar` \u2014 lazy loaded on results page\\n- `HistoryTable` (TanStack Table) \u2014 lazy loaded on history page\\n- All with `ssr: false` to avoid hydration mismatch\\n\\n**next.config.ts:**\\n- `compress: true` \u2014 gzip response compression\\n- `reactStrictMode: true` \u2014 catch subtle bugs\\n\\n**Already optimised:**\\n- `next/font` \u2014 Geist Sans + Mono with variable fonts (preloaded, no CLS)\\n- App Router automatic route-based code splitting\\n- CSS variables for theming (no runtime style recalculation)\\n- `prefers-reduced-motion` media query for reduced motion"
   },
   {
     "number": 54,
@@ -801,9 +828,10 @@
       "priority:medium",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.111472",
-    "closed": null
+    "closed": "2026-03-08T21:20:38.405025",
+    "closeComment": "Implemented in 86874d8.\\n\\n### Endpoints\\n- `GET /api/history` \u2014 List analyses (newest first), supports `?limit=` and `?offset=` pagination\\n- `GET /api/history/{id}` \u2014 Get single entry by UUID\\n- `DELETE /api/history/{id}` \u2014 Delete single entry\\n- `DELETE /api/history` \u2014 Clear all history\\n\\n### Storage\\n- In-memory `deque` with FIFO eviction (max 100 entries)\\n- Each analysis auto-saved after successful completion\\n- UUID generated per entry\\n\\n### Testing\\n- 17 unit tests for HistoryStore class (add, list, get, delete, clear, FIFO)\\n- 11 endpoint tests via FastAPI TestClient\\n- All 593 tests pass"
   },
   {
     "number": 55,
@@ -816,9 +844,10 @@
       "priority:high",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.115722",
-    "closed": null
+    "closed": "2026-03-08T23:34:17.187444",
+    "closeComment": "\u2705 Completed (commit 5b49dc6)\\n\\n**Created:**\\n- `docs/methodology-draft.md` \u2014 Comprehensive 8-section methodology draft covering:\\n  1. System architecture (3-layer pipeline diagram)\\n  2. Implementation methodology (tech stack, design patterns, workflow)\\n  3. NLP feature extraction (6 indicator categories)\\n  4. OSINT integration (4 data sources, enrichment process)\\n  5. Scoring algorithm (weighted formula, threat-level thresholds)\\n  6. Frontend architecture (component hierarchy, state management)\\n  7. Preliminary results (749 tests: 593 backend + 128 unit + 28 E2E)\\n  8. Evaluation plan for M4 (accuracy, performance, usability)\\n\\n- `docs/milestones/milestone-3.md` \u2014 Complete deliverable tracking for all 25+ M3 issues\""
   },
   {
     "number": 56,
@@ -830,9 +859,10 @@
       "priority:medium",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.121423",
-    "closed": null
+    "closed": "2026-03-08T23:37:04.923950",
+    "closeComment": "\u2705 Completed (commit 56d1f62)\\n\\n**Root README.md** \u2014 Complete rewrite:\\n- Project overview, architecture diagram, tech stack table\\n- Quick start guide (4 steps: clone, backend, frontend, run)\\n- All 9 API endpoints documented\\n- Test commands for all 3 layers (749 tests total)\\n- Milestone tracking, documentation links\\n\\n**frontend/README.md** \u2014 New frontend-specific guide:\\n- Full project structure tree\\n- All 10 routes documented\\n- 7 keyboard shortcuts listed\\n- Script reference table\\n- Unit and E2E test instructions\\n- Environment variables reference\\n- Coding conventions\\n\\n**.env.example files** \u2014 Already exist for both frontend and backend\""
   },
   {
     "number": 57,
@@ -845,8 +875,9 @@
       "priority:critical",
       "milestone-3"
     ],
-    "status": "open",
+    "status": "closed",
     "created": "2026-03-08T16:31:33.128909",
-    "closed": null
+    "closed": "2026-03-08T23:42:50.114950",
+    "closeComment": "\u2705 **All 8 integration test scenarios passed on first run!**\n\n**Test Results (8/8 PASS):**\n1. \u2705 Health Check \u2014 v1.0.0, all services healthy (osint, analyzer, ml)\n2. \u2705 URL Analysis \u2014 safe URL score=0.35, completed in 0.7s\n3. \u2705 Email Analysis \u2014 phishing detected, score=0.80, level=critical, 4 reasons, OSINT WHOIS confirmed suspicious domain\n4. \u2705 Auto-Detect \u2014 URL correctly auto-detected from content string\n5. \u2705 Validation Errors \u2014 empty URL correctly returns 422 Unprocessable Entity\n6. \u2705 History CRUD \u2014 full create\u2192list\u2192view\u2192delete\u2192verify cycle\n7. \u2705 Response Time \u2014 0.81s per analysis (well under 5s limit)\n8. \u2705 Sequential Stress \u2014 5 consecutive URLs all succeeded, avg 3.79s\n\n**Total Project Test Coverage: 757 tests**\n- 593 backend unit tests (pytest)\n- 128 frontend unit tests (Jest)\n- 28 E2E tests (Playwright)\n- 8 integration tests (custom script)\n\n**Files:** `tests/integration/test_fullSystemE2e.py`, `docs/integration-test-report.md`\n**Commit:** `1a2b2ea`"
   }
 ]

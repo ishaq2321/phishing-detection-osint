@@ -95,6 +95,14 @@ data/phishtank/*.json
 data/phishtank/*.csv
 *.log
 
+# ── ML Training Artifacts ───────────────────────────────────────
+data/raw/
+data/processed/
+data/evaluation/
+*.npy
+*.npz
+notebooks/.ipynb_checkpoints/
+
 # ── Frontend (Next.js) ──────────────────────────────────────────
 frontend/.next/
 frontend/out/

@@ -4,28 +4,26 @@ BSc Thesis Project — Faculty of Informatics, Eötvös Loránd University (ELTE
 
 ## 📋 Overview
 
-PhishGuard is a full-stack phishing detection system that combines **Natural
-Language Processing (NLP)**, **URL structural analysis**, and **Open-Source
-Intelligence (OSINT)** to detect phishing threats in URLs, emails, and
-free-text content.
+PhishGuard is a full-stack phishing detection system that combines a
+**trained XGBoost ML model**, **Natural Language Processing (NLP)**,
+**URL structural analysis**, and **Open-Source Intelligence (OSINT)** to
+detect phishing threats in URLs, emails, and free-text content.
 
-The system employs a three-layer analysis pipeline where each layer produces
-an independent risk score, combined using a weighted formula:
-
-```
-finalScore = textScore × 0.40 + urlScore × 0.25 + osintScore × 0.35
-```
+The system uses an **ML-primary scoring architecture**: for URL analysis the
+XGBoost classifier (trained on 23,374 samples, 21 features) provides 85% of
+the final score, supplemented by NLP text analysis at 15%.
 
 ### Key Features
 
-- **Three-layer detection pipeline** — NLP + URL features + OSINT enrichment
-- **Explainable results** — Detailed reasons, scores, and recommendations
+- **XGBoost ML classifier** — 96.45% accuracy, 96.39% F1, 99.41% AUC-ROC
+- **21-feature pipeline** — 17 URL structural + 4 OSINT features
+- **OSINT enrichment** — WHOIS, DNS, VirusTotal, AbuseIPDB
+- **Explainable results** — SHAP explanations, detailed reasons & scores
 - **Multiple input modes** — URL, email (with subject/sender), free-text
 - **Batch analysis** — Process up to 50 URLs in parallel
-- **OSINT enrichment** — WHOIS, DNS, VirusTotal, AbuseIPDB
 - **Interactive visualisations** — Score charts, threat gauges, confidence bars
 - **Full-featured UI** — Dark/light theme, keyboard shortcuts, responsive design
-- **749 automated tests** — Backend (593), frontend unit (128), E2E (28)
+- **749+ automated tests** — Backend (593), frontend unit (133), E2E (28)
 
 ## 🛠️ Tech Stack
 
@@ -35,9 +33,10 @@ finalScore = textScore × 0.40 + urlScore × 0.25 + osintScore × 0.35
 | UI          | shadcn/ui v4, Recharts, TanStack Table, Motion       |
 | Backend     | Python 3.10, FastAPI 0.109, Pydantic 2               |
 | NLP         | spaCy 3.7 (en_core_web_sm)                           |
-| ML          | scikit-learn 1.4                                     |
+| ML          | XGBoost 3.2, SHAP 0.49, Optuna 4.7, scikit-learn 1.4 |
 | OSINT       | python-whois, dnspython, aiohttp                     |
 | Testing     | pytest 8, Jest 30, Playwright 1.58                   |
+| Deployment  | Vercel (frontend), Render.com (backend)              |
 
 ## 📁 Project Structure
 
@@ -147,6 +146,7 @@ Backend API docs: **http://localhost:8000/docs**
 | Method   | Path                  | Description                              |
 |----------|-----------------------|------------------------------------------|
 | `GET`    | `/api/health`         | Health status & service availability     |
+| `GET`    | `/api/model/status`   | ML model status & feature info           |
 | `POST`   | `/api/analyze`        | Analyse any content (auto-detect type)   |
 | `POST`   | `/api/analyze/url`    | URL-specific phishing analysis           |
 | `POST`   | `/api/analyze/email`  | Email analysis (body + subject + sender) |
@@ -228,15 +228,15 @@ npm run test:e2e:ui
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
 │  │  Text/NLP    │  │  URL Feature │  │  OSINT           │   │
 │  │  Analysis    │  │  Extraction  │  │  Enrichment      │   │
-│  │  (spaCy)     │  │  (heuristic) │  │  (WHOIS/DNS/     │   │
-│  │              │  │              │  │   VirusTotal/     │   │
-│  │  Weight: 40% │  │  Weight: 25% │  │   AbuseIPDB)     │   │
-│  │              │  │              │  │  Weight: 35%      │   │
+│  │  (spaCy)     │  │  (21 feats)  │  │  (WHOIS/DNS/     │   │
+│  │              │  │  17 struct + │  │   VirusTotal/     │   │
+│  │  Supplement  │  │  4 OSINT     │  │   AbuseIPDB)     │   │
+│  │  15%         │  │              │  │                   │   │
 │  └──────┬───────┘  └──────┬───────┘  └──────┬───────────┘   │
 │         │                 │                  │               │
 │  ┌──────▼─────────────────▼──────────────────▼───────────┐   │
-│  │                   Scoring Engine                       │   │
-│  │  finalScore = text×0.40 + url×0.25 + osint×0.35       │   │
+│  │            XGBoost ML Classifier (85%)                 │   │
+│  │  Acc=96.45% · F1=96.39% · AUC=99.41% · PR-AUC=99.48% │   │
 │  └───────────────────────────────────────────────────────┘   │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -245,10 +245,31 @@ npm run test:e2e:ui
 
 | Level      | Score Range  | Action                                    |
 |------------|--------------|-------------------------------------------|
-| ✅ Safe     | 0.00 – 0.39 | No action needed                          |
-| ⚠️ Suspicious | 0.40 – 0.59 | Exercise caution, verify sender        |
-| 🔴 Dangerous | 0.60 – 0.79 | Likely phishing, do not interact       |
-| 🚨 Critical | 0.80 – 1.00 | Confirmed threat, report immediately    |
+| ✅ Safe     | 0.00 – 0.29 | No action needed                          |
+| ⚠️ Suspicious | 0.30 – 0.49 | Exercise caution, verify sender        |
+| 🔴 Dangerous | 0.50 – 0.69 | Likely phishing, do not interact       |
+| 🚨 Critical | 0.70 – 1.00 | Confirmed threat, report immediately    |
+
+## 🚀 Deployment
+
+### Backend — Render.com
+
+The backend deploys automatically from the `main` branch using the
+[`render.yaml`](render.yaml) blueprint.
+
+1. Go to [Render Dashboard](https://dashboard.render.com/) → **New** → **Blueprint**
+2. Connect the GitHub repo `ishaq2321/phishing-detection-osint`
+3. Render auto-detects `render.yaml` and creates the `phishguard-api` service
+4. Set `CORS_ORIGINS` to your Vercel frontend URL (e.g. `https://phishguard.vercel.app`)
+5. Optionally set `VIRUSTOTAL_API_KEY` and `ABUSEIPDB_API_KEY` for enhanced OSINT
+
+### Frontend — Vercel
+
+1. Go to [Vercel](https://vercel.com/) → **New Project** → Import `ishaq2321/phishing-detection-osint`
+2. Set **Root Directory** to `frontend`
+3. Add environment variable: `NEXT_PUBLIC_API_URL` = your Render backend URL
+   (e.g. `https://phishguard-api.onrender.com`)
+4. Deploy — Vercel auto-detects Next.js and builds accordingly
 
 ## 🎯 Milestones
 

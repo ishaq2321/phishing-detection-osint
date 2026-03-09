@@ -11,6 +11,7 @@ services:
     plan: free
     branch: main
     rootDir: .
+    healthCheckPath: /api/health
     buildCommand: |
       pip install -r backend/requirements.txt &&
       python -m spacy download en_core_web_sm

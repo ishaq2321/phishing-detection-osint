@@ -225,22 +225,44 @@ class AnalysisOrchestrator:
             url: Original URL being analyzed
         """
         try:
-            # Collect data from all OSINT sources in parallel
-            whoisResult, dnsResult, reputationResult = await asyncio.gather(
-                lookupWhois(domain),
-                lookupDns(domain),
-                lookupReputation(domain),
+            # Collect data from all OSINT sources in parallel with global timeout
+            # This ensures we don't hang indefinitely on non-existent domains
+            whoisResult, dnsResult, reputationResult = await asyncio.wait_for(
+                asyncio.gather(
+                    lookupWhois(domain),
+                    lookupDns(domain),
+                    lookupReputation(domain),
+                    return_exceptions=True,  # Don't fail if one lookup fails
+                ),
+                timeout=15.0,  # Global timeout for all OSINT lookups
             )
+            
+            # Handle exceptions returned by gather (when return_exceptions=True)
+            if isinstance(whoisResult, Exception):
+                whoisResult = None
+            if isinstance(dnsResult, Exception):
+                dnsResult = None
+            if isinstance(reputationResult, Exception):
+                reputationResult = None
             
             # Build OsintData object
             return OsintData(
                 url=url or f"https://{domain}",
                 domain=domain,
-                whois=whoisResult if whoisResult.status == "success" else None,
-                dns=dnsResult if dnsResult.status == "success" else None,
-                reputation=reputationResult if reputationResult.status == "success" else None,
+                whois=whoisResult if whoisResult and whoisResult.status == "success" else None,
+                dns=dnsResult if dnsResult and dnsResult.status == "success" else None,
+                reputation=reputationResult if reputationResult and reputationResult.status == "success" else None,
             )
             
+        except asyncio.TimeoutError:
+            # OSINT collection timed out - return empty data
+            return OsintData(
+                url=url or f"https://{domain}",
+                domain=domain,
+                whois=None,
+                dns=None,
+                reputation=None,
+            )
         except Exception:
             # Return None if OSINT collection fails
             return None

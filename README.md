@@ -284,10 +284,12 @@ The backend deploys automatically from the `main` branch using the
 | Milestone 1      | December 20, 2025 | ✅ Complete    |
 | Milestone 2      | February 20, 2026 | ✅ Complete    |
 | Milestone 3      | March 25, 2026    | ✅ Complete    |
-| Milestone 4      | April 15, 2026    | 🟡 Upcoming    |
-| Final Submission | May 1, 2026       | ⚪ Not Started |
+| Milestone 4      | April 15, 2026    | ✅ Complete    |
+| Final Submission | May 1, 2026       | 🟡 Draft In Progress |
 
 ## 📚 Documentation
+
+- [User Guide](docs/user_guide.md) — How to use the PhishGuard application
 
 - [Methodology Draft](docs/methodology-draft.md) — Thesis methodology and preliminary results
 - [Milestone 1](docs/milestones/milestone-1.md) — Topic, design, initial prototype

@@ -46,7 +46,7 @@ def scorer() -> PhishingScorer:
     Integration tests (test_ml_pipeline.py) cover the full ML path.
     """
     instance = PhishingScorer()
-    instance._predictor = type(
+    instance._predictor = type(  # type: ignore
         "_StubPredictor", (), {"isLoaded": False}
     )()
     return instance

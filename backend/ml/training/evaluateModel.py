@@ -23,6 +23,10 @@ import matplotlib
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -106,7 +110,7 @@ def _loadTestData() -> tuple[np.ndarray, np.ndarray, list[str]]:
     yTest = testDf[LABEL_COLUMN].values
 
     logger.info("Loaded test set: %d samples, %d features", len(yTest), len(featureNames))
-    return xTest, yTest, featureNames
+    return xTest, np.asarray(yTest), featureNames
 
 
 # ------------------------------------------------------------------
@@ -153,8 +157,8 @@ def _plotRocCurve(yTrue: np.ndarray, yProba: np.ndarray) -> None:
     ax.set_ylabel("True Positive Rate")
     ax.set_title("ROC Curve — XGBoost Phishing Classifier")
     ax.legend(loc="lower right")
-    ax.set_xlim([-0.01, 1.01])
-    ax.set_ylim([-0.01, 1.01])
+    ax.set_xlim((-0.01, 1.01))
+    ax.set_ylim((-0.01, 1.01))
 
     outPath = EVAL_DIR / "roc_curve.png"
     fig.savefig(outPath)
@@ -175,8 +179,8 @@ def _plotPrecisionRecallCurve(yTrue: np.ndarray, yProba: np.ndarray) -> None:
     ax.set_ylabel("Precision")
     ax.set_title("Precision-Recall Curve — XGBoost Phishing Classifier")
     ax.legend(loc="lower left")
-    ax.set_xlim([-0.01, 1.01])
-    ax.set_ylim([-0.01, 1.01])
+    ax.set_xlim((-0.01, 1.01))
+    ax.set_ylim((-0.01, 1.01))
 
     outPath = EVAL_DIR / "precision_recall_curve.png"
     fig.savefig(outPath)
@@ -207,8 +211,8 @@ def _plotFeatureImportance(model: xgb.XGBClassifier, featureNames: list[str]) ->
     ax.set_xlabel("Feature Importance (Gain)")
     ax.set_title("Feature Importance — XGBoost Phishing Classifier")
 
-    urlPatch = plt.Rectangle((0, 0), 1, 1, fc="#2563eb", label="URL Structural")
-    osintPatch = plt.Rectangle((0, 0), 1, 1, fc="#16a34a", label="OSINT-Derived")
+    urlPatch = Rectangle((0, 0), 1, 1, fc="#2563eb", label="URL Structural")
+    osintPatch = Rectangle((0, 0), 1, 1, fc="#16a34a", label="OSINT-Derived")
     ax.legend(handles=[urlPatch, osintPatch], loc="lower right")
 
     outPath = EVAL_DIR / "feature_importance.png"

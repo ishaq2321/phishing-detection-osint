@@ -879,5 +879,292 @@
     "created": "2026-03-08T16:31:33.128909",
     "closed": "2026-03-08T23:42:50.114950",
     "closeComment": "\u2705 **All 8 integration test scenarios passed on first run!**\n\n**Test Results (8/8 PASS):**\n1. \u2705 Health Check \u2014 v1.0.0, all services healthy (osint, analyzer, ml)\n2. \u2705 URL Analysis \u2014 safe URL score=0.35, completed in 0.7s\n3. \u2705 Email Analysis \u2014 phishing detected, score=0.80, level=critical, 4 reasons, OSINT WHOIS confirmed suspicious domain\n4. \u2705 Auto-Detect \u2014 URL correctly auto-detected from content string\n5. \u2705 Validation Errors \u2014 empty URL correctly returns 422 Unprocessable Entity\n6. \u2705 History CRUD \u2014 full create\u2192list\u2192view\u2192delete\u2192verify cycle\n7. \u2705 Response Time \u2014 0.81s per analysis (well under 5s limit)\n8. \u2705 Sequential Stress \u2014 5 consecutive URLs all succeeded, avg 3.79s\n\n**Total Project Test Coverage: 757 tests**\n- 593 backend unit tests (pytest)\n- 128 frontend unit tests (Jest)\n- 28 E2E tests (Playwright)\n- 8 integration tests (custom script)\n\n**Files:** `tests/integration/test_fullSystemE2e.py`, `docs/integration-test-report.md`\n**Commit:** `1a2b2ea`"
+  },
+  {
+    "number": 58,
+    "title": "[EPIC] The ProxiCall Custom Theme Builder Platform & Developer Marketplace",
+    "description": "### Objective\nTransform ProxiCall from an application into a platform. Allow external developers to build beautifully styled Next.js UI themes using a mock-data SDK. Businesses will purchase them via the app. Devs get paid via Stripe Connect. ProxiCall takes a 30% platform cut.\n\n### Architectural Constraints\n- **Security Check**: Devs get 0% access to backend code. They build locally on dummy JSON logic.\n- **Automation Execution**: Strict CI/CD. The pipeline blocks PRs automatically if there are hardcoded translations, API fetches, or duplicate structural hash clones.\n- **Maintenance Safety**: ProxiCall does not fix outdated custom themes. A \"Safety Shell\" auto-appends any future missing widgets seamlessly.\n\n### Roadmap Tracker\n- [ ] Phase 1: PostgreSQL Schema & Stripe Connect Split Payments\n- [ ] Phase 2: Open Source SDK Starter Repo & Types\n- [ ] Phase 3: The CI/CD AST Executioner\n- [ ] Phase 4: Next.js Safety Shell Renderer\n- [ ] Phase 5: Flutter WMS App Storefront Integration",
+    "milestone": "milestone-3",
+    "labels": [
+      "epic",
+      "theme-marketplace",
+      "wms"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:47:01.766625",
+    "closed": null
+  },
+  {
+    "number": 59,
+    "title": "[WMS Theme Store] Phase 1: Database Schema & Stripe Connect Routing",
+    "description": "### Objective\nEstablish the underlying PostgreSQL schema and Stripe Connect backend logic to support 3rd-party theme sales, developer platform payouts, and the Geo-Lock feature.\n\n### Implementation Requirements\n- [ ] Add `theme_marketplace` table (schema: dev_uid, base_price, buyout_price, tags, status, ast_hash_signature).\n- [ ] Add `theme_purchases` table (schema: business_id, theme_id, license_type [standard, buyout], amount_paid_cents).\n- [ ] **Stripe Connect Router**: Setup backend webhooks. When payment succeeds on a theme, transaction splits at the base layer: 30% transferred to ProxiCall operations account, 70% to `theme_marketplace.dev_stripe_id`.\n- [ ] **Geo-Lock Query Engine**: Create SQL function `is_theme_available_in_radius(business_id, theme_id, radius_km)`. Ensure a business knows if a competitor across the street has bought this.\n- [ ] Update `database/schema.sql` and provide migration.\n- [ ] **Buyout Logic**: If license_type = `buyout`, transition the marketplace theme status to `sold_out` so no further sales occur globally.\n\n### Notes\nFocus only on database operations, backend routing, and schema. No UI work required in this.",
+    "milestone": "milestone-3",
+    "labels": [
+      "backend",
+      "database",
+      "stripe",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:47:01.773565",
+    "closed": null
+  },
+  {
+    "number": 60,
+    "title": "[WMS Theme Store] Phase 2: Developer Starter SDK Repository & Mock JSON Engine",
+    "description": "### Objective\nCreate the standalone repository `ProxiCallThemeStarter` completely isolated from our private monorepo codebase. This is the playground for external developers.\n\n### Implementation Requirements\n- [ ] Create a completely disconnected headless Next.js environment.\n- [ ] Write `types/proxicall.d.ts` which strictly defines the exact structure of what a `business` prop contains (No secret tokens, no admin data).\n- [ ] Fill a `mock_data.json` state map containing 3 deeply seeded scenarios: Gym, Cafe, and Spa, loaded with images and dummy products.\n- [ ] Write the initial `// TODO` template structure (e.g. `HeroSection.tsx`, `Footer.tsx`). Ensure it's clear what they must style and what data they must bind to.\n- [ ] Package complex secure components (addToCart, LiveWebRtcChat) into dummy React nodes within `@proxicall/theme-sdk` that act normally for local rendering but get overridden in production.\n- [ ] Expose the internationalization hook `t(key)`. Ensure `welcomeMessage` and other core keys map to english fallbacks locally.\n\n### Rules of Engagement\nDevs only write front-end files. They receive the business object. They never write a fetch call.",
+    "milestone": "milestone-3",
+    "labels": [
+      "sdk",
+      "frontend",
+      "nextjs",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:47:01.779092",
+    "closed": null
+  },
+  {
+    "number": 61,
+    "title": "[WMS Theme Store] Phase 3: CI/CD Executioner Sandbox & AST PR Verification",
+    "description": "### Objective\nFully automate the approval and security scanning of incoming developer pull requests on the open repo, so we do not have to manually review the 500 theme submissions.\n\n### Implementation Requirements\n- [ ] **AST Translation Scanner**: Implement an `ast-grep` or advanced ESLint rule that runs on PR event. It must reject the PR completely if ANY string literals are found inside `<div>`, `<p>`, or `<span>` tags. The developer MUST use the `t()` function hook.\n- [ ] **Security Sandbox Wall**: Analyze files for `fetch()`, `XMLHttpRequest`, `<script>` tags, or unauthorized `npm install` packages. The SDK should be entirely statically imported. Reject automatically if identified.\n- [ ] **Code Structural Deduplicator**: To prevent lazy developers from swapping two CSS hex codes and submitting a \"new\" clone theme, hash the layout's AST. If hash match is >80% to a previously accepted theme UI tree, auto-reject with: *\"Theme architecture too similar to existing approved theme. Please provide a genuinely unique layout.\"*\n- [ ] **Approval Hand-Off**: On green checkmark, trigger GitHub Action to compile the artifact and register its metadata to our backend `theme_marketplace` database as 'pending_admin_publish'.",
+    "milestone": "milestone-3",
+    "labels": [
+      "ci-cd",
+      "security",
+      "github-actions",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:47:01.782506",
+    "closed": null
+  },
+  {
+    "number": 62,
+    "title": "[WMS Theme Store] Phase 4: Next.js Theme Injection Engine & Safety Shell",
+    "description": "### Objective\nUpdate our actual private Next.js production app to parse custom external themes and safely inject data without breaking our app structure.\n\n### Implementation Requirements\n- [ ] Modify `src/app/b/[slug]/page.tsx` dynamic router. Detect if `business.custom_theme_id` is assigned and valid (linked via `theme_purchases`).\n- [ ] Build the Injection Hydrator (using dynamic module federation or raw artifact wrapping). It must pull the developer's pure UI shell and inject the LIVE backend `business` context into their props.\n- [ ] **The \"ProxiCall Safety Shell\"**: This is critical. Build a wrapper component. If a year later we release the \"Loyalty Points\" widget and the custom theme (built earlier) obviously doesn't map it, the Safety Shell automatically detects the missing key and cleanly appends the default `<LoyaltyPoints>` generic widget at the base of the user's screen.\n- [ ] Security boundary: Enforce strict boundary limits. An injected theme runtime error cannot crash the core Next.js routing wrapper (`ErrorBoundary`).",
+    "milestone": "milestone-3",
+    "labels": [
+      "nextjs",
+      "frontend",
+      "safety",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:47:01.786360",
+    "closed": null
+  },
+  {
+    "number": 63,
+    "title": "[WMS Theme Store] Phase 5: Flutter WMS Theme Marketplace Storefront & Purchase Flow",
+    "description": "### Objective\nBuild the storefront embedded deep within the ProxiCall Flutter application where business owners browse, preview, and legally purchase third-party themes.\n\n### Implementation Requirements\n- [ ] **Storefront UX (`ThemeMarketplaceScreen`)**: Reachable via WMS Settings. Show a visually stunning grid of generated themes. Integrate category Tags (Salon, Minimalist, Tech).\n- [ ] **Geo-Lock Trust Badge**: Display local data contextually \u2014 *\"0 businesses within 10km are using this theme. Guaranteed unique locally.\"*\n- [ ] **Pricing Architecture Tiers**: Handle standard license vs total asset buyout ($2,499) clearly natively in Flutter.\n- [ ] **Live Injection Preview**: Clicking preview loads the `WebsitePreviewRoute` overriding their specific DB slug config with the test artifact configuration using their actual images to prove exactly what it looks like before purchase.\n- [ ] **Stripe Check-out Flow**: Bridge the 'Purchase' button to our standard `PMS` stripe modal. On success, trigger the sync event to attach `theme_id` to their business.\n\n### God-Level UI Rules (MANDATORY)\n- `AppLogger` only (no debug prints).\n- Native Haptics via `HapticsManager` on all chips, buttons, and transitions.\n- Fully accessible `Semantics` tags on all actionable elements.\n- Translation routing: All strings bound to `l10n.key`.\n- Visual spacing: `elevation: 0`, bordered design, zero-jank scrolling, maxLines applied gracefully against Overflow text.",
+    "milestone": "milestone-3",
+    "labels": [
+      "flutter",
+      "wms",
+      "ui",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:47:01.791351",
+    "closed": null
+  },
+  {
+    "number": 64,
+    "title": "[DB-01] Create `theme_marketplace` table structure",
+    "description": "**Location:** `database/schema.sql` \n\n**Requirements:**\n1. Define table `theme_marketplace`.\n2. Columns: `id` (uuid, PK), `developer_id` (uuid, FK users), `name` (text), `description` (text), `base_price_cents` (int), `buyout_price_cents` (int), `status` (enum: pending, active, sold_out, rejected).\n3. Add `ast_hash_signature` (text, unique) to prevent duplicates.\n4. Add `created_at` and `updated_at` timestamps.",
+    "milestone": "milestone-3",
+    "labels": [
+      "database",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:50:12.584950",
+    "closed": null
+  },
+  {
+    "number": 65,
+    "title": "[DB-02] Create `theme_purchases` table and constraints",
+    "description": "**Location:** `database/schema.sql`\n\n**Requirements:**\n1. Define table `theme_purchases`.\n2. Columns: `id` (uuid, PK), `business_id` (uuid, FK), `theme_id` (uuid, FK), `license_type` (enum: standard, buyout).\n3. `amount_paid_cents` (int), `stripe_pi_id` (text).\n4. Timestamp `purchased_at`.\n5. Add unique constraint on `(business_id, theme_id)` to prevent double charging.",
+    "milestone": "milestone-3",
+    "labels": [
+      "database",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:50:12.591675",
+    "closed": null
+  },
+  {
+    "number": 66,
+    "title": "[DB-03] Implement RLS policies for `theme_marketplace`",
+    "description": "**Location:** `database/schema.sql` & `supabase/migrations/`\n\n**Requirements:**\n1. Write RLS (Row Level Security) for `theme_marketplace`.\n2. `SELECT` -> Public (everyone can view active themes).\n3. `INSERT/UPDATE` -> Developer only for their own rows (where `auth.uid() = developer_id`).\n4. Prevent updates if `status` is already `active` or `sold_out`.",
+    "milestone": "milestone-3",
+    "labels": [
+      "database",
+      "security",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:50:12.597407",
+    "closed": null
+  },
+  {
+    "number": 67,
+    "title": "[DB-04] Secure Geo-Lock Function: `is_theme_available_in_radius`",
+    "description": "**Location:** `database/schema.sql`\n\n**Requirements:**\n1. Write Postgres function `is_theme_available_in_radius(p_business_id UUID, p_theme_id UUID, p_radius_km INT) RETURNS BOOLEAN`.\n2. Must cross-reference `business_locations` with `theme_purchases`.\n3. Use PostGIS `ST_DWithin` to check if any other business within `p_radius_km` holds the same `p_theme_id`.",
+    "milestone": "milestone-3",
+    "labels": [
+      "database",
+      "geo-location",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:50:12.602769",
+    "closed": null
+  },
+  {
+    "number": 68,
+    "title": "[BE-01] Stripe Connect Webhook: Implement 70/30 Split logic",
+    "description": "**Location:** `functions/src/stripe/`\n\n**Requirements:**\n1. Setup webhook listener for `checkout.session.completed` containing metadata `is_theme_purchase: true`.\n2. Query `theme_marketplace` for `developer_id` -> fetch their `stripe_connect_id`.\n3. Use Stripe SDK to calculate the 30/70 split.\n4. Issue programmatic Transfer to the developer's connected account.\n5. Log failure gracefully (insert to `failed_transfers` table) if Connect ID is invalid.",
+    "milestone": "milestone-3",
+    "labels": [
+      "backend",
+      "stripe",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:50:12.609147",
+    "closed": null
+  },
+  {
+    "number": 69,
+    "title": "[BE-02] Database Hook: Mark theme as Sold Out on Buyout License",
+    "description": "**Location:** `functions/src/stripe/`\n\n**Requirements:**\n1. Create a `theme_purchase_processor`.\n2. If the `checkout.session.completed` contains `license_type: 'buyout'`:\n3. Trigger an immediate UPDATE on `theme_marketplace` setting `status = 'sold_out'`.\n4. Send an automated FCM notification to the developer: \"Your theme has been bought out!\"",
+    "milestone": "milestone-3",
+    "labels": [
+      "backend",
+      "stripe",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:50:12.614731",
+    "closed": null
+  },
+  {
+    "number": 70,
+    "title": "[FL-01] Data Models for Theme Marketplace items",
+    "description": "**Location:** `lib/models/business/theme_marketplace_item.dart`\n\n**Requirements:**\n1. Create `ThemeMarketplaceItem` and `ThemePurchase` models extending Equatable.\n2. Ensure strict JSON serialization using `protectedJsonDecode`.\n3. Models must handle `List<String> tags` and nullable `buyoutPriceCents`.",
+    "milestone": "milestone-3",
+    "labels": [
+      "flutter",
+      "models",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:50:12.620022",
+    "closed": null
+  },
+  {
+    "number": 71,
+    "title": "[FL-02] Repository: fetch available and geo-unlocked themes",
+    "description": "**Location:** `lib/repositories/theme/theme_marketplace_repository.dart`\n\n**Requirements:**\n1. Build repository to interface with Supabase `theme_marketplace` table.\n2. Implement `getAvailableThemes(businessId)` that filters out globally `sold_out` items.\n3. Must invoke Postgres RPC `is_theme_available_in_radius` and filter out locally locked themes.",
+    "milestone": "milestone-3",
+    "labels": [
+      "flutter",
+      "repository",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:50:12.624873",
+    "closed": null
+  },
+  {
+    "number": 72,
+    "title": "[FL-03] UI: Integrate Marketplace Entry Point into Settings",
+    "description": "**Location:** `lib/ui/screens/business/business_settings_screen.dart`\n\n**Requirements:**\n1. Add new menu tile \"Theme Marketplace\" below the existing \"Website Settings\".\n2. Route navigation to `ThemeMarketplaceStorefrontRoute`.\n3. Ensure the tile has semantics and haptics matching God-Level UI guidelines.",
+    "milestone": "milestone-3",
+    "labels": [
+      "flutter",
+      "ui",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:50:12.629408",
+    "closed": null
+  },
+  {
+    "number": 73,
+    "title": "[FL-04] UI: Build Theme Storefront Grid Screen",
+    "description": "**Location:** `lib/ui/screens/theme/theme_marketplace_storefront_screen.dart`\n\n**Requirements:**\n1. Build the main storefront grid.\n2. Must use `SliverGrid` within a `CustomScrollView`.\n3. Each item card needs a cache-optimized Image (skeleton loader while loading).\n4. Show Base Price and \"Exclusivity Check\" badge inline.",
+    "milestone": "milestone-3",
+    "labels": [
+      "flutter",
+      "ui",
+      "theme-marketplace"
+    ],
+    "status": "open",
+    "created": "2026-03-13T06:50:12.634057",
+    "closed": null
+  },
+  {
+    "number": 74,
+    "title": "Build interactive Web UI with prediction form and SHAP visualizations",
+    "description": "Develop the frontend using HTML/JS/CSS. Fetch the input schema from the backend to dynamically generate the form. Submit the prediction request and visualize SHAP feature contributions using Chart.js.",
+    "milestone": "3",
+    "labels": [
+      "frontend",
+      "milestone-3",
+      "priority:high"
+    ],
+    "status": "closed",
+    "created": "2026-04-01T19:08:25.787452",
+    "closed": "2026-04-01T19:17:01.374637",
+    "closeComment": "Completed M3 UI implementation."
+  },
+  {
+    "number": 75,
+    "title": "Hyperparameter tuning for ML Models",
+    "description": "Implement GridSearchCV or RandomizedSearchCV to find optimal hyperparameters for Random Forest and XGBoost models to improve the AUC-ROC score.",
+    "milestone": "3",
+    "labels": [
+      "ml-model",
+      "milestone-3",
+      "priority:medium"
+    ],
+    "status": "closed",
+    "created": "2026-04-01T19:08:25.791999",
+    "closed": "2026-04-01T19:17:07.394724",
+    "closeComment": "Completed M3 hyperparameter tuning."
+  },
+  {
+    "number": 76,
+    "title": "Add Integration Tests",
+    "description": "Implement integration tests to verify the end-to-end pipeline: from data ingestion to model prediction and explainability output through the Flask API.",
+    "milestone": "3",
+    "labels": [
+      "testing",
+      "milestone-3",
+      "priority:medium"
+    ],
+    "status": "closed",
+    "created": "2026-04-01T19:08:25.795169",
+    "closed": "2026-04-01T19:17:11.012550",
+    "closeComment": "Completed M3 integration testing."
+  },
+  {
+    "number": 77,
+    "title": "Update Documentation for M3",
+    "description": "Document the new UI, update the hyperparameter tuning metrics in the README, and ensure DEVELOPMENT.md reflects the completion of M3 tasks.",
+    "milestone": "3",
+    "labels": [
+      "documentation",
+      "milestone-3",
+      "priority:medium"
+    ],
+    "status": "closed",
+    "created": "2026-04-01T19:08:25.798191",
+    "closed": "2026-04-01T19:17:14.970556",
+    "closeComment": "Completed M3 documentation."
   }
 ]

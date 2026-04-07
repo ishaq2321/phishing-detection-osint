@@ -250,7 +250,7 @@ URGENCY_PATTERNS: list[PatternDefinition] = [
 SUSPICIOUS_TLD_PATTERNS: list[PatternDefinition] = [
     PatternDefinition(
         patternType="suspicious_tld",
-        pattern=re.compile(r"\.(tk|ml|ga|cf|gq)$", re.IGNORECASE),
+        pattern=re.compile(r"\.(tk|ml|ga|cf|gq|cfd|sbs|quest|cyou)$", re.IGNORECASE),
         severity=0.8,
         description="Free domain TLD (commonly abused)",
         checkDomain=True,

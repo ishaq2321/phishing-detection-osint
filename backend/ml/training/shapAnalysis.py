@@ -189,7 +189,7 @@ def _patchShapXgboostCompat() -> None:
             builtins.float = origFloat
 
     patchedInit._patched = True  # type: ignore[attr-defined]
-    shap.explainers._tree.XGBTreeModelLoader.__init__ = patchedInit
+    shap.explainers._tree.XGBTreeModelLoader.__init__ = patchedInit  # type: ignore  # type: ignore  # type: ignore  # type: ignore  # type: ignore
 
 
 def _computeShapValues(

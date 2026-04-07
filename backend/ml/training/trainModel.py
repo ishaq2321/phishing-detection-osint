@@ -20,6 +20,7 @@ import time
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import optuna
 import pandas as pd
 import xgboost as xgb
@@ -80,7 +81,7 @@ def _splitFeaturesLabels(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Separate feature matrix X and label vector y."""
     featureCols = [c for c in dataFrame.columns if c != LABEL_COLUMN]
-    return dataFrame[featureCols].values, dataFrame[LABEL_COLUMN].values
+    return dataFrame[featureCols].values, dataFrame[LABEL_COLUMN].to_numpy()
 
 
 # ------------------------------------------------------------------
@@ -130,7 +131,7 @@ def _createObjective(
 
             probabilities = model.predict_proba(xVal)[:, 1]
             auc = roc_auc_score(yVal, probabilities)
-            foldScores.append(auc)
+            foldScores.append(float(auc))
 
         meanAuc = float(np.mean(foldScores))
         return meanAuc

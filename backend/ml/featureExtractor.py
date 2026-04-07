@@ -38,6 +38,7 @@ SUSPICIOUS_TLDS = frozenset({
     "info", "online", "site", "website",
     "buzz", "club", "live", "icu", "cam",
     "bid", "stream", "download", "racing",
+    "cfd", "sbs", "quest", "cyou", "icu",  # New abused TLDs
 })
 
 # Keywords commonly found in phishing URLs

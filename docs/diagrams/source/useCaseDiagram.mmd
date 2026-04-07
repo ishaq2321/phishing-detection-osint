@@ -1,6 +1,5 @@
 usecaseDiagram
     actor User
-    actor Admin
     
     rectangle "PhishGuard System" {
         usecase "Analyze URL" as UC1
@@ -8,7 +7,7 @@ usecaseDiagram
         usecase "Analyze Free Text" as UC3
         usecase "View History" as UC4
         usecase "Clear History" as UC5
-        usecase "View SHAP Explanations" as UC6
+        usecase "View Results Details (SHAP)" as UC6
     }
     
     User --> UC1

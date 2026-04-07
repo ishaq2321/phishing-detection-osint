@@ -287,8 +287,8 @@ def _runAblationStudy(
 
     logger.info("--- URL-only model (%d features) ---", len(urlOnlyFeatures))
     urlOnlyMetrics = _evaluateSubset(
-        trainDf[urlOnlyFeatures].values, yTrain,
-        testDf[urlOnlyFeatures].values, yTest,
+        trainDf[urlOnlyFeatures].to_numpy(), __import__("numpy").asarray(yTrain),
+        testDf[urlOnlyFeatures].to_numpy(), __import__("numpy").asarray(yTest),
         bestParams,
     )
     logger.info("  Accuracy: %.4f  F1: %.4f  AUC: %.4f", 
@@ -296,8 +296,8 @@ def _runAblationStudy(
 
     logger.info("--- URL+OSINT model (%d features) ---", len(urlOsintFeatures))
     urlOsintMetrics = _evaluateSubset(
-        trainDf[urlOsintFeatures].values, yTrain,
-        testDf[urlOsintFeatures].values, yTest,
+        trainDf[urlOsintFeatures].to_numpy(), __import__("numpy").asarray(yTrain),
+        testDf[urlOsintFeatures].to_numpy(), __import__("numpy").asarray(yTest),
         bestParams,
     )
     logger.info("  Accuracy: %.4f  F1: %.4f  AUC: %.4f",

@@ -249,9 +249,9 @@ class AnalysisOrchestrator:
             return OsintData(
                 url=url or f"https://{domain}",
                 domain=domain,
-                whois=whoisResult if whoisResult and not isinstance(whoisResult, BaseException) and whoisResult.status == \"success\" else None,
-                dns=dnsResult if dnsResult and not isinstance(dnsResult, BaseException) and dnsResult.status == \"success\" else None,
-                reputation=reputationResult if reputationResult and not isinstance(reputationResult, BaseException) and reputationResult.status == \"success\" else None,
+                whois=whoisResult if whoisResult and not isinstance(whoisResult, BaseException) and whoisResult.status == "success" else None,
+                dns=dnsResult if dnsResult and not isinstance(dnsResult, BaseException) and dnsResult.status == "success" else None,
+                reputation=reputationResult if reputationResult and not isinstance(reputationResult, BaseException) and reputationResult.status == "success" else None,
             )
             
         except asyncio.TimeoutError:

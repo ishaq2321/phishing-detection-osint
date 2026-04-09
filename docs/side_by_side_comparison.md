@@ -44,11 +44,11 @@ For each of the 12 chapters, we will execute the following 5 substeps:
 - [x] **Sub-step 3.5:** Commit the changes for this step to version control.
 
 ### Step 4: Chapter 4 - Feature Engineering and ML Model
-- [ ] **Sub-step 4.1:** Review ML code (XGBoost, SHAP, Optuna, 21 features, hyperparameter values).
-- [ ] **Sub-step 4.2:** Read and align current Chapter 4 documentation against the codebase.
-- [ ] **Sub-step 4.3:** Identify missing elements in code or docs for Chapter 4. Fix if necessary.
-- [ ] **Sub-step 4.4:** Finalize, review, complete Step 4, and prepare for Step 5.
-- [ ] **Sub-step 4.5:** Commit the changes for this step to version control.
+- [x] **Sub-step 4.1:** Review ML code (XGBoost, SHAP, Optuna, 21 features, hyperparameter values).
+- [x] **Sub-step 4.2:** Read and align current Chapter 4 documentation against the codebase.
+- [x] **Sub-step 4.3:** Identify missing elements in code or docs for Chapter 4. Fix if necessary.
+- [x] **Sub-step 4.4:** Finalize, review, complete Step 4, and prepare for Step 5.
+- [x] **Sub-step 4.5:** Commit the changes for this step to version control.
 
 ### Step 5: Chapter 5 - OSINT Integration
 - [ ] **Sub-step 5.1:** Review OSINT code (WHOIS, DNS, Reputation checker) and feature extraction logic.

@@ -51,11 +51,11 @@ For each of the 12 chapters, we will execute the following 5 substeps:
 - [x] **Sub-step 4.5:** Commit the changes for this step to version control.
 
 ### Step 5: Chapter 5 - OSINT Integration
-- [ ] **Sub-step 5.1:** Review OSINT code (WHOIS, DNS, Reputation checker) and feature extraction logic.
-- [ ] **Sub-step 5.2:** Read and align current Chapter 5 documentation against the codebase.
-- [ ] **Sub-step 5.3:** Identify missing elements in code or docs for Chapter 5. Fix if necessary.
-- [ ] **Sub-step 5.4:** Finalize, review, complete Step 5, and prepare for Step 6.
-- [ ] **Sub-step 5.5:** Commit the changes for this step to version control.
+- [x] **Sub-step 5.1:** Review OSINT code (WHOIS, DNS, Reputation checker) and feature extraction logic.
+- [x] **Sub-step 5.2:** Read and align current Chapter 5 documentation against the codebase.
+- [x] **Sub-step 5.3:** Identify missing elements in code or docs for Chapter 5. Fix if necessary.
+- [x] **Sub-step 5.4:** Finalize, review, complete Step 5, and prepare for Step 6.
+- [x] **Sub-step 5.5:** Commit the changes for this step to version control.
 
 ### Step 6: Chapter 6 - NLP Analysis
 - [ ] **Sub-step 6.1:** Review NLP code (spaCy pipeline, indicator matchers, text scoring logic).

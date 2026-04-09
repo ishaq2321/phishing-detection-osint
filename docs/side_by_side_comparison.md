@@ -30,11 +30,11 @@ For each of the 12 chapters, we will execute the following 5 substeps:
 - [x] **Sub-step 1.5:** Commit the changes for this step to version control.
 
 ### Step 2: Chapter 2 - Background and Related Work
-- [ ] **Sub-step 2.1:** Review code/project state relevant to Background (e.g., OSINT features actually used vs researched).
-- [ ] **Sub-step 2.2:** Read and align current Chapter 2 documentation against the codebase.
-- [ ] **Sub-step 2.3:** Identify missing elements in code or docs for Chapter 2. Fix if necessary.
-- [ ] **Sub-step 2.4:** Finalize, review, complete Step 2, and prepare for Step 3.
-- [ ] **Sub-step 2.5:** Commit the changes for this step to version control.
+- [x] **Sub-step 2.1:** Review code/project state relevant to Background (e.g., OSINT features actually used vs researched).
+- [x] **Sub-step 2.2:** Read and align current Chapter 2 documentation against the codebase.
+- [x] **Sub-step 2.3:** Identify missing elements in code or docs for Chapter 2. Fix if necessary.
+- [x] **Sub-step 2.4:** Finalize, review, complete Step 2, and prepare for Step 3.
+- [x] **Sub-step 2.5:** Commit the changes for this step to version control.
 
 ### Step 3: Chapter 3 - System Design and Architecture
 - [ ] **Sub-step 3.1:** Review code/project state relevant to Architecture (e.g., Next.js structure, FastAPI modularity, async orchestration).

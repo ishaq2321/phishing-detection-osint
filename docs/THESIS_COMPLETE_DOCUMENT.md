@@ -293,15 +293,15 @@ Blacklist-based detection systems maintain databases of known phishing URLs, dom
 - **APWG eCrime Exchange (eCX):** Industry consortium sharing phishing data among financial institutions [7].
 
 **Advantages:**
-- ✅ High precision (few false positives) when blacklist is accurate
-- ✅ Low computational overhead (simple hash table lookup)
-- ✅ Well-integrated into browsers and email clients
+- High precision (few false positives) when blacklist is accurate
+- Low computational overhead (simple hash table lookup)
+- Well-integrated into browsers and email clients
 
 **Limitations:**
-- ❌ **Zero-Hour Vulnerability:** Cannot detect new phishing sites until reported, verified, and added to blacklist (delay of hours to days)
-- ❌ **Short-Lived Phishing Sites:** 50% of phishing URLs remain active for <12 hours [8], often disappearing before blacklisting
-- ❌ **Evasion Techniques:** Attackers use URL shorteners, redirects, or dynamic URL generation to bypass blacklists
-- ❌ **Scalability:** Millions of new phishing URLs daily overwhelm manual verification processes
+- **Zero-Hour Vulnerability:** Cannot detect new phishing sites until reported, verified, and added to blacklist (delay of hours to days)
+- **Short-Lived Phishing Sites:** 50% of phishing URLs remain active for <12 hours [8], often disappearing before blacklisting
+- **Evasion Techniques:** Attackers use URL shorteners, redirects, or dynamic URL generation to bypass blacklists
+- **Scalability:** Millions of new phishing URLs daily overwhelm manual verification processes
 
 ---
 
@@ -326,15 +326,15 @@ Heuristic systems define handcrafted rules based on common phishing patterns:
 - Links in email point to domain different from sender domain
 
 **Advantages:**
-- ✅ Can detect zero-day phishing attempts (not reliant on blacklists)
-- ✅ Explainable decisions (specific rule triggered)
-- ✅ Fast execution (deterministic rule evaluation)
+- Can detect zero-day phishing attempts (not reliant on blacklists)
+- Explainable decisions (specific rule triggered)
+- Fast execution (deterministic rule evaluation)
 
 **Limitations:**
-- ❌ **High False Positive Rate:** Legitimate sites occasionally trigger heuristics (e.g., long URLs with tracking parameters)
-- ❌ **Brittleness:** Attackers adapt to evade specific rules (e.g., keeping URL length <75 characters)
-- ❌ **Manual Tuning Required:** Rules must be continuously updated as attack patterns evolve
-- ❌ **Limited Generalization:** Cannot adapt to novel attack patterns not covered by existing rules
+- **High False Positive Rate:** Legitimate sites occasionally trigger heuristics (e.g., long URLs with tracking parameters)
+- **Brittleness:** Attackers adapt to evade specific rules (e.g., keeping URL length <75 characters)
+- **Manual Tuning Required:** Rules must be continuously updated as attack patterns evolve
+- **Limited Generalization:** Cannot adapt to novel attack patterns not covered by existing rules
 
 ---
 
@@ -348,13 +348,13 @@ Visual similarity techniques compare the rendered appearance of a suspicious web
 - **DOM Tree Similarity:** Comparing HTML structure and CSS styles
 
 **Advantages:**
-- ✅ Detects sophisticated brand impersonation (visual mimicry)
-- ✅ Language-agnostic (works regardless of text content)
+- Detects sophisticated brand impersonation (visual mimicry)
+- Language-agnostic (works regardless of text content)
 
 **Limitations:**
-- ❌ **Computationally Expensive:** Rendering and analyzing page screenshots is slow
-- ❌ **Evasion via Minor Changes:** Attackers introduce small visual variations to bypass similarity thresholds
-- ❌ **False Positives:** Legitimate resellers or affiliates may use brand logos legally
+- **Computationally Expensive:** Rendering and analyzing page screenshots is slow
+- **Evasion via Minor Changes:** Attackers introduce small visual variations to bypass similarity thresholds
+- **False Positives:** Legitimate resellers or affiliates may use brand logos legally
 
 ---
 
@@ -364,9 +364,9 @@ Visual similarity techniques compare the rendered appearance of a suspicious web
 
 | Method | Detection Speed | Zero-Day Coverage | False Positive Rate | Scalability | Explainability |
 |--------|----------------|-------------------|---------------------|-------------|----------------|
-| Blacklists | Very Fast (<10ms) | ❌ None | Very Low (<1%) | High | High (URL match) |
-| Heuristic Rules | Fast (<50ms) | ✅ Moderate | Moderate (5-10%) | High | High (rule triggered) |
-| Visual Similarity | Slow (1-3s) | ✅ High | Moderate (5-15%) | Low | Moderate (similarity score) |
+| Blacklists | Very Fast (<10ms) | None | Very Low (<1%) | High | High (URL match) |
+| Heuristic Rules | Fast (<50ms) | Moderate | Moderate (5-10%) | High | High (rule triggered) |
+| Visual Similarity | Slow (1-3s) | High | Moderate (5-15%) | Low | Moderate (similarity score) |
 
 **Overarching Limitations:**
 All traditional methods share common weaknesses:
@@ -459,15 +459,15 @@ Recent work explores deep neural networks for phishing detection, particularly f
 - **Siamese Networks:** Learn visual similarity between suspicious pages and known legitimate brand pages [21].
 
 **Advantages:**
-- ✅ Automatic feature learning (no manual feature engineering)
-- ✅ High capacity for complex pattern recognition
-- ✅ State-of-the-art results on large datasets (>1M samples)
+- Automatic feature learning (no manual feature engineering)
+- High capacity for complex pattern recognition
+- State-of-the-art results on large datasets (>1M samples)
 
 **Limitations:**
-- ❌ **Data Hungry:** Require massive labeled datasets (often >100k samples for deep models)
-- ❌ **Black-Box Nature:** Lack of interpretability hinders trust and debugging
-- ❌ **Computational Cost:** Training and inference are resource-intensive (GPU required)
-- ❌ **Overfitting Risk:** Prone to memorizing training data patterns without generalizing
+- **Data Hungry:** Require massive labeled datasets (often >100k samples for deep models)
+- **Black-Box Nature:** Lack of interpretability hinders trust and debugging
+- **Computational Cost:** Training and inference are resource-intensive (GPU required)
+- **Overfitting Risk:** Prone to memorizing training data patterns without generalizing
 
 For this thesis, we opt for XGBoost (gradient boosting trees) over deep learning due to:
 1. Superior performance on tabular data (structured features)
@@ -653,15 +653,15 @@ This thesis addresses the identified gaps through the following design choices:
 
 | Feature / Capability | Blacklists (e.g., PhishTank) | Heuristic Systems | Academic ML Studies [9-16] | Deep Learning [17-21] | **PhishGuard (This Work)** |
 |----------------------|------------------------------|-------------------|-----------------------------|------------------------|---------------------------|
-| **Zero-Day Detection** | ❌ No | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| **Real-Time OSINT Integration** | ❌ No | ⚠️ Limited | ⚠️ Rare (1-2 studies) | ❌ No | ✅ Yes (4 features) |
-| **Explainability** | ✅ High (URL match) | ✅ High (rule triggered) | ⚠️ Low-Moderate | ❌ Very Low | ✅ High (SHAP) |
-| **Production Web Application** | ✅ Yes (API only) | ⚠️ Limited | ❌ No (research only) | ❌ No (research only) | ✅ Yes (Full-stack) |
-| **Multi-Modal Input** | ❌ No | ❌ No | ❌ No | ⚠️ Limited | ✅ Yes (URL/Email/Text) |
+| **Zero-Day Detection** | No | Yes | Yes | Yes | Yes |
+| **Real-Time OSINT Integration** | No | Limited | Rare (1-2 studies) | No | Yes (4 features) |
+| **Explainability** | High (URL match) | High (rule triggered) | Low-Moderate | Very Low | High (SHAP) |
+| **Production Web Application** | Yes (API only) | Limited | No (research only) | No (research only) | Yes (Full-stack) |
+| **Multi-Modal Input** | No | No | No | Limited | Yes (URL/Email/Text) |
 | **Dataset Size** | N/A | N/A | 10k-88k | 100k-1M | **150k** |
-| **Test Coverage** | N/A | N/A | ⚠️ Limited | ⚠️ Limited | ✅ Extensive (754 tests) |
+| **Test Coverage** | N/A | N/A | Limited | Limited | Extensive (754 tests) |
 | **Model Accuracy** | N/A | ~85-90% | 96-98% | 97-99% | **96.45%** |
-| **Open Source** | ✅ Yes (data) | ⚠️ Varies | ⚠️ Rare | ⚠️ Rare | ✅ Yes (code + model) |
+| **Open Source** | Yes (data) | Varies | Rare | Rare | Yes (code + model) |
 
 **PhishGuard's Unique Contributions:**
 1. **OSINT-Enhanced ML:** Integrates 4 real-time OSINT features (WHOIS, DNS, reputation) with empirical validation via ablation study (+0.30% accuracy improvement).

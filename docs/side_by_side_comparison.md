@@ -37,11 +37,11 @@ For each of the 12 chapters, we will execute the following 5 substeps:
 - [x] **Sub-step 2.5:** Commit the changes for this step to version control.
 
 ### Step 3: Chapter 3 - System Design and Architecture
-- [ ] **Sub-step 3.1:** Review code/project state relevant to Architecture (e.g., Next.js structure, FastAPI modularity, async orchestration).
-- [ ] **Sub-step 3.2:** Draft Chapter 3 with high-level design, data flow, concurrency models, and architecture diagrams.
-- [ ] **Sub-step 3.3:** Ensure the written draft perfectly matches the codebase findings (no hallucinated databases or stores).
-- [ ] **Sub-step 3.4:** Finalize, review, complete Step 3, and prepare for Step 4.
-- [ ] **Sub-step 3.5:** Commit the changes for this step to version control.
+- [x] **Sub-step 3.1:** Review code/project state relevant to Architecture (e.g., Next.js structure, FastAPI modularity, async orchestration).
+- [x] **Sub-step 3.2:** Draft Chapter 3 with high-level design, data flow, concurrency models, and architecture diagrams.
+- [x] **Sub-step 3.3:** Ensure the written draft perfectly matches the codebase findings (no hallucinated databases or stores).
+- [x] **Sub-step 3.4:** Finalize, review, complete Step 3, and prepare for Step 4.
+- [x] **Sub-step 3.5:** Commit the changes for this step to version control.
 
 ### Step 4: Chapter 4 - Feature Engineering and ML Model
 - [ ] **Sub-step 4.1:** Review ML code (XGBoost, SHAP, Optuna, 21 features, hyperparameter values).

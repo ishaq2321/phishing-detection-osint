@@ -1,3 +1,198 @@
+<div align="center">
+    <img src="https://www.elte.hu/media/7b/03/5a528646b6c2317180bfd094191d6eb661cbfa1742de8db4314c463f25c7/elte-logo-cimer-1200.jpg" alt="ELTE Logo" width="300"/>
+    <br><br>
+    <h3>Eötvös Loránd University</h3>
+    <h4>Faculty of Informatics</h4>
+    <br><br><br>
+    <h1>BSc THESIS</h1>
+    <br><br>
+    <h2>PhishGuard: A Hybrid Machine Learning and OSINT Architecture for Proactive Phishing Detection</h2>
+    <br><br><br>
+    <table width="100%" style="border-collapse: collapse; border: none;">
+        <tr style="border: none;">
+            <td style="border: none; text-align: left; vertical-align: top;">
+                <strong>Author:</strong><br>
+                ISHAQ MUHAMMAD<br>
+                Neptun Code: PXPRGK<br>
+                pxprgk@inf.elte.hu
+            </td>
+            <td style="border: none; text-align: right; vertical-align: top;">
+                <strong>Supervisor:</strong><br>
+                Arafat Md Easin<br>
+                arafatmdeasin@inf.elte.hu
+            </td>
+        </tr>
+    </table>
+    <br><br><br>
+    <p><strong>Project Repository:</strong> <a href="https://github.com/ishaq2321/phishing-detection-osint">github.com/ishaq2321/phishing-detection-osint</a></p>
+    <p><strong>Live Application:</strong> <a href="https://project-4soy4.vercel.app">project-4soy4.vercel.app</a></p>
+    <br><br><br>
+    <p>Budapest, Hungary</p>
+    <p>2026</p>
+</div>
+
+<div style="page-break-after: always;"></div>
+
+## Abstract
+
+The exponential proliferation of phishing attacks necessitates proactive, high-precision detection architectures that transcend traditional reactive blacklisting paradigms. This thesis presents PhishGuard, a novel, hybrid threat intelligence platform that orchestrates machine learning (ML), natural language processing (NLP), and Open-Source Intelligence (OSINT) to mitigate zero-day phishing campaigns. Operating within an asynchronous Python FastAPI backend, the system utilizes a heavily optimized XGBoost classifier trained on a 21-dimensional feature vector, achieving a 96.45% accuracy and a 97.86% precision rate on a strictly held-out test set of 5,009 samples. Beyond pure predictive performance, PhishGuard heavily emphasizes Explainable AI (XAI); it dynamically synthesizes its empirical classification scores into human-readable heuristic feedback, rendered through a Next.js frontend, to simultaneously protect and educate the end-user. This research rigorously details the architectural trade-offs inherent in synchronous OSINT gathering, the mitigation of concept drift, and the empirical value of structural versus dynamic intelligence markers in contemporary cyber defense.
+
+<div style="page-break-after: always;"></div>
+
+## Preface and Table of Contents
+
+- [Chapter 1: Introduction](#chapter-1-introduction)
+  - [1.1 Background and Motivation](#11-background-and-motivation)
+  - [1.2 Problem Statement](#12-problem-statement)
+  - [1.3 Research Objectives](#13-research-objectives)
+  - [1.4 Contributions](#14-contributions)
+    - [1.4.1 OSINT-Enhanced Feature Engineering Framework](#141-osint-enhanced-feature-engineering-framework)
+    - [1.4.2 State-of-the-Art ML Pipeline Implementation](#142-state-of-the-art-ml-pipeline-implementation)
+    - [1.4.3 Transparent, Explainable Threat Intelligence](#143-transparent-explainable-threat-intelligence)
+    - [1.4.4 Multi-Modal, Asynchronous Analysis Engine](#144-multi-modal-asynchronous-analysis-engine)
+    - [1.4.5 Production-Grade Software Engineering and Validation](#145-production-grade-software-engineering-and-validation)
+  - [1.5 Thesis Structure](#15-thesis-structure)
+- [Chapter 2: Background and Related Work](#chapter-2-background-and-related-work)
+  - [2.1 Phishing Attack Landscape](#21-phishing-attack-landscape)
+    - [2.1.1 Definition and Characteristics](#211-definition-and-characteristics)
+    - [2.1.2 Taxonomy of Phishing Attacks](#212-taxonomy-of-phishing-attacks)
+    - [2.1.3 Social Engineering Tactics](#213-social-engineering-tactics)
+    - [2.1.4 Evolution and Trends](#214-evolution-and-trends)
+  - [2.2 Traditional Detection Methods](#22-traditional-detection-methods)
+    - [2.2.1 Blacklist-Based Approaches](#221-blacklist-based-approaches)
+    - [2.2.2 Heuristic Rule-Based Systems](#222-heuristic-rule-based-systems)
+    - [2.2.3 Visual Similarity Detection](#223-visual-similarity-detection)
+    - [2.2.4 Comparison and Limitations](#224-comparison-and-limitations)
+  - [2.3 Machine Learning for Phishing Detection](#23-machine-learning-for-phishing-detection)
+    - [2.3.1 Feature-Based Classification](#231-feature-based-classification)
+    - [2.3.2 ML Algorithm Comparison](#232-ml-algorithm-comparison)
+    - [2.3.3 Deep Learning Approaches](#233-deep-learning-approaches)
+    - [2.3.4 Explainable AI for Phishing Detection](#234-explainable-ai-for-phishing-detection)
+  - [2.4 Open-Source Intelligence (OSINT) for Phishing Detection](#24-open-source-intelligence-osint-for-phishing-detection)
+    - [2.4.1 OSINT Overview](#241-osint-overview)
+    - [2.4.2 WHOIS Domain Registration Data](#242-whois-domain-registration-data)
+    - [2.4.3 DNS Infrastructure Analysis](#243-dns-infrastructure-analysis)
+    - [2.4.4 Reputation Databases](#244-reputation-databases)
+    - [2.4.5 OSINT Integration Workflow](#245-osint-integration-workflow)
+  - [2.5 Gap Analysis and Research Positioning](#25-gap-analysis-and-research-positioning)
+    - [2.5.1 Identified Gaps in Existing Work](#251-identified-gaps-in-existing-work)
+    - [2.5.2 PhishGuard Positioning](#252-phishguard-positioning)
+  - [2.6 Summary](#26-summary)
+- [Chapter 3: System Design and Architecture](#chapter-3-system-design-and-architecture)
+  - [3.1 Architectural Overview](#31-architectural-overview)
+  - [3.2 High-Level Data Flow](#32-high-level-data-flow)
+    - [3.2.1 Input Modality Detection](#321-input-modality-detection)
+    - [3.2.2 Asynchronous OSINT Orchestration](#322-asynchronous-osint-orchestration)
+  - [3.3 The API and Scoring Engine](#33-the-api-and-scoring-engine)
+    - [3.3.1 Weighted Verdict Combination](#331-weighted-verdict-combination)
+    - [3.3.2 Ephemeral History Store](#332-ephemeral-history-store)
+    - [3.3.3 Pydantic Schema Contracts](#333-pydantic-schema-contracts)
+  - [3.4 Frontend Architecture](#34-frontend-architecture)
+    - [3.4.1 Component-Based Structure](#341-component-based-structure)
+    - [3.4.2 State Management and Client-Server Interaction](#342-state-management-and-client-server-interaction)
+    - [3.4.3 Visual Presentation and Theming](#343-visual-presentation-and-theming)
+  - [3.5 Summary](#35-summary)
+- [Chapter 4: Feature Engineering and ML Model](#chapter-4-feature-engineering-and-ml-model)
+  - [4.1 Dataset Collection and Preprocessing](#41-dataset-collection-and-preprocessing)
+    - [4.1.1 Data Aggregation](#411-data-aggregation)
+    - [4.1.2 Cleaning and Balancing](#412-cleaning-and-balancing)
+  - [4.2 Feature Engineering Pipeline](#42-feature-engineering-pipeline)
+    - [4.2.1 Lexical and Structural Features (17 Dimensions)](#421-lexical-and-structural-features-17-dimensions)
+    - [4.2.2 OSINT Infrastructure Features (4 Dimensions)](#422-osint-infrastructure-features-4-dimensions)
+  - [4.3 Model Selection and Optimization](#43-model-selection-and-optimization)
+    - [4.3.1 The XGBoost Algorithm](#431-the-xgboost-algorithm)
+    - [4.3.2 Bayesian Hyperparameter Optimization (Optuna)](#432-bayesian-hyperparameter-optimization-optuna)
+  - [4.4 Model Explainability via SHAP](#44-model-explainability-via-shap)
+  - [4.5 Performance Evaluation](#45-performance-evaluation)
+- [Chapter 5: OSINT Integration](#chapter-5-osint-integration)
+  - [5.1 Open-Source Intelligence in Phishing Detection](#51-open-source-intelligence-in-phishing-detection)
+  - [5.2 Asynchronous Execution and Resilience](#52-asynchronous-execution-and-resilience)
+  - [5.3 DNS Infrastructure Analysis](#53-dns-infrastructure-analysis)
+    - [5.3.1 Mail Exchange (MX) Validation](#531-mail-exchange-mx-validation)
+    - [5.3.2 CDN Masking Detection](#532-cdn-masking-detection)
+    - [5.3.3 Infrastructure Volume and Validity](#533-infrastructure-volume-and-validity)
+  - [5.4 WHOIS Domain Analysis](#54-whois-domain-analysis)
+    - [5.4.1 Domain Age and Registration Proximity](#541-domain-age-and-registration-proximity)
+    - [5.4.2 Privacy Protection Heuristics](#542-privacy-protection-heuristics)
+  - [5.5 Third-Party Threat Intelligence](#55-third-party-threat-intelligence)
+- [Chapter 6: Natural Language Processing Analysis](#chapter-6-natural-language-processing-analysis)
+  - [6.1 Semantic Evaluation in Threat Detection](#61-semantic-evaluation-in-threat-detection)
+  - [6.2 The spaCy NLP Pipeline Architecture](#62-the-spacy-nlp-pipeline-architecture)
+    - [6.2.1 Pipeline Initialization and Matchers](#621-pipeline-initialization-and-matchers)
+  - [6.3 Tactical Heuristics and Feature Extraction](#63-tactical-heuristics-and-feature-extraction)
+    - [6.3.1 Urgency and Threat Indicators](#631-urgency-and-threat-indicators)
+    - [6.3.2 Authority and Brand Impersonation](#632-authority-and-brand-impersonation)
+    - [6.3.3 Financial and Credential Solicitation](#633-financial-and-credential-solicitation)
+    - [6.3.4 In-Text Link Manipulation](#634-in-text-link-manipulation)
+  - [6.4 Scoring Orchestration and Output](#64-scoring-orchestration-and-output)
+    - [6.4.1 The Scoring Algorithm](#641-the-scoring-algorithm)
+    - [6.4.2 Orchestrator Integration](#642-orchestrator-integration)
+- [Chapter 7: Scoring and Classification](#chapter-7-scoring-and-classification)
+  - [7.1 The Orchestration of Intelligence](#71-the-orchestration-of-intelligence)
+  - [7.2 The ML Predictor Architecture](#72-the-ml-predictor-architecture)
+    - [7.1.1 Thread-Safe Initialization](#711-thread-safe-initialization)
+    - [7.1.2 Inference Execution](#712-inference-execution)
+  - [7.3 The Phishing Scorer Module](#73-the-phishing-scorer-module)
+    - [7.3.1 Explanatory Heuristics](#731-explanatory-heuristics)
+    - [7.3.2 Graceful Heuristic Fallback](#732-graceful-heuristic-fallback)
+  - [7.4 Risk Level Determination](#74-risk-level-determination)
+    - [7.4.1 Reason Prioritization](#741-reason-prioritization)
+- [Chapter 8: Implementation](#chapter-8-implementation)
+  - [8.1 System Architecture and Overview](#81-system-architecture-and-overview)
+    - [8.1.1 Backend Framework and Initialization](#811-backend-framework-and-initialization)
+  - [8.2 The Analysis Orchestrator](#82-the-analysis-orchestrator)
+  - [8.3 Frontend Implementation](#83-frontend-implementation)
+    - [8.3.1 Component Architecture and Styling](#831-component-architecture-and-styling)
+    - [8.3.2 Data Visualization and Animation](#832-data-visualization-and-animation)
+  - [8.4 Deployment and Infrastructure](#84-deployment-and-infrastructure)
+  - [8.5 Integration and Weighting Mechanisms](#85-integration-and-weighting-mechanisms)
+    - [8.5.1 The 15-Second Concurrency Window](#851-the-15-second-concurrency-window)
+    - [8.5.2 Content-Specific Scoring Pipelines](#852-content-specific-scoring-pipelines)
+    - [8.5.3 The Phishing Threshold and Threat Boundaries](#853-the-phishing-threshold-and-threat-boundaries)
+- [Chapter 9: Testing and Quality Assurance](#chapter-9-testing-and-quality-assurance)
+  - [9.1 Introduction to the Quality Assurance Framework](#91-introduction-to-the-quality-assurance-framework)
+  - [9.2 Backend Testing Methodology](#92-backend-testing-methodology)
+    - [9.1.1 Environment Isolation and Fixture Management](#911-environment-isolation-and-fixture-management)
+    - [9.1.2 Dependency Inversion and OSINT Mocking](#912-dependency-inversion-and-osint-mocking)
+  - [9.3 Integration and Smoke Testing](#93-integration-and-smoke-testing)
+    - [9.3.1 Service Level Agreement (SLA) Validation](#931-service-level-agreement-sla-validation)
+  - [9.4 Frontend Quality Assurance](#94-frontend-quality-assurance)
+    - [9.4.1 Component and State Validation](#941-component-and-state-validation)
+    - [9.4.2 End-to-End (E2E) Browser Automation](#942-end-to-end-e2e-browser-automation)
+  - [9.5 Static Analysis and Type Safety](#95-static-analysis-and-type-safety)
+- [Chapter 10: Results and Evaluation](#chapter-10-results-and-evaluation)
+  - [10.1 Evaluation Methodology](#101-evaluation-methodology)
+  - [10.2 Hyperparameter Optimization](#102-hyperparameter-optimization)
+  - [10.3 Empirical Performance Metrics](#103-empirical-performance-metrics)
+    - [10.3.1 Error Analysis and Confusion Matrix](#1031-error-analysis-and-confusion-matrix)
+  - [10.4 Feature Explainability and SHAP Analysis](#104-feature-explainability-and-shap-analysis)
+    - [10.4.1 OSINT Ablation Study](#1041-osint-ablation-study)
+- [Chapter 11: Discussion](#chapter-11-discussion)
+  - [11.1 The Paradox of Threat Intelligence: Explainability versus Predictive Power](#111-the-paradox-of-threat-intelligence-explainability-versus-predictive-power)
+  - [11.2 Architectural Trade-offs: Latency and Concurrency](#112-architectural-trade-offs-latency-and-concurrency)
+  - [11.3 Graceful Degradation and Deterministic Fallbacks](#113-graceful-degradation-and-deterministic-fallbacks)
+  - [11.4 Threat Modeling and Limitations](#114-threat-modeling-and-limitations)
+    - [11.4.1 Linguistic Constraints and Homograph Attacks](#1141-linguistic-constraints-and-homograph-attacks)
+    - [11.4.2 Image-Based Exploitation and OCR Deficiencies](#1142-image-based-exploitation-and-ocr-deficiencies)
+    - [11.4.3 Compromised Legitimate Infrastructure](#1143-compromised-legitimate-infrastructure)
+  - [11.5 Comparison with State-of-the-Art Solutions](#115-comparison-with-state-of-the-art-solutions)
+  - [11.6 The Operational Cost of Classification Errors](#116-the-operational-cost-of-classification-errors)
+  - [11.7 The Shifting Paradigm of HTTPS in Phishing](#117-the-shifting-paradigm-of-https-in-phishing)
+  - [11.8 Explainable AI (XAI) and Security Awareness](#118-explainable-ai-xai-and-security-awareness)
+  - [11.9 Concept Drift and Future-Proofing](#119-concept-drift-and-future-proofing)
+- [Chapter 12: Conclusion and Future Work](#chapter-12-conclusion-and-future-work)
+  - [12.1 Summary of Contributions](#121-summary-of-contributions)
+  - [12.2 Fulfillment of Research Objectives](#122-fulfillment-of-research-objectives)
+  - [12.3 Future Work: Algorithmic Enhancements](#123-future-work-algorithmic-enhancements)
+    - [12.3.1 Dynamic Online Learning and Concept Drift Mitigation](#1231-dynamic-online-learning-and-concept-drift-mitigation)
+    - [12.3.2 Transitioning from NLP Heuristics to Large Language Models (LLMs)](#1232-transitioning-from-nlp-heuristics-to-large-language-models-llms)
+  - [12.4 Future Work: Architectural Scaling and Expansion](#124-future-work-architectural-scaling-and-expansion)
+    - [12.4.1 Event-Driven Microservices](#1241-event-driven-microservices)
+    - [12.4.2 Optical Character Recognition (OCR) Integration](#1242-optical-character-recognition-ocr-integration)
+  - [12.5 Concluding Remarks](#125-concluding-remarks)
+
+<div style="page-break-after: always;"></div>
+
 # Chapter 1: Introduction
 
 ## 1.1 Background and Motivation
@@ -159,7 +354,9 @@ The final chapter summarizes the overarching achievements of the thesis against 
 
 ---
 
-**End of Chapter 1**
+
+
+
 # Chapter 2: Background and Related Work
 
 ---
@@ -732,7 +929,9 @@ The next chapter (Chapter 3) presents the system design and architecture of Phis
 
 ---
 
-**End of Chapter 2**
+
+
+
 
 *Word Count: ~4,200 words (approximately 10-12 pages in standard thesis format)*
 # Chapter 3: System Design and Architecture
@@ -860,7 +1059,9 @@ The subsequent chapter, Chapter 4, will delve deeply into the mathematical core 
 
 ---
 
-**End of Chapter 3**# Chapter 4: Feature Engineering and ML Model
+
+
+# Chapter 4: Feature Engineering and ML Model
 
 ## 4.1 Dataset Collection and Preprocessing
 
@@ -954,7 +1155,9 @@ These metrics indicate an exceptionally high-performing classifier. The 97.86% p
 
 ---
 
-**End of Chapter 4**# Chapter 5: OSINT Integration
+
+
+# Chapter 5: OSINT Integration
 
 ## 5.1 Open-Source Intelligence in Phishing Detection
 
@@ -1018,43 +1221,7 @@ Unlike the DNS and WHOIS modules which rely on thread pools, the reputation chec
 The outputs from these APIs are mathematically aggregated into an overarching `reputationScore` bounded between 0.0 and 1.0. This score provides the orchestrator with definitive, community-verified intelligence that directly heavily influences the `VerdictResult`, particularly when the machine learning model's confidence falls into the ambiguous "Suspicious" tier.
 
 ---
-
-**End of Chapter 5**# Chapter 6: Natural Language Processing Analysis
-
-## 6.1 Semantic Evaluation in Threat Detection
-
-While lexical URL analysis and real-time infrastructure queries form the foundation of phishing detection, they remain inherently blind to the semantic payload of the attack. Attackers increasingly leverage sophisticated social engineering narratives—often devoid of immediate malicious links—to build trust or induce panic before delivering the payload in subsequent communications. 
-
-To counteract this, PhishGuard incorporates a dedicated Natural Language Processing (NLP) pipeline. This subsystem evaluates the unstructured text of emails, SMS messages, and web page content, quantifying the psychological manipulation tactics characteristic of social engineering.
-
-## 6.2 The spaCy NLP Pipeline Architecture
-
-The core of the semantic analysis engine is built upon the `spaCy` framework. Selected for its production-grade performance and robust linguistic features, `spaCy` provides the foundational capabilities for tokenization, lemmatization, dependency parsing, and Named Entity Recognition (NER).
-
-The `nlpAnalyzer.py` module encapsulates this functionality within the `NlpAnalyzer` class. To ensure deterministic execution and minimize latency, the system utilizes the lightweight, English-optimized `en_core_web_sm` model. Upon initialization, the analyzer pre-loads a comprehensive taxonomy of social engineering indicators mapped to specific heuristic weights.
-
-## 6.3 Tactical Heuristics and Feature Extraction
-
-Unlike the XGBoost model which operates on a continuous numerical feature vector, the NLP analyzer employs a deterministic, rule-based heuristic scoring mechanism. The system scans the tokenized document for specific psychological triggers.
-
-### 6.3.1 Urgency and Threat Indicators
-Phishing campaigns fundamentally rely on artificial time constraints to bypass rational scrutiny. The NLP analyzer implements strict keyword and phrase matching against a taxonomy of urgency indicators (e.g., "immediate action required," "account suspended," "final notice"). When the pipeline detects these phrases, it assigns high-confidence penalty weights to the text's overall risk score.
-
-### 6.3.2 Authority and Brand Impersonation
-Attackers frequently exploit authority bias by masquerading as trusted institutions. The pipeline leverages `spaCy`'s Named Entity Recognition (NER) capabilities (specifically the `ORG` entity label) to identify when prominent organizations (e.g., "PayPal," "Microsoft," "IRS") are referenced within the text. If these entities are detected in conjunction with urgency indicators or financial vocabulary, the interaction weight of the threat score is logarithmically increased.
-
-### 6.3.3 Financial and Credential Solicitation
-A primary objective of phishing is credential harvesting. The pipeline utilizes regular expressions and semantic matching to identify the explicit solicitation of sensitive data. Phrases demanding "password," "social security number," or "wire transfer" are flagged as critical risk indicators. 
-
-## 6.4 Scoring Orchestration and Output
-
-The output of the `NlpAnalyzer` is not a binary classification, but rather a structured `AnalysisResult` object. This object contains a continuous `confidenceScore` (bounded between 0.0 and 1.0) and an array of discrete, human-readable `indicators` detailing exactly which heuristic rules were triggered.
-
-This localized text score is subsequently passed back to the `AnalysisOrchestrator` detailed in Chapter 3. For email and raw text inputs, this NLP-derived score serves as the primary predictive signal (weighted at 55%), supplemented by any extracted URL lexical features (25%) and infrastructure OSINT (20%). This multi-layered weighting ensures the system remains resilient against polymorphic attack vectors that dynamically alter their semantic content.
-
----
-
-**End of Chapter 6**# Chapter 6: Natural Language Processing Analysis
+# Chapter 6: Natural Language Processing Analysis
 
 ## 6.1 Semantic Evaluation in Threat Detection
 
@@ -1124,7 +1291,9 @@ Furthermore, the `_generateReasons` method maps the mathematical output into hum
 
 ---
 
-**End of Chapter 6**# Chapter 7: Scoring and Classification
+
+
+# Chapter 7: Scoring and Classification
 
 ## 7.1 The Orchestration of Intelligence
 
@@ -1179,7 +1348,9 @@ To prevent alert fatigue and ensure the user interface remains uncluttered, the 
 
 ---
 
-**End of Chapter 7**# Chapter 8: Implementation
+
+
+# Chapter 8: Implementation
 
 ## 8.1 System Architecture and Overview
 

@@ -1,5 +1,6 @@
 <div align="center">
-    <img src="assets/elte-logo.jpg" alt="ELTE Logo" width="300"/>
+    ![ELTE Logo](./assets/elte-logo.jpg)
+    <br>
     <br><br>
     <h3>Eötvös Loránd University</h3>
     <h4>Faculty of Informatics</h4>

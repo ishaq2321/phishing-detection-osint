@@ -91,3 +91,27 @@ Let me know when you're ready, and I'll proceed to **Chapter 3: System Design an
 
 **Caption:**
 "Figure 8-1: Sequence diagram illustrating the asynchronous execution pipeline within the Analysis Orchestrator. The diagram highlights the concurrent execution of NLP and OSINT gathering tasks, bounded by a strict 15.0-second global timeout to ensure API responsiveness."
+
+---
+
+### FIGURE 9-1: PhishGuard Quality Assurance Architecture
+
+**How to create:**
+1. Use a block architecture tool (e.g., Lucidchart, draw.io, or Visio).
+2. Create two distinct vertical sections: "Backend Testing" and "Frontend Testing".
+3. **Backend Section:**
+   - Draw a large box for `pytest`.
+   - Inside the box, place three tiers (pyramid style):
+     - Bottom (Unit): "Isolated Tests (`tests/unit/`)" pointing to "Mocked OSINT Data (`conftest.py`)".
+     - Middle (Integration): "FastAPI TestClient" pointing to "Batch Analysis".
+     - Top (Smoke): "SLA Enforcement (< 5.0s, < 1.0s)".
+4. **Frontend Section:**
+   - Draw a large box for "Next.js QA".
+   - Inside the box, place two tiers:
+     - Bottom (Component/State): "Jest & React Testing Library" pointing to "State Stores & UI DOM".
+     - Top (End-to-End): "Playwright" pointing to "Browser Automation (Simulating User Flow)".
+5. Draw a horizontal bar at the very bottom spanning both sections labeled: "Static Analysis (Pyright & TypeScript / ESLint)".
+6. Export as a high-resolution PNG or SVG (300 DPI).
+
+**Caption:**
+"Figure 9-1: The multi-tiered Quality Assurance architecture of the PhishGuard platform, illustrating the strict separation between backend execution (`pytest` and mocked dependencies) and frontend UI automation (Jest and Playwright), underpinned by rigorous static type checking."

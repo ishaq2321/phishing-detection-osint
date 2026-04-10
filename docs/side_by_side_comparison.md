@@ -79,11 +79,11 @@ For each of the 12 chapters, we will execute the following 5 substeps:
 - [x] **Sub-step 8.5:** Commit the changes for this step to version control.
 
 ### Step 9: Chapter 9 - Testing and Quality Assurance
-- [ ] **Sub-step 9.1:** Review testing suites (pytest, Jest, Playwright) and exact test counts.
-- [ ] **Sub-step 9.2:** Read and align current Chapter 9 documentation against the codebase.
-- [ ] **Sub-step 9.3:** Identify missing elements in code or docs for Chapter 9. Fix if necessary.
-- [ ] **Sub-step 9.4:** Finalize, review, complete Step 9, and prepare for Step 10.
-- [ ] **Sub-step 9.5:** Commit the changes for this step to version control.
+- [x] **Sub-step 9.1:** Review testing suites (pytest, Jest, Playwright) and exact test counts.
+- [x] **Sub-step 9.2:** Read and align current Chapter 9 documentation against the codebase.
+- [x] **Sub-step 9.3:** Identify missing elements in code or docs for Chapter 9. Fix if necessary.
+- [x] **Sub-step 9.4:** Finalize, review, complete Step 9, and prepare for Step 10.
+- [x] **Sub-step 9.5:** Commit the changes for this step to version control.
 
 ### Step 10: Chapter 10 - Results and Evaluation
 - [ ] **Sub-step 10.1:** Review evaluation scripts and recorded results (accuracy, AUC, ablation study data, SHAP output).

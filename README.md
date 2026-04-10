@@ -58,9 +58,11 @@ the final score, supplemented by NLP text analysis at 15%.
 │   └── main.py           # FastAPI app entry point
 ├── data/                 # Datasets (phishing + legitimate URLs)
 ├── docs/                 # Documentation & research
-│   ├── milestones/       # M1–M4 progress tracking
-│   ├── methodology-draft.md  # Thesis methodology draft
-│   └── research.md       # Background research
+│   ├── THESIS_COMPLETE_DOCUMENT.md  # Final Thesis Document
+│   ├── API.md            # API Documentation
+│   ├── INSTALLATION.md   # Local Setup Guide
+│   ├── USER_JOURNEY.md   # User Flow Documentation
+│   └── PRIVACY.md        # Privacy Policy
 ├── frontend/             # Next.js 16 web application
 │   ├── src/
 │   │   ├── app/          # App Router pages (10 routes)
@@ -285,18 +287,15 @@ The backend deploys automatically from the `main` branch using the
 | Milestone 2      | February 20, 2026 | ✅ Complete    |
 | Milestone 3      | March 25, 2026    | ✅ Complete    |
 | Milestone 4      | April 15, 2026    | ✅ Complete    |
-| Final Submission | May 1, 2026       | 🟡 Draft In Progress |
+| Final Submission | May 1, 2026       | ✅ Complete |
 
 ## 📚 Documentation
 
-- [User Guide](docs/user_guide.md) — How to use the PhishGuard application
-
-- [Methodology Draft](docs/methodology-draft.md) — Thesis methodology and preliminary results
-- [Milestone 1](docs/milestones/milestone-1.md) — Topic, design, initial prototype
-- [Milestone 2](docs/milestones/milestone-2.md) — Core algorithm, backend, tests
-- [Milestone 3](docs/milestones/milestone-3.md) — UI development, testing, documentation
-- [Milestone 4](docs/milestones/milestone-4.md) — Final implementation, evaluation
-- [Research Notes](docs/research.md) — Background research on phishing and OSINT
+- [Complete Thesis Document](docs/THESIS_COMPLETE_DOCUMENT.md) — The final 19,500+ word BSc thesis document
+- [API Documentation](docs/API.md) — Detailed backend REST endpoints
+- [Installation Guide](docs/INSTALLATION.md) — Instructions for local environment setup
+- [User Journey](docs/USER_JOURNEY.md) — Expected workflows for different user types
+- [Privacy Policy](docs/PRIVACY.md) — Data handling and compliance considerations
 - [Frontend README](frontend/README.md) — Frontend-specific development guide
 
 ## 👤 Author

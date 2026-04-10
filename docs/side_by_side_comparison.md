@@ -65,11 +65,11 @@ For each of the 12 chapters, we will execute the following 5 substeps:
 - [x] **Sub-step 6.5:** Commit the changes for this step to version control.
 
 ### Step 7: Chapter 7 - Scoring and Classification
-- [ ] **Sub-step 7.1:** Review the Scorer module (weighting logic for URL vs Text, threat level thresholds).
-- [ ] **Sub-step 7.2:** Read and align current Chapter 7 documentation against the codebase.
-- [ ] **Sub-step 7.3:** Identify missing elements in code or docs for Chapter 7. Fix if necessary.
-- [ ] **Sub-step 7.4:** Finalize, review, complete Step 7, and prepare for Step 8.
-- [ ] **Sub-step 7.5:** Commit the changes for this step to version control.
+- [x] **Sub-step 7.1:** Review the Scorer module (weighting logic for URL vs Text, threat level thresholds).
+- [x] **Sub-step 7.2:** Read and align current Chapter 7 documentation against the codebase.
+- [x] **Sub-step 7.3:** Identify missing elements in code or docs for Chapter 7. Fix if necessary.
+- [x] **Sub-step 7.4:** Finalize, review, complete Step 7, and prepare for Step 8.
+- [x] **Sub-step 7.5:** Commit the changes for this step to version control.
 
 ### Step 8: Chapter 8 - Implementation
 - [ ] **Sub-step 8.1:** Review implementation details (tech stack, frontend routes, backend endpoints, deployment configs).

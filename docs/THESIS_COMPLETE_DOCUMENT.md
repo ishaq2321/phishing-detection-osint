@@ -1,5 +1,5 @@
 <div align="center">
-    ![ELTE Logo](./assets/elte-logo.jpg)
+    <img src="assets/logo.jpg" alt="ELTE Logo" width="400"/>
     <br>
     <br><br>
     <h3>Eötvös Loránd University</h3>

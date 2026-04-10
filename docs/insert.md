@@ -4,13 +4,36 @@ This is your master guide to replacing **every single placeholder** in your fina
 
 ---
 
+## ❓ HOW DOES IT WORK? (Your Questions Answered)
+
+**"How do I insert diagrams to the .md file, and when I convert to PDF, will they be there?"**
+
+Here is exactly how it works when you convert a Markdown (`.md`) file to a PDF:
+
+1. **For the Mermaid Diagrams (The `.mmd` files we just created):**
+   - You **DO NOT** use links or the `assets` folder! 
+   - You literally copy the text code from the `.mmd` file and paste it directly into your thesis document inside a code block (` ```mermaid ... ``` `).
+   - When you click "Convert to PDF", the converter reads that text and **automatically draws the diagram into the PDF**. You don't need any image files for these!
+
+2. **For Screenshots and Photos (`.png` / `.jpg` files from your UI):**
+   - You **MUST** save the image file into your `docs/assets/` folder.
+   - You write a link in your markdown like this: `![Description of Image](assets/my_screenshot.png)`
+   - When you click "Convert to PDF", the converter looks inside the `assets` folder on your computer, grabs the picture, and **glues it permanently into the PDF**.
+   - **Important:** Once the PDF is created, the images are permanently inside the PDF file. You can email the PDF to your professor, and they will see the images even if they don't have your `assets` folder!
+
+3. **What about the Tables?**
+   - You might notice text like `[TABLE 2-1: Types of Phishing Attacks]` in your thesis. **Do not delete these!** 
+   - If you look right below those labels, the actual tables are already written in Markdown code (using `| --- | --- |`). When you convert to PDF, those automatically turn into beautiful, fully-formatted academic tables. No images needed!
+
+---
+
 ## 🔍 The Exact 4 Placeholders to Replace
 
-I scanned your entire thesis document. There are exactly four `[FIGURE...]` placeholders. Here is exactly how to replace each one:
+I scanned your entire 19,500-word thesis document. There are exactly **four** `[FIGURE...]` placeholders that need your attention. Here is exactly how to replace each one:
 
 ### 1. Phishing Attack Taxonomy
 - **Find this in document:** `**[FIGURE 2-1: Phishing Attack Taxonomy Diagram]**` (Around Line 408)
-- **What to do:** Delete this text. You should paste a screenshot or image of a tree diagram showing phishing types (Email, SMS, Spear Phishing). Put the image in your `assets` folder and use this code:
+- **What to do:** Delete this text. You should find a diagram online showing phishing types (Email, SMS, Spear Phishing) or make a quick one. Save it to your `assets` folder as `taxonomy.png` and type:
   `![Figure 2.1: Phishing Attack Taxonomy](assets/taxonomy.png)`
 
 ### 2. OSINT Data Collection Pipeline
@@ -29,7 +52,7 @@ I scanned your entire thesis document. There are exactly four `[FIGURE...]` plac
 
 ### 4. SHAP Feature Importance Plot
 - **Find this in document:** `**[FIGURE 4-1: SHAP Feature Importance (Beeswarm Plot)]**` (Around Line 1133)
-- **What to do:** Delete this text. You need to take a screenshot of the actual SHAP graph your Python backend generates. Save it to the `assets` folder and use this code:
+- **What to do:** Delete this text. Take a screenshot of the actual SHAP graph your Python backend generates. Save it to the `assets` folder as `shap_plot.png` and type:
   `![Figure 4.1: SHAP Feature Importance (Beeswarm Plot)](assets/shap_plot.png)`
 
 ---
@@ -49,20 +72,3 @@ To make your thesis look even better, add the remaining 3 Mermaid diagrams we cr
 3. **User Journey Diagram**
    - **Where:** Chapter 6, under the introduction to **Chapter 6: User Interface and Experience**
    - **How:** Paste the code from `user-journey.mmd` inside a \`\`\`mermaid block.
-
----
-
-## 📸 How to Insert Images vs. Diagrams (Your Question Answered)
-
-**1. For the Mermaid Diagrams (`.mmd` files we just made):**
-You **DO NOT** use links or the assets folder! You literally copy the text code from the file and paste it directly into your thesis document inside a code block, like this:
-\`\`\`mermaid
-graph TD
-  A --> B
-\`\`\`
-When you convert the `.md` file to a `.pdf`, the PDF converter reads that text and draws the diagram for you automatically!
-
-**2. For Screenshots and Photos (PNGs/JPGs):**
-You **MUST** save the image file into your `docs/assets/` folder. Then, you write this in your markdown:
-`![Description of Image](assets/my_screenshot.png)`
-**Yes**, the image file MUST be inside the `assets` folder on your computer at the exact moment you click "Convert to PDF". If the asset file is missing, the PDF will just show a broken link.

@@ -1,0 +1,263 @@
+\chapter{System Design and
+Architecture}
+\label{chapter-3-system-design-and-architecture}
+
+\section{Architectural Overview}\label{architectural-overview}
+
+The PhishGuard platform is engineered as a modern, decoupled, full-stack
+web application. The architectural design prioritizes low-latency
+inference, modular separation of concerns, and a seamless user
+experience. To achieve these objectives, the system adopts a
+client-server architecture, cleanly separating the user interface and
+presentation logic from the heavy computational requirements of the
+machine learning and Open-Source Intelligence (OSINT) pipelines.
+
+The overarching architecture is composed of two primary subsystems: 1.
+\textbf{The Client-Side Application (Frontend):} A responsive web
+interface built with Next.js 16 and React 19. It is responsible for
+accepting user input, rendering complex analytical visualizations, and
+managing client-side state. 2. \textbf{The Analytical Engine (Backend):}
+A high-performance, asynchronous REST API constructed using the FastAPI
+framework in Python. It orchestrates the Natural Language Processing
+(NLP) pipeline, executes asynchronous network OSINT queries, performs
+feature engineering, and serves the XGBoost machine learning model.
+
+This separation of concerns ensures that computationally expensive
+operations---such as executing concurrent DNS queries and traversing
+gradient-boosted decision trees---do not block the main thread of the
+user interface, thereby guaranteeing a fluid and responsive user
+experience even under heavy analytical load.
+
+\section{High-Level Data Flow}\label{high-level-data-flow}
+
+The operational lifecycle of a threat analysis request within the
+PhishGuard architecture follows a deterministic, multi-stage pipeline.
+The data flow is designed to dynamically adapt based on the modality of
+the input (URL, email, or unstructured text).
+
+\begin{figure}
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/system-architecture.png}
+\caption{Figure 3.1: High-Level System Data Flow separating the Next.js
+Presentation layer, FastAPI Application Orchestrator, ML Pipeline, and
+Async OSINT}
+\end{figure}
+
+\subsection{Input Modality
+Detection}\label{input-modality-detection}
+
+Upon receiving a payload from the client via the \texttt{/api/analyze}
+endpoint, the backend orchestrator first subjects the input to a
+heuristic classification layer to determine its fundamental nature. The
+\texttt{\_detectContentType} method in \texttt{orchestrator.py} utilizes
+rigorous regular expressions and parsing logic to classify the input
+into one of three categories: - \textbf{URL:} Detected if the string
+begins with protocol identifiers (\texttt{http://}, \texttt{https://})
+or matches a strict bare-domain regular expression pattern (e.g.,
+\texttt{google.com}). - \textbf{Email:} Detected if the text block
+contains standard RFC 5322 email headers, specifically checking for the
+presence of substrings such as ``from:'', ``subject:'', and ``to:''. -
+\textbf{Free Text:} Any unstructured text that fails to meet the strict
+criteria of a URL or email header defaults to generic text analysis.
+
+This dynamic, ``auto'' detection allows the user to paste any suspicious
+content into a single, unified input field without needing to manually
+specify the content type, significantly reducing user friction. Once the
+modality is determined, the \texttt{\_extractDomain} method leverages
+\texttt{urllib.parse} and custom regex to isolate the base domain, which
+is a prerequisite for subsequent OSINT lookups.
+
+\subsection{Asynchronous OSINT
+Orchestration}\label{asynchronous-osint-orchestration}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/sequence-diagram.png}
+\caption{Figure 3.2: Sequence Diagram illustrating parallel execution of
+Structural Features, NLP Analysis, and the strict 15.0s OSINT timeout}
+\end{figure}
+
+The integration of real-time OSINT constitutes the primary bottleneck in
+the analysis pipeline. Querying global DNS servers, establishing WHOIS
+connections, and communicating with third-party threat intelligence APIs
+introduce unavoidable network latency.
+
+To mitigate this, the FastAPI backend heavily leverages Python's
+\texttt{asyncio} ecosystem. Within the \texttt{\_collectOsintData}
+method, the system does not execute these external queries sequentially.
+Instead, it utilizes \texttt{asyncio.gather} to concurrently execute
+\texttt{lookupWhois(domain)}, \texttt{lookupDns(domain)}, and
+\texttt{lookupReputation(domain)}.
+
+Crucially, this parallel execution is wrapped in an
+\texttt{asyncio.wait\_for} block with a strict global timeout of 15.0
+seconds. This architectural safeguard ensures that unresponsive external
+servers or rate-limited third-party APIs do not cause the internal event
+loop to hang indefinitely. The system is designed to fail gracefully; if
+an OSINT query times out or returns an exception, the orchestrator
+catches it, logs the failure, and proceeds with the analysis utilizing
+the available subset of data (or falling back to pure ML/NLP
+heuristics).
+
+\section{The API and Scoring
+Engine}\label{the-api-and-scoring-engine}
+
+\subsection{Weighted Verdict
+Combination}\label{weighted-verdict-combination}
+
+The core intelligence of the system resides in how the
+\texttt{AnalysisOrchestrator} synthesizes disparate analytical signals
+into a singular, actionable verdict. Because the system supports
+multi-modal inputs, the scoring logic must dynamically adjust the
+mathematical weight of each component based on the input type.
+
+The \texttt{\_combineVerdict} method implements the following weighting
+algorithm:
+
+\textbf{For URL Inputs:} When the input is a URL, the XGBoost model is
+treated as the supreme authority because its training data implicitly
+encoded both lexical and OSINT features. - \textbf{Machine Learning
+(XGBoost):} 85\% (\texttt{ML\_PRIMARY\_WEIGHT}) - \textbf{NLP Text
+Analysis:} 15\% (\texttt{TEXT\_SUPPLEMENT\_WEIGHT})
+
+\textbf{For Email/Text Inputs:} When analyzing raw text or emails, the
+raw lexical URL features become secondary to the semantic meaning of the
+content. - \textbf{NLP Text Analysis:} 55\%
+(\texttt{TEXT\_PRIMARY\_WEIGHT}) - \textbf{URL Lexical Features
+(Extracted from text):} 25\% (\texttt{URL\_SECONDARY\_WEIGHT}) -
+\textbf{OSINT Infrastructure Score:} 20\%
+(\texttt{OSINT\_SECONDARY\_WEIGHT})
+
+The resulting aggregate score is bounded between 0.0 and 1.0. This score
+is then mapped to definitive threat levels: - \textbf{Safe:} Score
+\textless{} 0.3 (\texttt{THREAT\_SAFE\_UPPER}) - \textbf{Suspicious:}
+Score \textless{} 0.5 (\texttt{THREAT\_SUSPICIOUS\_UPPER}) -
+\textbf{Dangerous:} Score \textless{} 0.7
+(\texttt{THREAT\_DANGEROUS\_UPPER}) - \textbf{Critical:} Score \(\ge\)
+0.7
+
+This tiered approach allows the frontend to render appropriate visual
+warnings and dynamic recommendations (e.g., ``Do not click links or
+provide information'' for `Dangerous' classifications).
+
+\subsection{Ephemeral History
+Store}\label{ephemeral-history-store}
+
+Consistent with the project's scope as a lightweight, deployable
+prototype, PhishGuard eschews the architectural complexity of a
+persistent relational database (e.g., PostgreSQL or MySQL). Instead, the
+backend implements a highly efficient, thread-safe, in-memory
+\texttt{HistoryStore} located in \texttt{backend/api/historyStore.py}.
+
+The module utilizes a standard Python \texttt{collections.deque}
+structured as a First-In-First-Out (FIFO) queue with a hard limit of 100
+entries (\texttt{MAX\_ENTRIES}). When a user submits an analysis, the
+backend generates a unique UUID, stores the full
+\texttt{AnalysisResponse} object in the deque, and assigns a precise
+timestamp.
+
+Because FastAPI operates on a single primary event loop, concurrent
+asynchronous mutations to this deque are fundamentally thread-safe
+without requiring complex locking mechanisms (like
+\texttt{asyncio.Lock}). This design allows users to review their recent
+analysis history via paginated API calls instantly, without the latency,
+scaling, or configuration overhead of a persistent database connection.
+
+\subsection{Pydantic Schema
+Contracts}\label{pydantic-schema-contracts}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/class-diagram.png}
+\caption{Figure 3.3: UML Class Diagram defining the strict Pydantic data
+contracts enforcing backend type safety}
+\end{figure}
+
+To guarantee structural integrity between the Next.js frontend and the
+FastAPI backend, PhishGuard utilizes Pydantic models to define strict
+data contracts. Every incoming request and outgoing response is
+automatically validated, serialized, and documented via OpenAPI.
+
+For example, the core \texttt{AnalysisResponse} schema mathematically
+guarantees that the frontend will always receive a deterministic JSON
+object. This object contains the \texttt{VerdictResult} (including the
+boolean \texttt{isPhishing} flag and float \texttt{confidenceScore}),
+the \texttt{OsintSummary}, and the \texttt{FeatureSummary}. This strict
+validation eliminates runtime \texttt{TypeError} and \texttt{KeyError}
+exceptions in the frontend UI, providing a robust, self-documenting API
+contract.
+
+\section{Frontend Architecture}\label{frontend-architecture}
+
+The presentation layer is constructed using Next.js 16 (App Router) and
+React 19, focusing heavily on performance, modern UI/UX paradigms, and
+data visualization.
+
+\subsection{Component-Based
+Structure}\label{component-based-structure}
+
+The user interface is strictly modular, adhering to React's
+component-based philosophy. The architecture leverages the
+\texttt{shadcn/ui} component library alongside \texttt{@base-ui/react}
+to provide accessible, highly customizable foundational components
+(e.g., buttons, input fields, modals).
+
+The application logic is separated into logical directories: -
+\texttt{src/app}: Contains the Next.js App Router logic, global layouts,
+and top-level page components (such as the analyzer dashboard and
+history views). - \texttt{src/components}: Houses reusable UI elements.
+Complex visual representations, such as risk gauges or metric cards, are
+isolated here.
+
+\subsection{State Management and Client-Server
+Interaction}\label{state-management-and-client-server-interaction}
+
+State management within the application is handled primarily through
+React's native hooks (\texttt{useState}, \texttt{useEffect}). The
+application consciously avoids heavyweight global state managers (like
+Redux or Zustand) in favor of localized, prop-drilled state where
+appropriate. This architectural choice aligns with the modern Next.js
+paradigm, which encourages keeping state as close to the UI components
+as possible to minimize unnecessary re-renders.
+
+Communication with the FastAPI backend is achieved via native
+\texttt{fetch} requests. The application utilizes the \texttt{sonner}
+library to provide non-blocking, toast-based notification feedback to
+the user regarding the success or failure of network requests, ensuring
+the user is always aware of the system's status during the 1-3 seconds
+required for OSINT queries.
+
+\subsection{Visual Presentation and
+Theming}\label{visual-presentation-and-theming}
+
+A critical requirement of the system was the delivery of a professional,
+``dark-mode'' optimized aesthetic typical of modern cybersecurity
+platforms. The application achieves this via \texttt{tailwindcss}
+(version 4) for utility-first styling and \texttt{next-themes} for
+seamless theme switching.
+
+The visual hierarchy utilizes distinct color coding to rapidly
+communicate the threat levels computed by the backend orchestrator:
+green for `Safe', amber for `Suspicious', and red for critical
+`Phishing' indicators. Fluid animations and layout transitions, powered
+by the \texttt{motion} library, are employed to provide immediate visual
+feedback during the analysis lifecycle, elegantly bridging the perceived
+latency gap during external network lookups.
+
+\section{Summary}\label{summary-1}
+
+This chapter detailed the structural engineering of the PhishGuard
+platform. The architecture successfully isolates the Next.js
+presentation layer from the FastAPI analytical engine. By employing an
+asynchronous concurrency model in Python (\texttt{asyncio.gather} with
+global timeouts) and an in-memory \texttt{deque} for history management,
+the system achieves the necessary performance metrics required for
+real-time threat analysis. Furthermore, the orchestrator's dynamic
+weighting algorithms ensure accurate assessments across diverse input
+modalities.
+
+The subsequent chapter, Chapter 4, will delve deeply into the
+mathematical core of this architecture: the feature engineering
+pipeline, the XGBoost classification model, and the Optuna optimization
+strategy.
+

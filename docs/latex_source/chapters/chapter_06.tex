@@ -1,0 +1,168 @@
+\chapter{Natural Language Processing
+Analysis}
+\label{chapter-6-natural-language-processing-analysis}
+
+\section{Semantic Evaluation in Threat
+Detection}\label{semantic-evaluation-in-threat-detection}
+
+While lexical URL analysis and real-time infrastructure queries form the
+empirical foundation of modern phishing detection, they remain
+inherently blind to the semantic payload of an attack. Contemporary
+cybercriminals increasingly leverage sophisticated social engineering
+narratives---often devoid of immediate malicious links---to build trust
+or induce panic before delivering the payload in subsequent
+communications (e.g., Business Email Compromise).
+
+To counteract this, PhishGuard incorporates a dedicated Natural Language
+Processing (NLP) pipeline. This subsystem evaluates the unstructured
+text of emails, SMS messages, and web page content, mathematically
+quantifying the psychological manipulation tactics that are the hallmark
+of social engineering.
+
+\section{The spaCy NLP Pipeline
+Architecture}\label{the-spacy-nlp-pipeline-architecture}
+
+The core of the semantic analysis engine is built upon the
+\texttt{spaCy} framework. Selected for its production-grade performance,
+strict typing, and robust linguistic features, \texttt{spaCy} provides
+the foundational capabilities for high-speed tokenization,
+lemmatization, and pattern matching.
+
+The \texttt{nlpAnalyzer.py} module encapsulates this functionality
+within the \texttt{NlpAnalyzer} class. To ensure deterministic execution
+and minimize memory overhead during serverless deployment, the system
+utilizes the lightweight, English-optimized \texttt{en\_core\_web\_sm}
+model. Upon instantiation, the analyzer pre-loads a comprehensive
+taxonomy of social engineering indicators into memory, mapping them to
+specific \texttt{spacy.matcher.PhraseMatcher} instances.
+
+\subsection{Pipeline Initialization and
+Matchers}\label{pipeline-initialization-and-matchers}
+
+The \texttt{\_setupMatchers} method constructs a highly optimized
+sequence of deterministic phrase matchers. By processing the text at the
+token level (rather than relying on brittle, raw string matching), the
+system successfully identifies indicators regardless of minor
+punctuation or casing deviations (utilizing the \texttt{attr="LOWER"}
+parameter).
+
+The system initializes six distinct \texttt{PhraseMatcher} pipelines: 1.
+\texttt{urgencyMatcher}: Detects artificial time pressure. 2.
+\texttt{threatMatcher}: Detects fear-inducing vocabulary. 3.
+\texttt{authorityMatcher}: Detects impersonation of IT or administrative
+personnel. 4. \texttt{brandMatcher}: Detects the unauthorized usage of
+high-value corporate names. 5. \texttt{credentialMatcher}: Detects the
+explicit solicitation of sensitive data. 6. \texttt{actionMatcher}:
+Detects suspicious call-to-action phrasing.
+
+\section{Tactical Heuristics and Feature
+Extraction}\label{tactical-heuristics-and-feature-extraction}
+
+Unlike the XGBoost model which operates on a continuous numerical
+feature vector, the NLP analyzer employs a deterministic, rule-based
+heuristic scoring mechanism. The system scans the tokenized \texttt{Doc}
+object for specific psychological triggers, categorizing them into
+predefined \texttt{PhishingTactic} enumerations.
+
+\subsection{Urgency and Threat
+Indicators}\label{urgency-and-threat-indicators}
+
+Phishing campaigns fundamentally rely on artificial time constraints to
+bypass a victim's rational scrutiny. The NLP analyzer implements strict
+phrase matching against a taxonomy of urgency indicators (e.g.,
+``immediate action required,'' ``expires today,'' ``within 24 hours'').
+
+Simultaneously, the \texttt{\_detectThreats} method scans for coercive
+vocabulary designed to induce panic. Phrases such as ``account
+suspended,'' ``unauthorized access,'' and ``permanently deleted'' are
+flagged. When the pipeline detects these phrases, it generates a
+\texttt{DetectedIndicator} object, assigning a high-confidence severity
+penalty (\texttt{severity=0.7} for urgency, \texttt{severity=0.8} for
+threats) to the text's overall risk profile.
+
+\subsection{Authority and Brand
+Impersonation}\label{authority-and-brand-impersonation}
+
+Attackers frequently exploit authority bias by masquerading as trusted
+institutions or internal administrative departments. - \textbf{Authority
+Impersonation:} The \texttt{\_detectAuthority} method flags phrases
+commonly abused in Business Email Compromise (BEC) attacks, such as ``IT
+support,'' ``billing department,'' and ``system administrator.'' -
+\textbf{Brand Impersonation:} The \texttt{\_detectBrands} method checks
+the tokenized text against a predefined list of the world's most
+frequently spoofed organizations (e.g., ``PayPal,'' ``Microsoft,''
+``IRS''). Because brand mentions can occur in legitimate contexts, this
+specific indicator is assigned a moderate severity weight
+(\texttt{severity=0.5}), requiring corroboration from other malicious
+indicators to definitively flag the text as phishing.
+
+\subsection{Financial and Credential
+Solicitation}\label{financial-and-credential-solicitation}
+
+A primary objective of phishing is direct credential harvesting. The
+\texttt{\_detectCredentialRequests} method identifies the explicit
+solicitation of sensitive data. Phrases demanding that a user ``verify
+your account,'' ``update your password,'' or ``confirm your SSN'' are
+flagged as critical risk indicators and assigned a severe penalty weight
+(\texttt{severity=0.85}).
+
+\subsection{In-Text Link
+Manipulation}\label{in-text-link-manipulation}
+
+When analyzing raw text or emails (as opposed to a single URL),
+attackers often obfuscate malicious links within the body. The
+\texttt{\_detectLinkManipulation} method utilizes regular expressions to
+extract all URLs embedded within the unstructured text. It then
+evaluates these extracted URLs against known malicious patterns: -
+\textbf{IP Obfuscation:} URLs utilizing raw IP addresses (e.g.,
+\texttt{http://192.168.1.1/login}) instead of standard domain names
+trigger a high-severity indicator (\texttt{severity=0.75}). -
+\textbf{Suspicious TLDs:} Extracted URLs are parsed via
+\texttt{urllib.parse}. If the domain resolves to a known high-abuse
+generic Top-Level Domain (such as \texttt{.tk}, \texttt{.ml}, or
+\texttt{.ga}), it triggers a specific manipulation indicator
+(\texttt{severity=0.7}).
+
+\section{Scoring Orchestration and
+Output}\label{scoring-orchestration-and-output}
+
+The final output of the \texttt{NlpAnalyzer} is not a binary
+classification, but rather a highly structured \texttt{AnalysisResult}
+object. The \texttt{\_calculateConfidence} method mathematically
+synthesizes the array of discrete \texttt{DetectedIndicator} objects
+into a continuous confidence score bounded between 0.0 and 1.0.
+
+\subsection{The Scoring Algorithm}\label{the-scoring-algorithm}
+
+The confidence score is computed utilizing a two-tiered mathematical
+approach: 1. \textbf{Base Indicator Score:} The system calculates the
+average severity of all triggered indicators
+(\texttt{sum(ind.severity)\ /\ max(len(indicators),\ 1)}). 2.
+\textbf{Sophistication Bonus:} A sophisticated phishing attack rarely
+relies on a single tactic. An attacker might combine Brand Impersonation
+(mentioning PayPal), a Threat Warning (``account suspended''), and a
+Credential Request (``verify your password''). The scoring algorithm
+applies a cumulative multiplier
+(\texttt{min(len(tactics)\ *\ 0.1,\ 0.3)}) based on the diversity of the
+unique \texttt{PhishingTactic} enumerations detected.
+
+If the final computed confidence exceeds 0.6, the \texttt{isPhishing}
+boolean is asserted.
+
+\subsection{Orchestrator
+Integration}\label{orchestrator-integration}
+
+The localized text score generated by the \texttt{NlpAnalyzer} is
+subsequently passed back to the central \texttt{AnalysisOrchestrator}
+(detailed in Chapter 3). For email and raw text inputs, this NLP-derived
+score serves as the primary predictive signal (weighted at 55\%),
+supplemented by any extracted URL lexical features (25\%) and
+infrastructure OSINT (20\%).
+
+Furthermore, the \texttt{\_generateReasons} method maps the mathematical
+output into human-readable strings (e.g., ``Uses fear tactics and
+account suspension threats''). These strings are serialized directly to
+the Next.js frontend, providing the end-user with immediate, transparent
+feedback regarding the psychological manipulation attempts detected
+within their input.
+

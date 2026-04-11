@@ -1,0 +1,21 @@
+\section{Abstract}\label{abstract}
+
+The exponential proliferation of phishing attacks necessitates
+proactive, high-precision detection architectures that transcend
+traditional reactive blacklisting paradigms. This thesis presents
+PhishGuard, a novel, hybrid threat intelligence platform that
+orchestrates machine learning (ML), natural language processing (NLP),
+and Open-Source Intelligence (OSINT) to mitigate zero-day phishing
+campaigns. Operating within an asynchronous Python FastAPI backend, the
+system utilizes a heavily optimized XGBoost classifier trained on a
+21-dimensional feature vector, achieving a 96.45\% accuracy and a
+97.86\% precision rate on a strictly held-out test set of 5,009 samples.
+Beyond pure predictive performance, PhishGuard heavily emphasizes
+Explainable AI (XAI); it dynamically synthesizes its empirical
+classification scores into human-readable heuristic feedback, rendered
+through a Next.js frontend, to simultaneously protect and educate the
+end-user. This research rigorously details the architectural trade-offs
+inherent in synchronous OSINT gathering, the mitigation of concept
+drift, and the empirical value of structural versus dynamic intelligence
+markers in contemporary cyber defense.
+

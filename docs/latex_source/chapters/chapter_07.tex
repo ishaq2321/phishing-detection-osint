@@ -1,0 +1,138 @@
+\chapter{Scoring and
+Classification}
+\label{chapter-7-scoring-and-classification}
+
+\section{The Orchestration of
+Intelligence}\label{the-orchestration-of-intelligence}
+
+A primary challenge in engineering a multi-modal threat detection
+platform is the synthesis of disparate analytical signals into a
+unified, actionable verdict. PhishGuard achieves this through a
+sophisticated scoring and classification engine that seamlessly bridges
+the continuous probabilistic output of the XGBoost machine learning
+model with discrete, rule-based heuristic indicators.
+
+This architecture ensures that the system is not only highly accurate
+but also highly transparent, providing Security Operations Center (SOC)
+analysts and end-users with explicit, human-readable explanations for
+every classification.
+
+\section{The ML Predictor
+Architecture}\label{the-ml-predictor-architecture}
+
+The core inference engine is housed within the
+\texttt{backend/ml/predictor.py} module. To guarantee high-throughput
+and sub-millisecond inference times during production deployment, the
+\texttt{PhishingPredictor} class is implemented utilizing a thread-safe
+Singleton design pattern.
+
+\subsection{Thread-Safe
+Initialization}\label{thread-safe-initialization}
+
+During the FastAPI application startup sequence, the
+\texttt{PhishingPredictor} invokes its \texttt{\_\_new\_\_} method,
+locking the execution thread (\texttt{threading.Lock()}) to instantiate
+the XGBoost model exactly once. The model weights are loaded into memory
+from \texttt{models/phishingModel.json}, alongside the strict
+21-dimensional feature schema defined in \texttt{modelMetadata.json}.
+Once initialized, the model state becomes immutable, allowing the
+asynchronous web server to process concurrent inference requests across
+multiple threads without encountering race conditions or requiring
+continuous disk I/O operations.
+
+\subsection{Inference Execution}\label{inference-execution}
+
+When a URL analysis request is routed to the predictor, the
+21-dimensional \texttt{FeatureSet} is cast into a strongly typed
+\texttt{numpy.ndarray} (\texttt{dtype=np.float64}). The
+\texttt{predict()} method invokes the XGBoost \texttt{predict\_proba}
+function, returning a continuous probability bounded between 0.0 and
+1.0, representing the mathematical likelihood that the input belongs to
+the malicious class.
+
+\section{The Phishing Scorer
+Module}\label{the-phishing-scorer-module}
+
+While the XGBoost probability serves as the primary ground truth for URL
+inputs, it operates as an opaque numerical value. To resolve the
+black-box interpretability crisis, the \texttt{backend/ml/scorer.py}
+module introduces a parallel heuristic scoring engine that
+reverse-engineers the threat context.
+
+\subsection{Explanatory Heuristics}\label{explanatory-heuristics}
+
+Regardless of whether the XGBoost model is active, the
+\texttt{PhishingScorer} executes three discrete heuristic calculators to
+generate the human-readable \texttt{factors} array that will be
+presented to the user: 1. \textbf{\texttt{calculateUrlStructureScore}:}
+Applies deterministic penalty weights to structural anomalies. For
+example, a URL length exceeding 75 characters generates a scaling
+penalty (\texttt{min((urlLength\ -\ 75)\ /\ 100,\ 0.3)}), while the
+presence of raw IP addresses or Suspicious TLDs adds fixed penalties. 2.
+\textbf{\texttt{calculateOsintScore}:} Evaluates the infrastructure
+context. If \texttt{isNewlyRegistered} is true (domain age \textless{}
+30 days), a 0.35 penalty is recorded. Detection in third-party
+blacklists adds up to a 0.5 penalty. 3.
+\textbf{\texttt{calculateFeatureScore}:} Analyzes holistic combinations
+that indicate sophisticated evasion, such as a newly registered domain
+combined with the presence of suspicious keywords in the URI string
+(\texttt{score\ +=\ 0.3}).
+
+\subsection{Graceful Heuristic
+Fallback}\label{graceful-heuristic-fallback}
+
+In the event of a catastrophic failure where the compiled XGBoost model
+cannot be loaded into memory, the \texttt{PhishingScorer} implements a
+graceful degradation protocol. Instead of halting the application, it
+relies entirely on the heuristic calculators, combining their raw
+outputs using the strict constants defined in the
+\texttt{ScoringWeights} dataclass: - \textbf{URL Structure:} 25\% weight
+- \textbf{OSINT Derived:} 35\% weight - \textbf{Feature Based:} 40\%
+weight
+
+This fallback mechanism ensures the platform remains operational and
+capable of identifying overt threats even during degraded system states.
+
+\section{Risk Level Determination}\label{risk-level-determination}
+
+The final continuous score (whether derived from the XGBoost probability
+or the heuristic fallback) is mapped to discrete, actionable categories
+using the strict boundaries defined in the \texttt{RISK\_THRESHOLDS}
+dictionary:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Safe (Score \textless{} 0.20):} The domain exhibits normal
+  structural characteristics, extensive DNS history, and clean
+  reputation metrics.
+\item
+  \textbf{Low Risk (Score \textless{} 0.40):} Minor anomalies detected,
+  often typical of newly registered legitimate businesses or
+  non-standard tracking URLs.
+\item
+  \textbf{Medium Risk / Suspicious (Score \textless{} 0.60):} The domain
+  exhibits multiple characteristics commonly associated with phishing
+  infrastructure, requiring explicit user verification.
+\item
+  \textbf{High Risk (Score \textless{} 0.80):} Strong indications of
+  malicious intent, such as obscured IPs, known bad TLDs, or missing MX
+  records on a young domain.
+\item
+  \textbf{Critical (Score \(\ge\) 0.80):} Definitive malicious
+  classification. The XGBoost model expresses supreme confidence in the
+  threat, or the domain has been explicitly flagged by external threat
+  intelligence APIs.
+\end{itemize}
+
+\subsection{Reason Prioritization}\label{reason-prioritization}
+
+To prevent alert fatigue and ensure the user interface remains
+uncluttered, the \texttt{\_prioritizeReasons} method deduplicates and
+sorts the aggregated heuristic factors. It employs a keyword-based
+sorting algorithm, ensuring that highly critical warnings (e.g.,
+``malicious,'' ``ip address,'' ``newly registered'') are prioritized at
+the top of the array, while lower-severity structural warnings are
+pushed down or truncated. The final output is strictly limited to the
+top 10 most relevant reasons.
+

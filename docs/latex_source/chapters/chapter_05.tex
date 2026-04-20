@@ -145,12 +145,12 @@ its \texttt{base\_score} (e.g., \texttt{{[}5E-1{]}}), a custom
 monkey-patch (\texttt{\_patchShapXgboostCompat}) was engineered to
 ensure seamless compatibility with the SHAP explainer.
 
-\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/shap_plot.png} 
-\texttt{backend/ml/training/shapAnalysis.py} script. 2. The script will
-automatically generate the beeswarm plot using \texttt{matplotlib} and
-\texttt{seaborn}. 3. Locate the output image at
-\texttt{data/evaluation/shap\_summary.png}. 4. Insert the generated PNG
-here.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/shap_plot.png}
+\caption{Figure 5.1: SHAP Feature Importance Analysis (Beeswarm Plot)}
+\label{fig:shap_plot}
+\end{figure}
 
 This SHAP integration allows the backend to decompose a 96\% phishing
 probability into human-readable insights (e.g., exactly how much the

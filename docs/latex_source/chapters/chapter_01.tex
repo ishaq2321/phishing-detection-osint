@@ -367,85 +367,25 @@ confidence.
 
 \section{Thesis Structure}\label{thesis-structure}
 
-The remainder of this document provides a comprehensive, systematic
-exploration of the PhishGuard project, organized into the following
-chapters:
+The remainder of this document provides a comprehensive, systematic exploration of the PhishGuard project, organized to fulfill both academic and software engineering requirements:
 
-\textbf{Chapter 2: Background and Related Work} This chapter surveys the
-theoretical foundations of the phishing threat landscape. It reviews the
-historical progression of defense mechanisms, from manual blacklists to
-heuristic engines, and critically analyzes the current state-of-the-art
-in machine learning-based detection, explicitly identifying the
-literature gaps that justify the integration of OSINT.
+\textbf{Chapter 2: User Documentation} This chapter outlines the problem from an end-user perspective. It provides a clear guide on how to interface with the deployed Next.js web application, detailing the process of submitting URLs, emails, or text snippets, and interpreting the resulting threat analysis dashboard.
 
-\textbf{Chapter 3: System Design and Architecture} This chapter details
-the high-level software architecture of PhishGuard. It provides
-comprehensive diagrams of the data flow, the separation of concerns
-between the Next.js frontend and FastAPI backend, and the asynchronous
-concurrency models utilized to process complex requests under strict
-latency budgets.
+\textbf{Chapter 3: Developer Documentation} This chapter documents the system's software engineering architecture. It defines the logical and physical structures separating the Vercel-hosted frontend from the Render-hosted Python backend, details the integration of GitHub for version control, and outlines the rigorous Quality Assurance (QA) testing strategies employed across the stack.
 
-\textbf{Chapter 4: Feature Engineering and ML Model} This chapter
-documents the core machine learning methodology. It outlines the dataset
-collection and rigorous cleaning processes, details the exact
-mathematical formulation of the 21-dimensional feature vector, justifies
-the selection of the XGBoost algorithm, explains the Optuna Bayesian
-optimization pipeline, and details the integration of SHAP for model
-explainability.
+\textbf{Chapter 4: Background and Related Work} This chapter surveys the theoretical foundations of the phishing threat landscape. It reviews the historical progression of defense mechanisms, explicitly identifying the literature gaps that justify the integration of OSINT into machine learning paradigms.
 
-\textbf{Chapter 5: OSINT Integration} This chapter focuses on the
-engineering of the external intelligence pipeline. It provides technical
-details on how the system asynchronously interfaces with global DNS
-servers, WHOIS databases, and third-party threat APIs (VirusTotal,
-AbuseIPDB) to extract real-time infrastructure context, and how these
-network responses are normalized for the ML classifier.
+\textbf{Chapter 5: Feature Engineering and ML Model} This chapter documents the core machine learning methodology. It outlines the dataset collection, details the mathematical formulation of the 21-dimensional feature vector, justifies the selection of the XGBoost algorithm, and explains the integration of SHAP for model explainability.
 
-\textbf{Chapter 6: NLP Analysis} This chapter explains the secondary
-analytical engine: the Natural Language Processing pipeline. It details
-the implementation of the spaCy-based text analyzer, outlining the
-heuristic rules and named entity recognition techniques used to identify
-social engineering indicators (e.g., urgency, brand impersonation)
-within unstructured text and emails.
+\textbf{Chapter 6: OSINT Integration} This chapter focuses on the engineering of the external intelligence pipeline. It provides technical details on how the system asynchronously interfaces with global DNS servers, WHOIS databases, and third-party threat APIs to extract real-time infrastructure context.
 
-\textbf{Chapter 7: Scoring and Classification} This chapter defines the
-mathematical orchestration of the system. It presents the algorithmic
-formulas used to compute weighted aggregate risk scores, detailing how
-the system dynamically balances the XGBoost probability outputs against
-the NLP risk matrices to generate a final, definitive threat level.
+\textbf{Chapter 7: NLP Analysis} This chapter explains the secondary analytical engine. It details the implementation of the spaCy-based Natural Language Processing pipeline used to identify social engineering indicators, such as urgency and brand impersonation, within unstructured text.
 
-\textbf{Chapter 8: Implementation} This chapter transitions from theory
-to code, providing concrete technical details regarding the practical
-software construction. It discusses the selection of frameworks (React,
-Tailwind, FastAPI, Pydantic), specific design patterns employed, and the
-infrastructure configurations used for live cloud deployment.
+\textbf{Chapter 8: Scoring and Classification} This chapter defines the mathematical orchestration of the system. It presents the algorithmic formulas used to dynamically balance the XGBoost probability outputs against the NLP risk matrices to generate a final, definitive threat level.
 
-\textbf{Chapter 9: Testing and Quality Assurance} This chapter documents
-the extreme rigor applied to system validation. It details the execution
-of the 754-test suite, explaining the strategies used to mock complex
-external network calls in \texttt{pytest}, the component testing
-methodology in \texttt{Jest}, and the browser automation strategies
-implemented via \texttt{Playwright}.
+\textbf{Chapter 9: Results and Evaluation} This chapter presents the empirical findings of the research. It provides an exhaustive statistical analysis of the classifier's performance, presents confusion matrices, ROC curves, and benchmarks the application's real-world latency and throughput capabilities.
 
-\textbf{Chapter 10: Results and Evaluation} This chapter presents the
-empirical findings of the research. It provides an exhaustive
-statistical analysis of the XGBoost classifier's performance, presents
-confusion matrices, ROC curves, the results of the OSINT ablation study,
-and benchmarks the application's real-world latency and throughput
-capabilities.
-
-\textbf{Chapter 11: Discussion} This chapter offers a critical
-interpretation of the empirical results. It contextualizes the success
-of the model, openly acknowledges architectural limitations (such as API
-rate limiting and WHOIS privacy regulations), and discusses the
-practical trade-offs encountered between model complexity and execution
-speed.
-
-\textbf{Chapter 12: Conclusion and Future Work} The final chapter
-summarizes the overarching achievements of the thesis against the
-original research objectives. It reflects on the lessons learned during
-the engineering process and outlines highly actionable future research
-directions, including the potential integration of Large Language Models
-(LLMs) and browser-level deployment.
+\textbf{Chapter 10: Conclusion and Discussion} The final chapter summarizes the overarching achievements of the thesis, offers a critical interpretation of the results, acknowledges architectural limitations, and outlines actionable future research directions.
 
 \textbf{References for Chapter 1:}
 

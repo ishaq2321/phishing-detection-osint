@@ -8,7 +8,10 @@ The problem addressed by this application is the rapid detection and explanation
 To protect the user, the application utilizes a hybrid Machine Learning (ML), Open Source Intelligence (OSINT), and Natural Language Processing (NLP) architecture. When a user submits an artifact, the system automatically parses the input, compares it against known global threat databases, and runs mathematical feature models to predict malicious intent. The results are translated into a simple risk score and an explainable breakdown for the user.
 
 \section{User Guide and Interface}
-\section{Frontend Implementation}\label{frontend-implementation}
+
+The PhishGuard user interface is designed to be highly accessible and visually intuitive. The core user flow involves accessing the dashboard, inputting a suspicious artifact, and reviewing the generated risk report.
+
+\subsection{Frontend Implementation}\label{frontend-implementation}
 
 The user interface for the PhishGuard platform is implemented as a
 modern web application utilizing Next.js 16 utilizing the App Router
@@ -21,7 +24,7 @@ component-based UI rendering and state management.
 \caption{Figure 2.1: The PhishGuard Next.js Web Application Dashboard}
 \end{figure}
 
-\subsection{Component Architecture and
+\subsubsection{Component Architecture and
 Styling}\label{component-architecture-and-styling}
 
 The frontend employs a rigorous component-driven design methodology. The
@@ -36,7 +39,7 @@ integrated with the Tailwind configuration, ensuring a consistent design
 language across the application while adhering to web accessibility
 guidelines.
 
-\subsection{Data Visualization and
+\subsubsection{Data Visualization and
 Animation}\label{data-visualization-and-animation}
 
 To effectively communicate the complex risk metrics and threat

@@ -39,7 +39,6 @@ targeted attack vectors. Modern adversaries employ advanced techniques
 to bypass both human scrutiny and technical defenses:
 
 \begin{itemize}
-\tightlist
 \item
   \textbf{Spear Phishing and Whaling:} Highly personalized attacks
   leveraging publicly available information to target specific
@@ -101,7 +100,6 @@ real-time visibility into the underlying infrastructure and reputation
 of a domain. Critical OSINT vectors include:
 
 \begin{itemize}
-\tightlist
 \item
   \textbf{WHOIS Data:} Revealing the domain's registration date
   (detecting newly minted domains), registrar reputation, and the
@@ -259,18 +257,18 @@ Objective ID & Description & Success Criteria & Status \\
 \midrule
 
 RO1 & Multi-layered analysis architecture & Modular design with
-\textgreater3 independent analysis layers, clean API contracts &
+$>$3 independent analysis layers, clean API contracts &
 Achieved \\
-RO2 & OSINT-enhanced feature engineering & Extract \textgreater=4 OSINT
+RO2 & OSINT-enhanced feature engineering & Extract $\geq$4 OSINT
 features, demonstrate measurable accuracy improvement & Achieved \\
-RO3 & High-performance ML classifier & Accuracy \textgreater95\%,
-AUC-ROC \textgreater95\%, F1 \textgreater93\% on held-out test set &
+RO3 & High-performance ML classifier & Accuracy $>$95\%,
+AUC-ROC $>$95\%, F1 $>$93\% on held-out test set &
 Achieved (96.45\% acc, 99.41\% AUC) \\
 RO4 & Model explainability via SHAP & Per-prediction feature importance,
 visual explanations in UI & Achieved \\
-RO5 & Production web application & Deployed system with \textless3s
+RO5 & Production web application & Deployed system with $<$3s
 response time, responsive UI, API documentation & Achieved \\
-RO6 & Comprehensive evaluation & Test suite \textgreater500 tests,
+RO6 & Comprehensive evaluation & Test suite $>$500 tests,
 ablation study, performance benchmarks & Achieved (754 tests) \\
 
 \bottomrule
@@ -309,7 +307,6 @@ cross-validation. The resulting production model achieves exceptional
 predictive performance on unseen data:
 
 \begin{itemize}
-\tightlist
 \item
   \textbf{Test Accuracy:} 96.45\%
 \item

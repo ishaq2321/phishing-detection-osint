@@ -70,7 +70,7 @@ example, a URL length exceeding 75 characters generates a scaling
 penalty (\texttt{min((urlLength\ -\ 75)\ /\ 100,\ 0.3)}), while the
 presence of raw IP addresses or Suspicious TLDs adds fixed penalties. 2.
 \textbf{\texttt{calculateOsintScore}:} Evaluates the infrastructure
-context. If \texttt{isNewlyRegistered} is true (domain age \textless{}
+context. If \texttt{isNewlyRegistered} is true (domain age $<${}
 30 days), a 0.35 penalty is recorded. Detection in third-party
 blacklists adds up to a 0.5 penalty. 3.
 \textbf{\texttt{calculateFeatureScore}:} Analyzes holistic combinations
@@ -101,21 +101,20 @@ using the strict boundaries defined in the \texttt{RISK\_THRESHOLDS}
 dictionary:
 
 \begin{itemize}
-\tightlist
 \item
-  \textbf{Safe (Score \textless{} 0.20):} The domain exhibits normal
+  \textbf{Safe (Score $<${} 0.20):} The domain exhibits normal
   structural characteristics, extensive DNS history, and clean
   reputation metrics.
 \item
-  \textbf{Low Risk (Score \textless{} 0.40):} Minor anomalies detected,
+  \textbf{Low Risk (Score $<${} 0.40):} Minor anomalies detected,
   often typical of newly registered legitimate businesses or
   non-standard tracking URLs.
 \item
-  \textbf{Medium Risk / Suspicious (Score \textless{} 0.60):} The domain
+  \textbf{Medium Risk / Suspicious (Score $<${} 0.60):} The domain
   exhibits multiple characteristics commonly associated with phishing
   infrastructure, requiring explicit user verification.
 \item
-  \textbf{High Risk (Score \textless{} 0.80):} Strong indications of
+  \textbf{High Risk (Score $<${} 0.80):} Strong indications of
   malicious intent, such as obscured IPs, known bad TLDs, or missing MX
   records on a young domain.
 \item

@@ -20,7 +20,6 @@ A typical phishing attack follows this workflow:
 
 \begin{enumerate}
 
-\tightlist
 \item
   \textbf{Reconnaissance:} The attacker identifies a target audience
   (e.g., customers of a specific bank, employees of a company, or
@@ -48,7 +47,6 @@ A typical phishing attack follows this workflow:
 \textbf{Key characteristics of phishing attacks include:}
 
 \begin{itemize}
-\tightlist
 \item
   \textbf{Social Engineering:} Exploiting psychological manipulation
   (urgency, fear, curiosity, greed) rather than technical
@@ -201,7 +199,6 @@ checked against the blacklist; a match triggers a warning or block.
 \textbf{Major Blacklist Services:}
 
 \begin{itemize}
-\tightlist
 \item
   \textbf{Google Safe Browsing:} Protects over 4 billion devices by
   sharing threat intelligence with browsers (Chrome, Firefox, Safari)
@@ -224,7 +221,7 @@ lookup) - Well-integrated into browsers and email clients
 \textbf{Limitations:} - \textbf{Zero-Hour Vulnerability:} Cannot detect
 new phishing sites until reported, verified, and added to blacklist
 (delay of hours to days) - \textbf{Short-Lived Phishing Sites:} 50\% of
-phishing URLs remain active for \textless12 hours \cite{ramesh2015_ch4}, often
+phishing URLs remain active for $<$12 hours \cite{ramesh2015_ch4}, often
 disappearing before blacklisting - \textbf{Evasion Techniques:}
 Attackers use URL shorteners, redirects, or dynamic URL generation to
 bypass blacklists - \textbf{Scalability:} Millions of new phishing URLs
@@ -237,9 +234,9 @@ Heuristic systems define handcrafted rules based on common phishing
 patterns:
 
 \textbf{URL-Based Heuristics:} - URL contains IP address instead of
-domain name → suspicious - Excessive subdomains (\textgreater3) →
+domain name → suspicious - Excessive subdomains ($>$3) →
 suspicious - Domain contains brand name + suspicious TLD (e.g.,
-\texttt{paypal-verify.tk}) → suspicious - URL length \textgreater75
+\texttt{paypal-verify.tk}) → suspicious - URL length $>$75
 characters → suspicious
 
 \textbf{Content-Based Heuristics:} - HTML form requesting
@@ -259,7 +256,7 @@ reliant on blacklists) - Explainable decisions (specific rule triggered)
 \textbf{Limitations:} - \textbf{High False Positive Rate:} Legitimate
 sites occasionally trigger heuristics (e.g., long URLs with tracking
 parameters) - \textbf{Brittleness:} Attackers adapt to evade specific
-rules (e.g., keeping URL length \textless75 characters) - \textbf{Manual
+rules (e.g., keeping URL length $<$75 characters) - \textbf{Manual
 Tuning Required:} Rules must be continuously updated as attack patterns
 evolve - \textbf{Limited Generalization:} Cannot adapt to novel attack
 patterns not covered by existing rules
@@ -301,9 +298,9 @@ Methods} \\
 Method & Detection Speed & Zero-Day Coverage & False Positive Rate & Scalability & Explainability \\
 \midrule
 
-Blacklists & Very Fast (\textless10ms) & None & Very Low (\textless1\%)
+Blacklists & Very Fast ($<$10ms) & None & Very Low ($<$1\%)
 & High & High (URL match) \\
-Heuristic Rules & Fast (\textless50ms) & Moderate & Moderate (5-10\%) &
+Heuristic Rules & Fast ($<$50ms) & Moderate & Moderate (5-10\%) &
 High & High (rule triggered) \\
 Visual Similarity & Slow (1-3s) & High & Moderate (5-15\%) & Low &
 Moderate (similarity score) \\
@@ -411,12 +408,12 @@ Optuna-optimized} \\
 \end{longtable}
 
 \textbf{Key Observations:} - \textbf{Ensemble Methods Dominate:} Random
-Forest, XGBoost, and LightGBM consistently achieve \textgreater96\%
+Forest, XGBoost, and LightGBM consistently achieve $>$96\%
 accuracy due to their ability to model non-linear feature interactions.
 - \textbf{Diminishing Returns from Feature Explosion:} Studies with 100+
 features (e.g., Buber et al.) achieve only marginal gains over carefully
 curated 20-30 feature sets, but incur higher computational costs. -
-\textbf{Dataset Size Matters:} Larger datasets (\textgreater50,000
+\textbf{Dataset Size Matters:} Larger datasets ($>$50,000
 samples) tend to produce more robust models with better generalization.
 - \textbf{OSINT Underutilized:} Most studies focus on static URL/content
 features; few integrate real-time OSINT (domain age, DNS, reputation),
@@ -443,10 +440,10 @@ pages \cite{dhamija2006}.
 
 \textbf{Advantages:} - Automatic feature learning (no manual feature
 engineering) - High capacity for complex pattern recognition -
-State-of-the-art results on large datasets (\textgreater1M samples)
+State-of-the-art results on large datasets ($>$1M samples)
 
 \textbf{Limitations:} - \textbf{Data Hungry:} Require massive labeled
-datasets (often \textgreater100k samples for deep models) -
+datasets (often $>$100k samples for deep models) -
 \textbf{Black-Box Nature:} Lack of interpretability hinders trust and
 debugging - \textbf{Computational Cost:} Training and inference are
 resource-intensive (GPU required) - \textbf{Overfitting Risk:} Prone to
@@ -484,7 +481,7 @@ trained models (e.g., using RIPPER algorithm).
 \textbf{PhishGuard Implementation:} We integrate SHAP TreeExplainer to
 provide per-prediction feature importance scores and visualizations,
 enabling users to understand exactly why a URL was flagged (e.g.,
-``domain age \textless30 days contributed +0.15 to phishing score'').
+``domain age $<$30 days contributed +0.15 to phishing score'').
 
 \section{Open-Source Intelligence (OSINT) for Phishing
 Detection}\label{open-source-intelligence-osint-for-phishing-detection}
@@ -509,7 +506,7 @@ OSINT Source & Data Provided & Relevance to Phishing Detection & Access Method \
 \midrule
 
 \textbf{WHOIS} & Domain registration date, registrar, registrant
-contact, expiration date & Young domains (\textless30 days) are often
+contact, expiration date & Young domains ($<$30 days) are often
 phishing; privacy protection hides identity & \texttt{whois} command,
 python-whois library \\
 \textbf{DNS Records} & A (IP address), MX (mail servers), NS (name
@@ -548,14 +545,12 @@ name registrations (RFC 3912) \cite{daigle2004}.
 
 \begin{enumerate}
 
-\tightlist
 \item
   \textbf{Domain Age (Creation Date):}
 
   \begin{itemize}
-  \tightlist
-  \item
-    \textbf{Phishing Indicator:} Domains registered \textless30 days ago
+    \item
+    \textbf{Phishing Indicator:} Domains registered $<$30 days ago
     are highly suspicious (attackers register fresh domains to evade
     blacklists).
   \item
@@ -566,8 +561,7 @@ name registrations (RFC 3912) \cite{daigle2004}.
   \textbf{Registrar:}
 
   \begin{itemize}
-  \tightlist
-  \item
+    \item
     \textbf{Phishing Indicator:} Cheap or anonymous registrars (e.g.,
     Freenom offering free .tk, .ml, .ga domains) are favored by
     attackers.
@@ -579,8 +573,7 @@ name registrations (RFC 3912) \cite{daigle2004}.
   \textbf{Privacy Protection:}
 
   \begin{itemize}
-  \tightlist
-  \item
+    \item
     \textbf{Phishing Indicator:} WHOIS privacy services hide registrant
     identity; legitimate businesses typically display contact info.
   \item
@@ -590,8 +583,7 @@ name registrations (RFC 3912) \cite{daigle2004}.
   \textbf{Registration Length:}
 
   \begin{itemize}
-  \tightlist
-  \item
+    \item
     \textbf{Phishing Indicator:} Short-term registrations (1 year or
     less) are suspicious; legitimate businesses often register for
     multiple years.
@@ -616,13 +608,11 @@ infrastructure and configuration.
 
 \begin{enumerate}
 
-\tightlist
 \item
   \textbf{A / AAAA Records (IP Address):}
 
   \begin{itemize}
-  \tightlist
-  \item
+    \item
     \textbf{Phishing Indicator:} IP geolocation in high-risk countries,
     shared hosting with known malicious sites.
   \item
@@ -633,8 +623,7 @@ infrastructure and configuration.
   \textbf{MX Records (Mail Servers):}
 
   \begin{itemize}
-  \tightlist
-  \item
+    \item
     \textbf{Phishing Indicator:} Absence of MX records suggests domain
     isn't configured for email (unusual for business sites).
   \item
@@ -645,8 +634,7 @@ infrastructure and configuration.
   \textbf{NS Records (Name Servers):}
 
   \begin{itemize}
-  \tightlist
-  \item
+    \item
     \textbf{Phishing Indicator:} Use of free DNS services (e.g.,
     afraid.org) or frequent nameserver changes.
   \item
@@ -656,8 +644,7 @@ infrastructure and configuration.
   \textbf{TXT Records (SPF, DMARC, DKIM):}
 
   \begin{itemize}
-  \tightlist
-  \item
+    \item
     \textbf{Phishing Indicator:} Lack of email authentication records
     suggests domain isn't used for legitimate email.
   \item
@@ -667,8 +654,7 @@ infrastructure and configuration.
   \textbf{CNAME Records (Aliases):}
 
   \begin{itemize}
-  \tightlist
-  \item
+    \item
     \textbf{Phishing Indicator (Positive):} CDN usage (Cloudflare,
     Akamai) indicates infrastructure investment (legitimate sites).
   \item
@@ -734,7 +720,7 @@ studies focus on static URL/content features extracted at analysis time.
 Few integrate real-time OSINT (WHOIS, DNS, reputation) that provides
 external context about domain infrastructure. Studies that do
 incorporate OSINT (e.g., domain age) often use small feature sets
-(\textless5 OSINT features) and don't rigorously evaluate their
+($<$5 OSINT features) and don't rigorously evaluate their
 contribution via ablation studies.
 
 \textbf{G2. Lack of Explainability:} High-accuracy models (especially
@@ -753,7 +739,7 @@ multi-modal input (URL, email with subject/sender, free-text) with
 automatic content-type detection.
 
 \textbf{G5. Insufficient Dataset Scale:} Many studies use datasets of
-10,000-50,000 URLs. Larger datasets (\textgreater100,000) improve model
+10,000-50,000 URLs. Larger datasets ($>$100,000) improve model
 generalization but are underutilized in the literature.
 
 \subsection{PhishGuard Positioning}\label{phishguard-positioning}

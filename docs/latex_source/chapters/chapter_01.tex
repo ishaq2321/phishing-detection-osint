@@ -367,21 +367,21 @@ confidence.
 
 The remainder of this document provides a comprehensive, systematic exploration of the PhishGuard project, organized to fulfill both academic and software engineering requirements:
 
-\textbf{Chapter 2: User Documentation} This chapter outlines the problem from an end-user perspective. It provides a clear guide on how to interface with the deployed Next.js web application, detailing the process of submitting URLs, emails, or text snippets, and interpreting the resulting threat analysis dashboard.
+\textbf{Chapter \ref{user-documentation}: User Documentation} This chapter outlines the problem from an end-user perspective. It provides a clear guide on how to interface with the deployed Next.js web application, detailing the process of submitting URLs, emails, or text snippets, and interpreting the resulting threat analysis dashboard.
 
-\textbf{Chapter 3: Developer Documentation} This chapter documents the system's software engineering architecture. It defines the logical and physical structures separating the Vercel-hosted frontend from the Render-hosted Python backend, details the integration of GitHub for version control, and outlines the rigorous Quality Assurance (QA) testing strategies employed across the stack.
+\textbf{Chapter \ref{developer-documentation}: Developer Documentation} This chapter documents the system's software engineering architecture. It defines the logical and physical structures separating the Vercel-hosted frontend from the Render-hosted Python backend, details the integration of GitHub for version control, and outlines the rigorous Quality Assurance (QA) testing strategies employed across the stack.
 
-\textbf{Chapter 4: Background and Related Work} This chapter surveys the theoretical foundations of the phishing threat landscape. It reviews the historical progression of defense mechanisms, explicitly identifying the literature gaps that justify the integration of OSINT into machine learning paradigms.
+\textbf{Chapter \ref{chapter-2-background-and-related-work}: Background and Related Work} This chapter surveys the theoretical foundations of the phishing threat landscape. It reviews the historical progression of defense mechanisms, explicitly identifying the literature gaps that justify the integration of OSINT into machine learning paradigms.
 
-\textbf{Chapter 5: Feature Engineering and ML Model} This chapter documents the core machine learning methodology. It outlines the dataset collection, details the mathematical formulation of the 21-dimensional feature vector, justifies the selection of the XGBoost algorithm, and explains the integration of SHAP for model explainability.
+\textbf{Chapter \ref{chapter-4-feature-engineering-and-ml-model}: Feature Engineering and ML Model} This chapter documents the core machine learning methodology. It outlines the dataset collection, details the mathematical formulation of the 21-dimensional feature vector, justifies the selection of the XGBoost algorithm, and explains the integration of SHAP for model explainability.
 
-\textbf{Chapter 6: OSINT Integration} This chapter focuses on the engineering of the external intelligence pipeline. It provides technical details on how the system asynchronously interfaces with global DNS servers, WHOIS databases, and third-party threat APIs to extract real-time infrastructure context.
+\textbf{Chapter \ref{chapter-5-osint-integration}: OSINT Integration} This chapter focuses on the engineering of the external intelligence pipeline. It provides technical details on how the system asynchronously interfaces with global DNS servers, WHOIS databases, and third-party threat APIs to extract real-time infrastructure context.
 
-\textbf{Chapter 7: NLP Analysis} This chapter explains the secondary analytical engine. It details the implementation of the spaCy-based Natural Language Processing pipeline used to identify social engineering indicators, such as urgency and brand impersonation, within unstructured text.
+\textbf{Chapter \ref{chapter-6-natural-language-processing-analysis}: NLP Analysis} This chapter explains the secondary analytical engine. It details the implementation of the spaCy-based Natural Language Processing pipeline used to identify social engineering indicators, such as urgency and brand impersonation, within unstructured text.
 
-\textbf{Chapter 8: Scoring and Classification} This chapter defines the mathematical orchestration of the system. It presents the algorithmic formulas used to dynamically balance the XGBoost probability outputs against the NLP risk matrices to generate a final, definitive threat level.
+\textbf{Chapter \ref{chapter-7-scoring-and-classification}: Scoring and Classification} This chapter defines the mathematical orchestration of the system. It presents the algorithmic formulas used to dynamically balance the XGBoost probability outputs against the NLP risk matrices to generate a final, definitive threat level.
 
-\textbf{Chapter 9: Results and Evaluation} This chapter presents the empirical findings of the research. It provides an exhaustive statistical analysis of the classifier's performance, presents confusion matrices, ROC curves, and benchmarks the application's real-world latency and throughput capabilities.
+\textbf{Chapter \ref{chapter-10-results-and-evaluation}: Results and Evaluation} This chapter presents the empirical findings of the research. It provides an exhaustive statistical analysis of the classifier's performance, presents confusion matrices, ROC curves, and benchmarks the application's real-world latency and throughput capabilities.
 
-\textbf{Chapter 10: Conclusion and Discussion} The final chapter summarizes the overarching achievements of the thesis, offers a critical interpretation of the results, acknowledges architectural limitations, and outlines actionable future research directions.
+\textbf{Chapter \ref{chapter-11-discussion}: Conclusion and Discussion} The final chapter summarizes the overarching achievements of the thesis, offers a critical interpretation of the results, acknowledges architectural limitations, and outlines actionable future research directions.
 

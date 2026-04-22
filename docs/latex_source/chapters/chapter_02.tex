@@ -13,26 +13,26 @@ The PhishGuard user interface is designed to be highly accessible and visually i
 
 \subsection{Step 1: The Dashboard and Input Submission}\label{dashboard-input}
 
-Upon navigating to the PhishGuard application, the user is presented with a clean, distraction-free dashboard (Figure 2.1). The primary interactive element is the central input field. 
-
-To initiate a security scan, the user simply pastes the suspicious content into this field. The system is designed to be modality-agnostic; the user does not need to specify whether the input is a URL, an email address, or a block of text. The application will automatically detect the format upon submission.
+Upon navigating to the PhishGuard application, the user is presented with a clean, distraction-free dashboard (Figure \ref{fig:dashboard}). The primary interactive element is the central input field. 
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/dashboard.png}
 \caption{The PhishGuard Web Application Dashboard}
+\label{fig:dashboard}
 \end{figure}
 
 Once the content is pasted, the user clicks the ``Analyze'' button. During the analysis phase, which typically takes between 1 to 5 seconds depending on external network lookups, the interface displays a loading state to assure the user that the request is being processed.
 
 \subsection{Step 2: Interpreting the Threat Analysis Results}\label{interpreting-results}
 
-When the backend orchestrator completes its evaluation, the interface seamlessly transitions to the Threat Analysis Results view (Figure 2.2). This page is structured to provide an immediate, high-level verdict followed by detailed, transparent metrics.
+When the backend orchestrator completes its evaluation, the interface seamlessly transitions to the Threat Analysis Results view (Figure \ref{fig:results_view}). This page is structured to provide an immediate, high-level verdict followed by detailed, transparent metrics.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/result.png}
 \caption{Threat Analysis Results showing the interactive threat gauge}
+\label{fig:results_view}
 \end{figure}
 
 \subsubsection{The Threat Gauge and Verdict}\label{threat-gauge-verdict}

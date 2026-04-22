@@ -471,8 +471,6 @@ Quality Assurance
 \section{Quality Assurance and Testing}
 
 \subsection{Testing Plan and Results}
-\section{Introduction to the Quality Assurance
-Framework}\label{introduction-to-the-quality-assurance-framework}
 
 In the domain of cybersecurity and threat intelligence, software
 reliability is paramount. A false positive in a phishing detection
@@ -489,7 +487,7 @@ mirror the application's microservice design, utilizing domain-specific
 tooling for the Python-based API backend and the TypeScript-based
 Next.js frontend.
 
-\section{Backend Testing
+\subsubsection{Backend Testing
 Methodology}\label{backend-testing-methodology}
 
 The backend testing architecture is constructed upon the \texttt{pytest}
@@ -501,7 +499,7 @@ and the underlying Open-Source Intelligence (OSINT) network calls, the
 via \texttt{pytest.ini} (\texttt{asyncio\_mode\ =\ auto}) to natively
 resolve coroutines during test execution.
 
-\subsection{Environment Isolation and Fixture
+\paragraph{Environment Isolation and Fixture
 Management}\label{environment-isolation-and-fixture-management}
 
 To guarantee deterministic test execution and prevent state leakage
@@ -515,7 +513,7 @@ forcibly overriding critical environment variables (e.g., setting
 \texttt{DEBUG}) and invoking \texttt{getSettings.cache\_clear()} to
 purge any memoized configuration states.
 
-\subsection{Dependency Inversion and OSINT
+\paragraph{Dependency Inversion and OSINT
 Mocking}\label{dependency-inversion-and-osint-mocking}
 
 The backend relies heavily on external, rate-limited threat intelligence
@@ -536,7 +534,7 @@ downstream services. Mock clients, such as
 test suite to mathematically verify the orchestrator's error handling
 and fallback heuristics without relying on actual network degradation.
 
-\section{Integration and Smoke
+\subsubsection{Integration and Smoke
 Testing}\label{integration-and-smoke-testing}
 
 While unit tests validate discrete algorithmic functions (e.g., URL
@@ -552,7 +550,7 @@ structural integrity of the JSON responses
 (\texttt{TestResponseFormatConsistency}) and ensuring the API conforms
 precisely to the OpenAPI schema specifications.
 
-\subsection{Service Level Agreement (SLA)
+\paragraph{Service Level Agreement (SLA)
 Validation}\label{service-level-agreement-sla-validation}
 
 Performance degradation is a critical failure state for synchronous
@@ -570,14 +568,14 @@ failure. Similarly, the \texttt{/api/health} endpoint is rigorously
 asserted to respond in under \texttt{1.0} seconds, ensuring load
 balancers can rapidly assess instance viability.
 
-\section{Frontend Quality
+\subsubsection{Frontend Quality
 Assurance}\label{frontend-quality-assurance}
 
 The Next.js client application employs an orthogonal testing strategy
 tailored to React component lifecycles and browser Document Object Model
 (DOM) interactions.
 
-\subsection{Component and State
+\paragraph{Component and State
 Validation}\label{component-and-state-validation}
 
 Unit testing for the frontend is executed utilizing the \texttt{jest}
@@ -590,7 +588,7 @@ local storage, while component tests ensure that risk indicators
 strictly map to the correct visual paradigms defined by Tailwind CSS
 utility classes.
 
-\subsection{End-to-End (E2E) Browser
+\paragraph{End-to-End (E2E) Browser
 Automation}\label{end-to-end-e2e-browser-automation}
 
 To validate the complete user journey from initial input to final
@@ -611,7 +609,7 @@ high-confidence percentage score. This methodology ensures that backend
 API responses are correctly parsed and visually communicated to the
 end-user.
 
-\section{Static Analysis and Type
+\subsubsection{Static Analysis and Type
 Safety}\label{static-analysis-and-type-safety}
 
 Beyond dynamic execution testing, the PhishGuard architecture enforces

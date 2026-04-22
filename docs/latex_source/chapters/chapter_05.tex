@@ -50,44 +50,71 @@ The architectural philosophy of PhishGuard explicitly rejects the
 ``black-box'' deep learning approach of raw character sequence ingestion
 in favor of explicit, mathematically formulated feature engineering. The
 system extracts a highly discriminative, 21-dimensional feature vector
-(\texttt{FeatureSet}) partitioned into two distinct categories.
+(\texttt{FeatureSet}) partitioned into two distinct categories, as detailed in Table~\ref{tab:feature_dictionary}.
+
+\begin{longtable}{
+  >{\raggedright\arraybackslash\ttfamily}p{0.25\textwidth}
+  >{\raggedright\arraybackslash}p{0.15\textwidth}
+  >{\raggedright\arraybackslash}p{0.50\textwidth}}
+\caption{Feature Dictionary for the 21-Dimensional ML Input Vector} \label{tab:feature_dictionary} \\
+\toprule
+\normalfont\textbf{Feature Name} & \textbf{Category} & \textbf{Description \& Rationale} \\
+\midrule
+\endfirsthead
+\caption[]{Feature Dictionary for the 21-Dimensional ML Input Vector (continued)} \\
+\toprule
+\normalfont\textbf{Feature Name} & \textbf{Category} & \textbf{Description \& Rationale} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\textit{Continued on next page}} \\
+\endfoot
+\bottomrule
+\endlastfoot
+
+\multicolumn{3}{c}{\textbf{Lexical and Structural Features (17 Dimensions)}} \\
+\midrule
+urlLength & Length & Total character count of the absolute URL. Phishing URLs are often unusually long to obscure the actual domain. \\
+domainLength & Length & Character count of the primary domain. \\
+pathDepth & Length & The number of hierarchical directories in the URL path. Attackers often bury payloads deep in nested folders. \\
+digitRatio & Composition & Ratio of numerical digits to total characters in the URL. \\
+specialCharCount & Composition & Total count of non-alphanumeric characters (e.g., \texttt{?}, \texttt{\&}, \texttt{=}, \texttt{\%}). \\
+hasEncodedChars & Composition & Boolean indicating the presence of URL-encoded characters (e.g., \texttt{\%20}), often used to obfuscate malicious payloads. \\
+subdomainCount & Structure & The number of subdomains present. Phishers frequently use excessively long subdomains (e.g., \texttt{login.secure.bank.com}). \\
+hasIpAddress & Structure & Boolean indicating if an IPv4/IPv6 address is used instead of a hostname (bypassing DNS entirely). \\
+hasAtSymbol & Structure & Boolean indicating the presence of an \texttt{@} symbol, typically used to spoof credentials in the URI. \\
+hasDoubleSlash & Structure & Boolean indicating if \texttt{//} appears in the path, often used for unauthorized redirection. \\
+hasDashInDomain & Structure & Boolean indicating dashes in the domain name, a common typo-squatting technique. \\
+hasUnderscoreInDomain & Structure & Boolean indicating underscores in the domain name. \\
+isHttps & Protocol & Boolean indicating if the URL utilizes TLS/SSL. \\
+hasPortNumber & Protocol & Boolean indicating if a non-standard port is explicitly defined in the URL. \\
+queryParamCount & Protocol & Total number of HTTP GET query parameters. \\
+hasSuspiciousTld & Categorization & Boolean indicating usage of known high-abuse generic Top-Level Domains (e.g., \texttt{.tk}, \texttt{.ml}, \texttt{.cf}). \\
+hasSuspiciousKeywords & Categorization & Boolean indicating the presence of social engineering triggers in the URL (e.g., \textit{login}, \textit{secure}, \textit{verify}). \\
+
+\midrule
+\multicolumn{3}{c}{\textbf{OSINT Infrastructure Features (4 Dimensions)}} \\
+\midrule
+hasValidMx & OSINT & Boolean indicating the presence of valid Mail Exchange records. Phishing domains rarely configure email routing. \\
+usesCdn & OSINT & Boolean detecting if the domain is hidden behind a Content Delivery Network (e.g., Cloudflare) via CNAME analysis. \\
+dnsRecordCount & OSINT & An integer volumetric metric of the domain's overall DNS footprint. \\
+hasValidDns & OSINT & Boolean verifying if the domain successfully resolves to an active A/AAAA record. \\
+
+\end{longtable}
 
 \subsection{Lexical and Structural Features (17
 Dimensions)}\label{lexical-and-structural-features-17-dimensions}
 
 The \texttt{extractFeatures.py} module parses the raw URL string to
-extract 17 deterministic structural indicators. These heuristics capture
-the traditional syntactic anomalies favored by attackers: -
-\textbf{Length Metrics:} \texttt{urlLength}, \texttt{domainLength},
-\texttt{pathDepth}. - \textbf{Character Composition:}
-\texttt{digitRatio}, \texttt{specialCharCount},
-\texttt{hasEncodedChars}. - \textbf{Structural Anomalies:}
-\texttt{subdomainCount}, \texttt{hasIpAddress} (attackers bypassing
-DNS), \texttt{hasAtSymbol} (credential spoofing in the URI),
-\texttt{hasDoubleSlash}, \texttt{hasDashInDomain},
-\texttt{hasUnderscoreInDomain}. - \textbf{Protocol and Routing:}
-\texttt{isHttps}, \texttt{hasPortNumber}, \texttt{queryParamCount}. -
-\textbf{Domain Categorization:} \texttt{hasSuspiciousTld} (e.g.,
-matching against known high-abuse generic Top-Level Domains like
-\texttt{.tk}, \texttt{.ml}), \texttt{hasSuspiciousKeywords} (e.g.,
-`login', `secure', `verify').
+extract the 17 deterministic structural indicators listed in Table~\ref{tab:feature_dictionary}. These heuristics capture
+the traditional syntactic anomalies favored by attackers, such as structural obfuscation, typo-squatting, and malicious routing configurations.
 
 \subsection{OSINT Infrastructure Features (4
 Dimensions)}\label{osint-infrastructure-features-4-dimensions}
 
 To resolve the contextual blindness inherent in purely lexical models,
 the feature vector is augmented with 4 dynamically retrieved Open-Source
-Intelligence indicators via the asynchronous OSINT pipeline: 1.
-\textbf{\texttt{hasValidMx} (Boolean):} Indicates the presence of valid
-Mail Exchange records. Phishing domains rarely configure legitimate
-email routing infrastructure. 2. \textbf{\texttt{usesCdn} (Boolean):}
-Detects if the domain is hidden behind a Content Delivery Network (e.g.,
-Cloudflare) via CNAME analysis. 3. \textbf{\texttt{dnsRecordCount}
-(Integer):} A volumetric metric of the domain's overall DNS footprint.
-Legitimate enterprise domains typically possess extensive, complex DNS
-configurations. 4. \textbf{\texttt{hasValidDns} (Boolean):} Verifies if
-the domain successfully resolves to an A/AAAA record, confirming the
-infrastructure is currently active.
+Intelligence indicators via the asynchronous OSINT pipeline. As outlined in Table~\ref{tab:feature_dictionary}, these live metrics provide unforgeable proof of the infrastructure's legitimacy and current operational state.
 
 \section{Model Selection and
 Optimization}\label{model-selection-and-optimization}

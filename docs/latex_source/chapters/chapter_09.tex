@@ -47,12 +47,31 @@ Metrics}\label{empirical-performance-metrics}
 The fully optimized XGBoost model, utilizing the complete 21-dimensional
 feature vector (17 URL structural features and 4 OSINT-derived
 features), demonstrated exceptional performance on the held-out test set
-of 5,009 samples.
+of 5,009 samples. 
 
-The model achieved an aggregate \textbf{Accuracy of 96.45\%}
+As summarized in Table~\ref{tab:performance_metrics}, the model achieved an aggregate \textbf{Accuracy of 96.45\%}
 (\texttt{0.96446}), indicating robust overall correctness. However, in
 the context of threat detection, precision and recall offer more nuanced
 insights into operational viability.
+
+\begin{table}[htbp]
+\centering
+\caption{PhishGuard XGBoost Model Performance Metrics (Test Set: N=5,009)}
+\label{tab:performance_metrics}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Metric} & \textbf{Value (\%)} \\
+\midrule
+Accuracy & 96.45\% \\
+Precision & 97.86\% \\
+Recall (Sensitivity) & 94.97\% \\
+F1-Score & 96.39\% \\
+ROC AUC & 99.41\% \\
+PR AUC & 99.48\% \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 The system achieved a \textbf{Precision of 97.86\%} (\texttt{0.97860}),
 demonstrating a low false-positive rate---a critical metric for
@@ -71,11 +90,23 @@ across various classification thresholds, achieving a \textbf{ROC AUC of
 Matrix}\label{error-analysis-and-confusion-matrix}
 
 A granular analysis of the classification errors on the test set reveals
-the model's operational tendencies. Out of 5,009 total predictions: -
-\textbf{True Positives (Phishing correctly identified):} 2,378 -
-\textbf{True Negatives (Legitimate correctly allowed):} 2,453 -
-\textbf{False Positives (Legitimate incorrectly flagged):} 52 -
-\textbf{False Negatives (Phishing incorrectly allowed):} 126
+the model's operational tendencies. Table~\ref{tab:confusion_matrix} presents the exact distribution of the 5,009 test predictions.
+
+\begin{table}[htbp]
+\centering
+\caption{Confusion Matrix for the Holdout Test Set}
+\label{tab:confusion_matrix}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{c >{\bfseries}c | c c}
+\multicolumn{2}{c}{} & \multicolumn{2}{c}{\textbf{Predicted Class}} \\
+\cline{3-4}
+\multicolumn{2}{c|}{} & \textbf{Legitimate (0)} & \textbf{Phishing (1)} \\
+\cline{2-4}
+\multirow{2}{*}{\rotatebox{90}{\textbf{Actual}}} & \textbf{Legitimate (0)} & 2,453 (TN) & 52 (FP) \\
+& \textbf{Phishing (1)} & 126 (FN) & 2,378 (TP) \\
+\cline{2-4}
+\end{tabular}
+\end{table}
 
 The disparity between False Positives (52) and False Negatives (126)
 underscores the model's high-precision orientation. While the system is

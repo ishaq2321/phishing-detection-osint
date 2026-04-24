@@ -184,34 +184,6 @@ probability into human-readable insights (e.g., exactly how much the
 frontend dynamically renders as interactive waterfall charts for the
 end-user.
 
-\section{Performance Evaluation}\label{performance-evaluation}
-
-The optimized XGBoost model underwent rigorous evaluation against the
-held-out test split. The empirical results definitively validate the
-efficacy of the 21-dimensional feature engineering pipeline:
-
-\begin{itemize}
-\item
-  \textbf{Test Accuracy:} 96.45\%
-\item
-  \textbf{Test F1-Score:} 96.39\%
-\item
-  \textbf{Test Precision:} 97.86\%
-\item
-  \textbf{Test Recall:} 94.97\%
-\item
-  \textbf{Test ROC-AUC:} 99.41\%
-\end{itemize}
-
-These metrics indicate an exceptionally high-performing classifier. The
-97.86\% precision rate is particularly critical in a cybersecurity
-context, as it minimizes ``false positives'' (flagging legitimate
-corporate domains as malicious), thereby reducing alert fatigue for
-Security Operations Center (SOC) analysts. The 99.41\% Area Under the
-Receiver Operating Characteristic Curve (ROC-AUC) proves the model's
-supreme capability in distinctly separating the Phishing and Legitimate
-classes based on the synthesized lexical and OSINT features.
-
 
 
 \section{Open-Source Intelligence in Phishing

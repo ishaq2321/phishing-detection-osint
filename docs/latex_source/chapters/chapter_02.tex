@@ -2,48 +2,309 @@
 \label{user-documentation}
 
 \section{Problem Statement}
-The problem addressed by this application is the rapid detection and explanation of phishing attacks. End-users and organizations frequently encounter suspicious URLs, emails, or text snippets, but lack the technical expertise to determine their legitimacy. PhishGuard provides a simple, intuitive web interface where users can submit these artifacts and receive an immediate, understandable threat analysis report, protecting them from malicious social engineering campaigns.
+
+Phishing attacks remain one of the most prevalent cybersecurity threats, exploiting human trust through deceptive URLs, emails, and text messages. The problem addressed by PhishGuard is the rapid detection and transparent explanation of phishing attacks for end-users who lack technical expertise. The application provides a web-based interface where users submit suspicious content and receive an immediate, understandable threat analysis report, protecting them from malicious social engineering campaigns.
 
 \section{Methods Used}
-To protect the user, the application utilizes a hybrid Machine Learning (ML), Open Source Intelligence (OSINT), and Natural Language Processing (NLP) architecture. When a user submits an artifact, the system automatically parses the input, compares it against known global threat databases, and runs mathematical feature models to predict malicious intent. The results are translated into a simple risk score and an explainable breakdown for the user.
 
-\section{User Guide and Interface}
+PhishGuard employs a hybrid architecture combining three analytical methods:
 
-The PhishGuard user interface is designed to be highly accessible and visually intuitive. The core user flow involves accessing the dashboard, inputting a suspicious artifact, and reviewing the generated risk report. No technical expertise or installation is required by the end-user, as the platform is accessed entirely via a standard web browser.
+\begin{enumerate}
+\item \textbf{Machine Learning (XGBoost):} A gradient-boosted decision tree model trained on 150,391 URLs with 21 engineered features (17 lexical + 4 OSINT). The model predicts a phishing probability score between 0.0 and 1.0.
+\item \textbf{Open-Source Intelligence (OSINT):} Real-time queries to WHOIS registries, DNS servers, VirusTotal, and AbuseIPDB provide external context about domain age, infrastructure validity, and threat reputation.
+\item \textbf{Natural Language Processing (NLP):} A spaCy-based pipeline detecting social engineering tactics such as urgency, brand impersonation, threat warnings, and credential solicitation within unstructured text.
+\end{enumerate}
 
-\subsection{Step 1: The Dashboard and Input Submission}\label{dashboard-input}
+These signals are combined using content-specific weighting: for URL inputs, the ML model contributes 85\% and NLP 15\%; for email and text inputs, NLP contributes 55\%, URL features 25\%, and OSINT 20\%. The final score maps to one of four threat levels: Safe, Suspicious, Dangerous, or Critical.
 
-Upon navigating to the PhishGuard application, the user is presented with a clean, distraction-free dashboard (Figure \ref{fig:dashboard}). The primary interactive element is the central input field. 
+\section{Accessing the Application}
+
+PhishGuard is a web application requiring no installation. The user accesses the platform through a standard web browser (Chrome, Firefox, Safari, or Edge) by navigating to the deployed URL. The interface is responsive, adapting its layout across desktop, tablet, and mobile devices. The application supports both light and dark themes, defaulting to the system preference. The user can toggle the theme via the header dropdown or the Settings page.
+
+\section{Using the Program}
+
+\subsection{The Dashboard}
+
+Upon navigating to the application, the user is presented with the Dashboard (Figure \ref{fig:dashboard}). This screen serves as the landing page and provides two primary call-to-action buttons: ``Analyse Now,'' which navigates to the analysis page, and ``How It Works,'' which navigates to the methodology explanation. The Dashboard also displays three capability cards describing the system's detection modes: URL Analysis, OSINT Enrichment, and NLP Detection.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/dashboard.png}
-\caption{The PhishGuard Web Application Dashboard}
+\caption{The PhishGuard Dashboard with capability cards and navigation buttons}
 \label{fig:dashboard}
 \end{figure}
 
-Once the content is pasted, the user clicks the ``Analyze'' button. During the analysis phase, which typically takes between 1 to 5 seconds depending on external network lookups, the interface displays a loading state to assure the user that the request is being processed.
+\subsection{Single Analysis}
 
-\subsection{Step 2: Interpreting the Threat Analysis Results}\label{interpreting-results}
+The Analyse page is the primary interface for submitting content (Figure \ref{fig:analyze-page}). The user performs the following steps:
 
-When the backend orchestrator completes its evaluation, the interface seamlessly transitions to the Threat Analysis Results view (Figure \ref{fig:results_view}). This page is structured to provide an immediate, high-level verdict followed by detailed, transparent metrics.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/analyze-page.png}
+\caption{The Analyse page showing input type selector and content field}
+\label{fig:analyze-page}
+\end{figure}
+
+\begin{enumerate}
+\item \textbf{Select the input type} using the dropdown selector at the top of the form. Three modes are available:
+\begin{itemize}
+\item \textbf{URL:} For analysing a single web address (e.g., \texttt{https://example.com/login}).
+\item \textbf{Email:} For pasting the full body of a suspicious email. Two additional optional fields appear: Subject and Sender.
+\item \textbf{Text:} For any unstructured text content.
+\end{itemize}
+\item \textbf{Enter the content} in the input field. In URL mode, this is a single-line input; in Email and Text modes, a multi-line textarea is provided.
+\item \textbf{Submit the analysis} by clicking the ``Analyse'' button. A five-step progress indicator is displayed during processing:
+\begin{enumerate}
+\item Extracting URL features
+\item Running OSINT checks
+\item Analysing text with NLP
+\item Calculating final score
+\item Analysis complete
+\end{enumerate}
+\item \textbf{Cancel if needed} by clicking the ``Cancel'' button that replaces the Analyse button during processing. This aborts the network request.
+\end{enumerate}
+
+The Analyse page also includes a tips card advising the user to enter full URLs including the protocol (\texttt{https://}), paste complete email bodies, and a link to the Batch Analysis mode for multiple URLs.
+
+\subsection{Batch Analysis}
+
+For analysing multiple URLs simultaneously, the user navigates to the Batch Analysis page via the link on the Analyse page or the sidebar (Figure \ref{fig:batch-page}). This page allows the user to:
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/batch-page.png}
+\caption{Batch Analysis page with URL input and results table}
+\label{fig:batch-page}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{Enter up to 50 URLs} in a multi-line text area, one URL per line.
+\item \textbf{Upload a file} (\texttt{.txt} or \texttt{.csv}) containing URLs by clicking the ``Upload File'' button.
+\item \textbf{Start the analysis} by clicking ``Analyse N URLs.'' The system processes 3 URLs concurrently and displays a progress bar.
+\item \textbf{Review the results table} showing each URL's status, threat level, confidence score, and analysis time.
+\item \textbf{Export the results} as CSV or JSON files using the export buttons above the table.
+\end{itemize}
+
+\section{Interpreting the Results}
+
+When the backend completes its evaluation, the application navigates to the Results page (Figure \ref{fig:results-page}). This page provides a comprehensive breakdown of the analysis.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/result.png}
-\caption{Threat Analysis Results showing the interactive threat gauge}
-\label{fig:results_view}
+\caption{The Results page displaying the verdict banner, risk indicators, and score visualisation}
+\label{fig:results-page}
 \end{figure}
 
-\subsubsection{The Threat Gauge and Verdict}\label{threat-gauge-verdict}
+\subsection{Verdict Banner}
 
-At the top of the results page, the user will see a large, color-coded Threat Gauge. This is the most critical piece of information for non-technical users. It displays an overall risk percentage (from 0\% to 100\%) and a clear textual verdict:
+At the top of the results page, a prominent colour-coded banner displays the final verdict. It shows a large shield icon (green for safe, amber for suspicious, red for dangerous, violet for critical), the classification label (``PHISHING'' or ``SAFE''), the animated confidence score as a percentage, the threat level badge, and a plain-language recommendation. The four threat levels are defined in Table \ref{tab:threat_levels}.
+
+\begin{table}[htbp]
+\centering
+\caption{Threat Level Definitions and Recommendations}
+\label{tab:threat_levels}
+\begin{tabular}{llll}
+\toprule
+\textbf{Threat Level} & \textbf{Score Range} & \textbf{Colour} & \textbf{Recommendation} \\
+\midrule
+Safe & 0.00--0.29 & Green & No action needed \\
+Suspicious & 0.30--0.49 & Amber & Exercise caution \\
+Dangerous & 0.50--0.69 & Red & Likely phishing, do not interact \\
+Critical & 0.70--1.00 & Violet & Confirmed threat, block and report \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Risk Indicators}
+
+Below the verdict, the ``Risk Indicators'' card lists each factor that contributed to the final score (Figure \ref{fig:risk-indicators}). Each indicator is accompanied by a context-aware icon: a lightning bolt for urgency indicators, a theatre mask for brand impersonation, a key for credential solicitation, a link for URL-related findings, and a globe for OSINT-derived indicators. Examples of risk indicators include:
+
 \begin{itemize}
-    \item \textbf{Safe (Green):} The content shows no signs of malicious intent or known blacklisting.
-    \item \textbf{Suspicious (Amber):} The content exhibits anomalous characteristics (such as a newly registered domain or unusual routing) but is not definitively malicious. Caution is advised.
-    \item \textbf{Dangerous (Red):} The content is highly likely to be a phishing attempt, confirmed by threat intelligence databases or strong heuristic matches. Do not interact with the original link.
+\item ``Domain registered fewer than 30 days ago''
+\item ``Uses fear tactics and account suspension threats''
+\item ``URL contains suspicious top-level domain''
+\item ``No valid DNS records found''
+\item ``Brand impersonation detected: PayPal''
 \end{itemize}
 
-\subsubsection{Detailed Metric Breakdown}\label{detailed-metric-breakdown}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/risk-indicators.png}
+\caption{Risk Indicators card showing detected phishing signals}
+\label{fig:risk-indicators}
+\end{figure}
 
-Below the primary gauge, the user can review specific findings that contributed to the final score. This section translates complex technical data into plain-language warnings. For example, it will clearly state if a domain was registered very recently, if the SSL certificate is invalid, or if the URL structure attempts to spoof a known brand. This level of transparency empowers the user to understand \textit{why} a specific verdict was reached, fostering trust in the platform's analysis.
+\subsection{OSINT Intelligence}
+
+The OSINT Intelligence section presents the external intelligence gathered about the analysed domain (Figure \ref{fig:osint-results}). It is organised into three cards:
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/osint-results.png}
+\caption{OSINT Intelligence section showing domain, DNS, and reputation data}
+\label{fig:osint-results}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{Domain Information:} Displays the domain name, domain age (classified as ``Very New'' if under 30 days, ``New'' if under 180 days, or ``Established'' otherwise), registrar name, and WHOIS privacy status (``Protected'' or ``Public''). Each field includes an info tooltip explaining its relevance.
+\item \textbf{DNS Status:} Indicates whether the domain has valid DNS records, shown with a checkmark or cross icon and an explanatory description.
+\item \textbf{Reputation:} Displays a reputation score between 0 and 1 on a colour-coded progress bar (green for Good $\geq$0.7, amber for Fair $\geq$0.4, red for Poor), and a blacklist status badge (``Clean'' or ``Blacklisted'').
+\end{itemize}
+
+If OSINT data could not be retrieved (e.g., due to API rate limits or timeouts), the section displays a card explaining that OSINT data is not available and the analysis was performed using URL and NLP features only.
+
+\subsection{Feature Extraction and Detected Tactics}
+
+The Feature Extraction section displays four animated counters: the number of suspicious URL features detected, text features detected, OSINT risk indicators, and the total risk indicator count. The Detected Tactics card shows colour-coded badges for each social engineering tactic identified by the NLP pipeline. The ten detectable tactics are: urgency, authority impersonation, brand impersonation, credential request, threat warning, emotional manipulation, monetary request, attachment malware, link manipulation, and social proof. Each badge includes a tooltip explaining the tactic.
+
+\subsection{Score Visualisation}
+
+The Score Visualisation section provides three interactive charts (Figure \ref{fig:score-viz}):
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/score-viz.png}
+\caption{Score Visualisation showing the ML/NLP breakdown, threat gauge, and confidence bar}
+\label{fig:score-viz}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{Score Breakdown (Donut Chart):} A Recharts donut chart showing the proportion of the ML model contribution (85\% for URL inputs, 55\% for text inputs) versus the NLP contribution, with the final risk score displayed in the centre.
+\item \textbf{Threat Gauge:} A semi-circular SVG gauge with four colour zones (green, yellow, orange, red) and an animated needle pointing to the calculated score.
+\item \textbf{Confidence Bar:} A horizontal progress bar colour-coded by threat level, with a gradient scale showing the boundaries between threat zones at 30\%, 50\%, 70\%, and 100\%.
+\end{itemize}
+
+\subsection{Share and Export Actions}
+
+The Results page provides four action buttons for sharing the analysis:
+\begin{itemize}
+\item \textbf{Copy Summary:} Copies a formatted text report to the clipboard containing the content, verdict, threat level, confidence score, recommendation, and risk indicators.
+\item \textbf{Copy JSON:} Copies the raw JSON response from the API.
+\item \textbf{Copy Link:} Copies the current page URL.
+\item \textbf{Print:} Opens the browser print dialog with a print-optimised layout that hides the navigation sidebar and footer.
+\end{itemize}
+
+\section{Analysis History}
+
+The History page (Figure \ref{fig:history-page}) provides a persistent record of all analyses conducted by the user. Data is stored in the browser's local storage and persists across sessions.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/history-page.png}
+\caption{Analysis History page with search, filter, and export capabilities}
+\label{fig:history-page}
+\end{figure}
+
+\subsection{Viewing and Searching History}
+
+The History page displays a sortable table with the following columns: content (truncated), type (URL, email, or text), threat level (colour-coded badge), confidence score, and date. A search bar allows filtering by content or domain name. A dropdown filter enables filtering by threat level (All Levels, Safe, Suspicious, Dangerous, or Critical). Pagination controls at the bottom allow adjusting the page size (10, 25, or 50 entries).
+
+On mobile devices, the table is replaced by a card-based layout with the same information and action buttons.
+
+\subsection{History Actions}
+
+Each history entry provides three actions via a dropdown menu:
+\begin{itemize}
+\item \textbf{View Results:} Loads the stored analysis response and navigates to the Results page.
+\item \textbf{Re-analyse:} Navigates to the Analyse page with the content and type pre-populated, allowing the user to submit the same content again.
+\item \textbf{Delete:} Removes the entry from the history.
+\end{itemize}
+
+The ``Clear All'' button at the top of the page deletes all history entries after a confirmation dialog.
+
+\subsection{Exporting History}
+
+The Export dropdown provides two options:
+\begin{itemize}
+\item \textbf{Export as CSV:} Downloads a \texttt{.csv} file with columns for content, type, threat level, score, and date.
+\item \textbf{Export as JSON:} Downloads a \texttt{.json} file containing the full analysis data for each entry.
+\end{itemize}
+
+\section{How It Works Page}
+
+The How It Works page explains the system's methodology to non-technical users. It contains six sections:
+
+\begin{enumerate}
+\item \textbf{Architecture Overview:} A visual pipeline diagram showing how input flows through text analysis, URL feature extraction, and OSINT enrichment into the XGBoost model, producing a final verdict.
+\item \textbf{Text Analysis:} An accordion describing six NLP detection categories: urgency patterns, credential harvesting, brand impersonation, fear and threat tactics, suspicious formatting, and emotional manipulation.
+\item \textbf{URL Feature Analysis:} An accordion describing six URL-based detection categories: suspicious TLDs, IP addresses in URLs, subdomain depth, homograph attacks, URL shorteners, and path and query anomalies.
+\item \textbf{OSINT Enrichment:} An accordion describing six OSINT data sources: WHOIS domain age, registrar reputation, DNS record validation, VirusTotal score, AbuseIPDB reports, and blacklist membership.
+\item \textbf{Scoring Algorithm:} Displays the model metrics (96.5\% accuracy, F1 score 96.4\%, AUC-ROC 99.4\%, PR-AUC 99.5\%) and the weighting formula used for URL inputs: $\text{finalScore} = \text{mlPrediction} \times 0.85 + \text{nlpScore} \times 0.15$.
+\item \textbf{Threat Levels:} Four cards explaining each threat level with its score range and recommended action.
+\end{enumerate}
+
+\section{Settings Page}
+
+The Settings page allows the user to configure the application (Figure \ref{fig:settings-page}):
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/settings-page.png}
+\caption{Settings page with API configuration, display preferences, and history management}
+\label{fig:settings-page}
+\end{figure}
+
+\begin{itemize}
+\item \textbf{API Configuration:} The Backend URL input field specifies the address of the PhishGuard API server. The ``Test'' button verifies connectivity and displays a status badge (Connected, Failed, or Testing).
+\item \textbf{Display Preferences:} A dark mode toggle switches between light and dark themes. A detail level selector adjusts the verbosity of result displays (Simple, Detailed, or Expert).
+\item \textbf{History Management:} The maximum number of history entries can be set to 10, 25, 50, or 100. An auto-clear option automatically removes entries older than 7, 14, or 30 days. A ``Clear History'' button immediately removes all entries.
+\item \textbf{About:} Displays application metadata including the version (1.0.0), author, supervisor, and university.
+\end{itemize}
+
+A ``Reset to Defaults'' button at the bottom restores all settings to their original values.
+
+\section{Additional Features}
+
+\subsection{Keyboard Shortcuts}
+
+The application supports seven keyboard shortcuts for efficient navigation:
+
+\begin{table}[htbp]
+\centering
+\caption{Keyboard Shortcuts}
+\label{tab:keyboard_shortcuts}
+\begin{tabular}{ll}
+\toprule
+\textbf{Shortcut} & \textbf{Action} \\
+\midrule
+\texttt{/} & Focus the search or URL input field \\
+\texttt{Ctrl+Enter} & Submit the analysis form \\
+\texttt{Ctrl+Shift+D} & Toggle dark mode \\
+\texttt{Ctrl+H} & Navigate to History \\
+\texttt{Ctrl+N} & Start a new analysis \\
+\texttt{?} & Open the keyboard shortcuts help dialog \\
+\texttt{Escape} & Close open dialogs \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On macOS, the Ctrl key is replaced with the Command key. The shortcuts are disabled when the user is typing in input fields or text areas.
+
+\subsection{Responsive Design}
+
+The application adapts its layout based on screen size:
+\begin{itemize}
+\item \textbf{Desktop (1024px and above):} A full sidebar (240px) with icons and labels for navigation.
+\item \textbf{Tablet (768px--1023px):} A collapsed icon-only sidebar rail (56px) with tooltips on hover.
+\item \textbf{Mobile (below 768px):} A fixed bottom navigation bar with touch-optimised targets (minimum 44x48 pixels, meeting WCAG 2.1 AA requirements). Tables are replaced with card-based layouts.
+\end{itemize}
+
+\subsection{Error Handling}
+
+The application provides clear feedback when errors occur:
+\begin{itemize}
+\item \textbf{Network errors:} A toast notification displays ``Cannot connect to the analysis server. Is the backend running?'' when the API is unreachable.
+\item \textbf{Server errors:} A toast notification displays ``The analysis server encountered an internal error. Please try again.'' for HTTP 500+ responses.
+\item \textbf{Validation errors:} If the input is invalid, a toast notification shows ``Invalid input:'' followed by the specific error message from the API.
+\item \textbf{Error boundaries:} If a page fails to render, a dedicated error page appears with a ``Try Again'' button and a link back to the Dashboard.
+\item \textbf{404 page:} Navigating to a non-existent route displays a custom page with links to the Dashboard and Analyse page.
+\end{itemize}
+
+\subsection{Backend Health Indicator}
+
+The application header displays a small coloured dot indicating the backend server status, refreshed every 30 seconds: green for connected, amber for degraded (ML model not loaded), and red for unhealthy.
+
+\subsection{Print Support}
+
+The ``Print'' action on the Results page triggers the browser print dialog with a clean layout that hides the navigation sidebar, footer, and toast notifications, using white backgrounds and black text optimised for paper output.

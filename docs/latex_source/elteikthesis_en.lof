@@ -2,18 +2,25 @@
 \babel@toc {english}{}\relax 
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces The PhishGuard Web Application Dashboard\relax }}{17}{figure.caption.2}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Threat Analysis Results showing the interactive threat gauge\relax }}{18}{figure.caption.3}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces The PhishGuard Dashboard with capability cards and navigation buttons\relax }}{19}{figure.caption.2}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces The Analyse page showing input type selector and content field\relax }}{19}{figure.caption.3}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Batch Analysis page with URL input and results table\relax }}{21}{figure.caption.4}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces The Results page displaying the verdict banner, risk indicators, and score visualisation\relax }}{21}{figure.caption.5}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Risk Indicators card showing detected phishing signals\relax }}{23}{figure.caption.7}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces OSINT Intelligence section showing domain, DNS, and reputation data\relax }}{23}{figure.caption.8}%
+\contentsline {figure}{\numberline {2.7}{\ignorespaces Score Visualisation showing the ML/NLP breakdown, threat gauge, and confidence bar\relax }}{25}{figure.caption.9}%
+\contentsline {figure}{\numberline {2.8}{\ignorespaces Analysis History page with search, filter, and export capabilities\relax }}{26}{figure.caption.10}%
+\contentsline {figure}{\numberline {2.9}{\ignorespaces Settings page with API configuration, display preferences, and history management\relax }}{28}{figure.caption.11}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces High-Level System Data Flow separating the Next.js Presentation layer, FastAPI Application Orchestrator, ML Pipeline, and Async OSINT\relax }}{21}{figure.caption.7}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Sequence Diagram illustrating parallel execution of Structural Features, NLP Analysis, and the strict 15.0s OSINT timeout\relax }}{22}{figure.caption.8}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces UML Class Diagram defining the strict Pydantic data contracts enforcing backend type safety\relax }}{24}{figure.caption.9}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces The End-to-End User Journey, illustrating the transition from input submission to reviewing Explainable AI (SHAP) metrics\relax }}{27}{figure.caption.10}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces High-Level System Data Flow separating the Next.js Presentation layer, FastAPI Application Orchestrator, ML Pipeline, and Async OSINT\relax }}{33}{figure.caption.14}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Sequence Diagram illustrating parallel execution of Structural Features, NLP Analysis, and the strict 15.0s OSINT timeout\relax }}{34}{figure.caption.15}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces UML Class Diagram defining the strict Pydantic data contracts enforcing backend type safety\relax }}{36}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces The End-to-End User Journey, illustrating the transition from input submission to reviewing Explainable AI (SHAP) metrics\relax }}{39}{figure.caption.17}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Phishing Attack Taxonomy\relax }}{38}{figure.caption.20}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces OSINT Data Collection and Feature Engineering Pipeline\relax }}{51}{figure.caption.21}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Phishing Attack Taxonomy\relax }}{50}{figure.caption.27}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces OSINT Data Collection and Feature Engineering Pipeline\relax }}{63}{figure.caption.28}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {5.1}{\ignorespaces SHAP Feature Importance Analysis (Beeswarm Plot)\relax }}{59}{figure.caption.22}%
+\contentsline {figure}{\numberline {5.1}{\ignorespaces SHAP Feature Importance Analysis (Beeswarm Plot)\relax }}{71}{figure.caption.29}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

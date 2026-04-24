@@ -33,7 +33,7 @@
 \contentsline {subsection}{\numberline {2.6.2}History Actions}{28}{subsection.2.6.2}%
 \contentsline {subsection}{\numberline {2.6.3}Exporting History}{28}{subsection.2.6.3}%
 \contentsline {section}{\numberline {2.7}How It Works Page}{29}{section.2.7}%
-\contentsline {section}{\numberline {2.8}Settings Page}{30}{section.2.8}%
+\contentsline {section}{\numberline {2.8}Settings Page}{29}{section.2.8}%
 \contentsline {section}{\numberline {2.9}Additional Features}{31}{section.2.9}%
 \contentsline {subsection}{\numberline {2.9.1}Keyboard Shortcuts}{31}{subsection.2.9.1}%
 \contentsline {subsection}{\numberline {2.9.2}Responsive Design}{31}{subsection.2.9.2}%

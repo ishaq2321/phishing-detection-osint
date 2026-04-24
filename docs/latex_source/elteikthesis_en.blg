@@ -1,15 +1,15 @@
 [0] Config.pm:307> INFO - This is Biber 2.17
 [0] Config.pm:310> INFO - Logfile is 'elteikthesis_en.blg'
-[81] biber:340> INFO - === Fri Apr 24, 2026, 05:13:01
-[160] Biber.pm:418> INFO - Reading 'elteikthesis_en.bcf'
-[234] Biber.pm:972> INFO - Found 28 citekeys in bib section 0
-[247] Biber.pm:4383> INFO - Processing section 0
-[257] Biber.pm:4574> INFO - Looking for bibtex file 'elteikthesis.bib' for section 0
-[258] bibtex.pm:1713> INFO - LaTeX decoding ...
-[276] bibtex.pm:1518> INFO - Found BibTeX data source 'elteikthesis.bib'
-[449] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[449] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[449] Biber.pm:4203> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
-[449] Biber.pm:4209> INFO - No sort tailoring available for locale 'en-US'
-[472] bbl.pm:654> INFO - Writing 'elteikthesis_en.bbl' with encoding 'UTF-8'
-[484] bbl.pm:757> INFO - Output to elteikthesis_en.bbl
+[85] biber:340> INFO - === Fri Apr 24, 2026, 06:38:33
+[99] Biber.pm:418> INFO - Reading 'elteikthesis_en.bcf'
+[171] Biber.pm:972> INFO - Found 28 citekeys in bib section 0
+[184] Biber.pm:4383> INFO - Processing section 0
+[197] Biber.pm:4574> INFO - Looking for bibtex file 'elteikthesis.bib' for section 0
+[198] bibtex.pm:1713> INFO - LaTeX decoding ...
+[220] bibtex.pm:1518> INFO - Found BibTeX data source 'elteikthesis.bib'
+[378] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[378] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[378] Biber.pm:4203> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
+[378] Biber.pm:4209> INFO - No sort tailoring available for locale 'en-US'
+[399] bbl.pm:654> INFO - Writing 'elteikthesis_en.bbl' with encoding 'UTF-8'
+[410] bbl.pm:757> INFO - Output to elteikthesis_en.bbl

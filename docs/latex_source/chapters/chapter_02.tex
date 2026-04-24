@@ -9,13 +9,13 @@ Phishing attacks remain one of the most prevalent cybersecurity threats, exploit
 
 PhishGuard employs a hybrid architecture combining three analytical methods:
 
-\begin{enumerate}
-\item \textbf{Machine Learning (XGBoost):} A gradient-boosted decision tree model trained on 23,374 samples (evaluated on 5,009 held-out test samples) with 21 engineered features (17 lexical + 4 OSINT). The model predicts a phishing probability score between 0.0 and 1.0.
-\item \textbf{Open-Source Intelligence (OSINT):} Real-time queries to WHOIS registries, DNS servers, VirusTotal, and AbuseIPDB provide external context about domain age, infrastructure validity, and threat reputation.
-\item \textbf{Natural Language Processing (NLP):} A spaCy-based pipeline detecting social engineering tactics such as urgency, brand impersonation, threat warnings, and credential solicitation within unstructured text.
-\end{enumerate}
+\begin{itemize}
+\item \textbf{Machine Learning (XGBoost):} A trained model that analyzes URL structure to predict phishing probability.
+\item \textbf{Open-Source Intelligence (OSINT):} Live queries verify domain infrastructure and reputation using external threat intelligence sources.
+\item \textbf{Natural Language Processing (NLP):} Text analysis detects social engineering tactics such as urgency, brand impersonation, and credential solicitation.
+\end{itemize}
 
-These signals are combined using content-specific weighting: for URL inputs, the ML model contributes 85\% and NLP 15\%; for email and text inputs, NLP contributes 55\%, URL features 25\%, and OSINT 20\%. The final score maps to one of four threat levels: Safe, Suspicious, Dangerous, or Critical.
+For URL inputs, the ML model receives primary weight. For email and text inputs, NLP receives primary weight. The final score maps to one of four threat levels: Safe, Suspicious, Dangerous, or Critical.
 
 \section{Accessing the Application}
 
@@ -62,7 +62,7 @@ The Analyse page is the primary interface for submitting content (Figure \ref{fi
 \item Analysis complete
 \end{enumerate}
 The progress indicator is a client-side animation that runs on a timer to provide visual feedback while the single API request is in flight. Navigation to the Results page occurs automatically once the server response is received.
-\item \textbf{Cancel if needed} by clicking the ``Cancel'' button that replaces the Analyse button during processing. This aborts the in-flight API request via an AbortController, terminating the network connection.
+\item \textbf{Cancel if needed} by clicking the ``Cancel'' button that replaces the Analyse button during processing. This stops the network request in progress.
 \item \textbf{Clear the form} using the ``Clear'' ghost-variant button that appears when content has been entered. This resets the content, subject, and sender fields.
 \end{enumerate}
 
@@ -172,7 +172,7 @@ The Feature Extraction section displays four animated counters: the number of su
 
 \subsection{Score Visualisation}
 
-The Score Visualisation section provides three interactive charts (Figure \ref{fig:score-viz}), each dynamically imported to reduce the initial JavaScript bundle size:
+The Score Visualisation section provides three interactive charts (Figure \ref{fig:score-viz}), loaded on demand for faster page loading:
 
 \begin{figure}[htbp]
 \centering
@@ -197,12 +197,12 @@ The Results page provides four action buttons for sharing the analysis, each wit
 \item \textbf{Print:} Opens the browser print dialog with a print-optimised layout that hides the navigation sidebar, footer, mobile navigation, sheet overlays, and toast notifications, using white backgrounds and black text optimised for paper output.
 \end{itemize}
 
-If the browser's Clipboard API is unavailable, a hidden textarea and \texttt{execCommand("copy")} fallback is used to maintain compatibility with older browsers. If clipboard access fails entirely, an error toast displays ``Failed to copy --- Your browser may not support clipboard access.''
+If the browser's Clipboard API is unavailable, a fallback copy method is used to maintain compatibility with older browsers. If clipboard access fails entirely, an error toast displays ``Failed to copy --- Your browser may not support clipboard access.''
 
 \section{Analysis History}
 \label{sec:history}
 
-The History page (Figure \ref{fig:history-page}) provides a persistent record of all analyses conducted by the user. Data is stored in the browser's local storage and persists across sessions. The page subtitle displays the total count: ``N analysis result(s) stored locally.'' When no analyses have been run yet, a ``No Analyses Yet'' card appears with a ``Start Analysing'' link button. If the auto-clear setting is enabled, entries older than the configured threshold are automatically removed when the History page is loaded.
+The History page (Figure \ref{fig:history-page}) provides a persistent record of all analyses conducted by the user. The system maintains dual history stores: a backend in-memory store for internal logging, and a frontend localStorage store for user-facing persistence across sessions. The page subtitle displays the total count: ``N analysis result(s) stored locally.'' When no analyses have been run yet, a ``No Analyses Yet'' card appears with a ``Start Analysing'' link button. If the auto-clear setting is enabled, entries older than the configured threshold are automatically removed when the History page is loaded.
 
 \begin{figure}[htbp]
 \centering
@@ -245,7 +245,7 @@ The How It Works page explains the system's methodology to non-technical users. 
 \item \textbf{Text Analysis:} An accordion describing six NLP detection categories: urgency patterns, credential harvesting, brand impersonation, fear and threat tactics, suspicious formatting, and emotional manipulation.
 \item \textbf{URL Feature Analysis:} An accordion describing six URL-based detection categories: suspicious TLDs, IP addresses in URLs, subdomain depth, homograph attacks, URL shorteners, and path and query anomalies.
 \item \textbf{OSINT Enrichment:} An accordion describing six OSINT data sources: WHOIS domain age, registrar reputation, DNS record validation, VirusTotal score, AbuseIPDB reports, and blacklist membership.
-\item \textbf{Scoring Algorithm:} Displays the model metrics (96.5\% accuracy, F1 score 96.4\%, AUC-ROC 99.4\%, PR-AUC 99.5\%) trained on 23,374 samples and evaluated on 5,009 held-out test samples. The weighting formula for URL inputs is shown: $\text{finalScore} = \text{mlPrediction} \times 0.85 + \text{nlpScore} \times 0.15$. A colour-coded weight bar visualises the 85\%/15\% split, and a callout box explains why the ML model receives the primary weight for URL inputs, noting that email and text inputs use a different weighted combination.
+\item \textbf{Scoring Algorithm:} Explains how the ML model receives primary weight for URL inputs and NLP receives primary weight for text inputs. The exact weighting is detailed in Chapter \ref{chapter-7-scoring-and-classification}.
 \item \textbf{Threat Levels:} Four cards explaining each threat level with its score range and recommended action.
 \end{enumerate}
 
@@ -351,13 +351,10 @@ The ``Print'' action on the Results page triggers the browser print dialog with 
 
 \subsection{Accessibility}
 
-The application implements several WCAG 2.1 accessibility features:
+The application implements several WCAG 2.1 accessibility features to ensure it is usable by people with diverse abilities:
 \begin{itemize}
-\item \textbf{Skip-to-main-content link:} The first focusable element on every page is a visually hidden ``Skip to main content'' link that becomes visible when focused via keyboard, allowing screen reader and keyboard users to bypass navigation.
-\item \textbf{\texttt{aria-live="polite"}} on the Results page container, so screen readers announce result changes.
-\item \textbf{\texttt{aria-current="page"}} on all active navigation links (sidebar, mobile nav, and collapsed rail), informing screen readers of the current page.
-\item \textbf{\texttt{role="status"}} on the health indicator and loading spinner for screen reader announcements.
-\item \textbf{\texttt{aria-label}} on all icon-only buttons (mobile menu, row actions, theme toggle, etc.) and \texttt{aria-hidden="true"} on all decorative icons.
-\item \textbf{Keyboard focus-visible rings:} All interactive elements display a visible focus ring (\texttt{focus-visible:ring-2}) when navigated to via keyboard.
-\item \textbf{Reduced motion support:} A CSS media query (\texttt{prefers-reduced-motion: reduce}) disables all transitions and animations. A JavaScript hook (\texttt{useReducedMotion}) allows components to programmatically skip animations when the user prefers reduced motion.
+\item \textbf{Screen reader support:} Users can navigate the application using screen readers, with the current page and status announced.
+\item \textbf{Keyboard navigation:} All interactive elements are accessible via keyboard, with visible focus indicators.
+\item \textbf{Reduced motion support:} Animations are automatically disabled when the user's operating system preference is set to reduce motion.
+\item \textbf{Mobile accessibility:} Touch targets meet WCAG 2.1 AA requirements (minimum 44x48 pixels).
 \end{itemize}

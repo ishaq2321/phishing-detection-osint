@@ -105,7 +105,7 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-wrap gap-2">
-                <Badge variant="secondary">Scoring: text 40% · url 25% · osint 35%</Badge>
+                <Badge variant="secondary">Scoring: text 55% · url 25% · osint 20%</Badge>
                 <Badge variant="secondary">4 threat levels</Badge>
                 <Badge variant="secondary">3 input modes</Badge>
               </CardContent>

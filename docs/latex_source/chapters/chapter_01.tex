@@ -301,7 +301,7 @@ trained on a massive, highly curated dataset. Originally comprising
 150,391 URLs, the dataset underwent strict deduplication, zero-variance
 filtering, and class-balancing via majority undersampling to eliminate
 bias, resulting in a pristine dataset of 33,392 feature-engineered URLs.
-Using a 70/15/15 stratified split, the model was subjected to 50 trials
+Using a 70/15/15 stratified split, this yields 23,374 training samples for model fitting, 5,009 validation samples for hyperparameter optimization, and 5,009 held-out test samples for final evaluation. The model was subjected to 50 trials
 of Bayesian hyperparameter optimization (Optuna) with 5-fold
 cross-validation. The resulting production model achieves exceptional
 predictive performance on unseen data:

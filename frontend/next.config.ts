@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const currentDirectory = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   /**
@@ -25,6 +29,11 @@ const nextConfig: NextConfig = {
 
   /** React strict mode for catching subtle bugs. */
   reactStrictMode: true,
+
+  /** Force Turbopack to resolve modules from the frontend workspace. */
+  turbopack: {
+    root: join(currentDirectory),
+  },
 
   /** Tree-shake server-only code from the client bundle. */
   serverExternalPackages: [],

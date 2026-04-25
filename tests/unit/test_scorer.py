@@ -429,32 +429,32 @@ class TestCalculateFeatureScore:
 
 class TestDetermineRiskLevel:
     """Tests for determineRiskLevel function."""
-    
+
     def test_lowScoreIsSafe(self) -> None:
         """Low score maps to SAFE level."""
         assert determineRiskLevel(0.1) == RiskLevel.SAFE
-    
-    def test_lowBoundaryIsLow(self) -> None:
-        """Score at LOW boundary maps to LOW."""
-        assert determineRiskLevel(0.25) == RiskLevel.LOW
-    
-    def test_mediumScore(self) -> None:
-        """Medium score maps to MEDIUM level."""
-        assert determineRiskLevel(0.5) == RiskLevel.MEDIUM
-    
-    def test_highScore(self) -> None:
-        """High score maps to HIGH level."""
-        assert determineRiskLevel(0.7) == RiskLevel.HIGH
-    
+
+    def test_safeBoundaryIsSuspicious(self) -> None:
+        """Score at SAFE boundary maps to SUSPICIOUS."""
+        assert determineRiskLevel(0.35) == RiskLevel.SUSPICIOUS
+
+    def test_suspiciousScore(self) -> None:
+        """Score in suspicious range maps to SUSPICIOUS level."""
+        assert determineRiskLevel(0.4) == RiskLevel.SUSPICIOUS
+
+    def test_dangerousScore(self) -> None:
+        """Score in dangerous range maps to DANGEROUS level."""
+        assert determineRiskLevel(0.6) == RiskLevel.DANGEROUS
+
     def test_veryHighScoreIsCritical(self) -> None:
         """Very high score maps to CRITICAL level."""
         assert determineRiskLevel(0.9) == RiskLevel.CRITICAL
-    
+
     def test_edgeCases(self) -> None:
         """Edge cases at threshold boundaries."""
         assert determineRiskLevel(0.0) == RiskLevel.SAFE
         assert determineRiskLevel(1.0) == RiskLevel.CRITICAL
-        assert determineRiskLevel(RISK_THRESHOLDS[RiskLevel.SAFE]) == RiskLevel.LOW
+        assert determineRiskLevel(RISK_THRESHOLDS[RiskLevel.SAFE]) == RiskLevel.SUSPICIOUS
 
 
 # =============================================================================
@@ -530,18 +530,18 @@ class TestPhishingScorer:
     def test_scoreSafeUrl(self, scorer: PhishingScorer) -> None:
         """Safe URL produces low score."""
         result = scorer.score("https://google.com")
-        
+
         assert result.finalScore < 0.3
-        assert result.riskLevel in (RiskLevel.SAFE, RiskLevel.LOW)
-    
+        assert result.riskLevel == RiskLevel.SAFE
+
     def test_scoreSuspiciousUrl(self, scorer: PhishingScorer) -> None:
         """Suspicious URL produces high score."""
         result = scorer.score(
             "http://paypal-verify.suspicious.tk@evil.com/login"
         )
-        
-        assert result.finalScore > 0.3  # Above LOW threshold
-        assert result.riskLevel in (RiskLevel.LOW, RiskLevel.MEDIUM, RiskLevel.HIGH, RiskLevel.CRITICAL)
+
+        assert result.finalScore > 0.3
+        assert result.riskLevel in (RiskLevel.SUSPICIOUS, RiskLevel.DANGEROUS, RiskLevel.CRITICAL)
     
     def test_scoreContainsComponents(self, scorer: PhishingScorer) -> None:
         """Score result contains all components."""
@@ -767,7 +767,7 @@ class TestScorerIntegration:
 
         result = scorer.score("https://www.google.com/search?q=test")
         
-        assert result.riskLevel in (RiskLevel.SAFE, RiskLevel.LOW)
+        assert result.riskLevel == RiskLevel.SAFE
         assert result.finalScore < 0.4
         assert result.confidence > 0.3
     

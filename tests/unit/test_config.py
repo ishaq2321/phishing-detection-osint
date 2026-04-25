@@ -48,7 +48,7 @@ class TestSettingsDefaults:
         settings = Settings()
         assert settings.whoisTimeout == 10
         assert settings.dnsTimeout == 5
-        assert settings.httpTimeout == 10
+        assert settings.reputationTimeout == 10
     
     def test_defaultRetrySettings(self):
         """Default retry settings should be sensible."""
@@ -62,21 +62,13 @@ class TestSettingsDefaults:
         assert settings.highRiskThreshold == 0.7
         assert settings.mediumRiskThreshold == 0.4
         assert settings.mediumRiskThreshold < settings.highRiskThreshold
-    
-    def test_defaultCacheSettings(self):
-        """Default cache settings should be enabled."""
-        settings = Settings()
-        assert settings.cacheEnabled is True
-        assert settings.cacheTtlSeconds == 3600
-    
+
     def test_defaultApiSettings(self):
         """Default API settings should be secure for development."""
         settings = Settings()
-        assert settings.corsOrigins == "http://localhost:3000,https://localhost:3000"
+        assert settings.corsOrigins == "*"
         assert settings.corsMethods == "GET,POST,OPTIONS"
         assert settings.corsHeaders == "Content-Type,Authorization"
-        assert settings.apiRateLimit == 100
-        assert settings.apiPrefix == "/api"
 
 
 class TestSettingsValidation:
@@ -152,8 +144,8 @@ class TestSettingsEnvironmentVariables:
     
     def test_analyzerEngineOverride(self):
         """ANALYZER_ENGINE variable should override default via constructor."""
-        settings = Settings(analyzerEngine=AnalyzerEngine.LLM)
-        assert settings.analyzerEngine == AnalyzerEngine.LLM
+        settings = Settings(analyzerEngine=AnalyzerEngine.NLP)
+        assert settings.analyzerEngine == AnalyzerEngine.NLP
     
     def test_logLevelOverride(self):
         """LOG_LEVEL variable should override default via constructor."""
@@ -176,28 +168,24 @@ class TestSettingsEnvironmentVariables:
         """All settings should be configurable."""
         settings = Settings(
             environment=Environment.PRODUCTION,
-            analyzerEngine=AnalyzerEngine.LLM,
+            analyzerEngine=AnalyzerEngine.NLP,
             logLevel=LogLevel.WARNING,
             whoisTimeout=20,
             dnsTimeout=10,
-            httpTimeout=15,
+            reputationTimeout=15,
             maxRetries=5,
             retryDelaySeconds=2.0,
             virusTotalApiKey="vt-key",
             abuseIpDbApiKey="abuse-key",
             corsOrigins="http://localhost:3000",
-            apiRateLimit=50,
-            cacheEnabled=False,
-            cacheTtlSeconds=7200,
             highRiskThreshold=0.8,
             mediumRiskThreshold=0.3,
         )
-        
+
         assert settings.environment == Environment.PRODUCTION
-        assert settings.analyzerEngine == AnalyzerEngine.LLM
+        assert settings.analyzerEngine == AnalyzerEngine.NLP
         assert settings.whoisTimeout == 20
         assert settings.virusTotalApiKey == "vt-key"
-        assert settings.cacheEnabled is False
 
 
 class TestSettingsComputedProperties:
@@ -290,7 +278,6 @@ class TestEnumerations:
     def test_analyzerEngineValues(self):
         """AnalyzerEngine enum should have expected values."""
         assert AnalyzerEngine.NLP.value == "nlp"
-        assert AnalyzerEngine.LLM.value == "llm"
     
     def test_logLevelValues(self):
         """LogLevel enum should have expected values."""

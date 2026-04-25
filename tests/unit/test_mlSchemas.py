@@ -40,9 +40,8 @@ class TestEnumerations:
     def test_riskLevelValues(self) -> None:
         """RiskLevel has expected values."""
         assert RiskLevel.SAFE == "safe"
-        assert RiskLevel.LOW == "low"
-        assert RiskLevel.MEDIUM == "medium"
-        assert RiskLevel.HIGH == "high"
+        assert RiskLevel.SUSPICIOUS == "suspicious"
+        assert RiskLevel.DANGEROUS == "dangerous"
         assert RiskLevel.CRITICAL == "critical"
     
     def test_featureCategoryValues(self) -> None:
@@ -408,9 +407,9 @@ class TestRiskScore:
         assert score.confidence == 0.0
         assert score.components == []
         assert score.reasons == []
-    
+
     def test_isPhishingProperty(self) -> None:
-        """isPhishing returns True for HIGH/CRITICAL."""
+        """isPhishing returns True for DANGEROUS/CRITICAL."""
         # Safe
         score = RiskScore(
             url="https://example.com",
@@ -418,15 +417,15 @@ class TestRiskScore:
             riskLevel=RiskLevel.SAFE,
         )
         assert score.isPhishing is False
-        
-        # High
+
+        # Dangerous
         score = RiskScore(
             url="https://example.com",
             domain="example.com",
-            riskLevel=RiskLevel.HIGH,
+            riskLevel=RiskLevel.DANGEROUS,
         )
         assert score.isPhishing is True
-        
+
         # Critical
         score = RiskScore(
             url="https://example.com",
@@ -436,20 +435,20 @@ class TestRiskScore:
         assert score.isPhishing is True
     
     def test_isSuspiciousProperty(self) -> None:
-        """isSuspicious returns True for MEDIUM."""
-        # Medium
+        """isSuspicious returns True for SUSPICIOUS."""
+        # Suspicious
         score = RiskScore(
             url="https://example.com",
             domain="example.com",
-            riskLevel=RiskLevel.MEDIUM,
+            riskLevel=RiskLevel.SUSPICIOUS,
         )
         assert score.isSuspicious is True
-        
-        # Not medium
+
+        # Not suspicious
         score = RiskScore(
             url="https://example.com",
             domain="example.com",
-            riskLevel=RiskLevel.LOW,
+            riskLevel=RiskLevel.SAFE,
         )
         assert score.isSuspicious is False
     
@@ -706,13 +705,13 @@ class TestSerialization:
             url="https://example.com",
             domain="example.com",
             finalScore=0.5,
-            riskLevel=RiskLevel.MEDIUM,
+            riskLevel=RiskLevel.SUSPICIOUS,
         )
-        
+
         data = score.model_dump()
-        
+
         assert data["finalScore"] == 0.5
-        assert data["riskLevel"] == "medium"
+        assert data["riskLevel"] == "suspicious"
     
     def test_urlAnalysisResultJson(self) -> None:
         """UrlAnalysisResult can be serialized to JSON."""

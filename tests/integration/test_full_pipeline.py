@@ -88,11 +88,10 @@ class TestAnalyzerIntegration:
             url = extractedUrls[0]
             features = extractFeatures(url)
             riskScore = scoreUrl(url)
-            
+
             # Should detect as suspicious
-            assert riskScore.riskLevel in [RiskLevel.LOW,
-                                           RiskLevel.MEDIUM, 
-                                           RiskLevel.HIGH,
+            assert riskScore.riskLevel in [RiskLevel.SUSPICIOUS,
+                                           RiskLevel.DANGEROUS,
                                            RiskLevel.CRITICAL]
     
     @pytest.mark.asyncio

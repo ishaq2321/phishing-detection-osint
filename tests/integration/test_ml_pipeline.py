@@ -241,7 +241,7 @@ class TestScoringPipeline:
         
         # Should have low risk
         assert riskScore.finalScore < 0.3
-        assert riskScore.riskLevel in [RiskLevel.SAFE, RiskLevel.LOW]
+        assert riskScore.riskLevel == RiskLevel.SAFE
         assert riskScore.confidence > 0.7
     
     def test_scoreSuspiciousUrlWithOsint(self, suspiciousOsintData):
@@ -254,7 +254,7 @@ class TestScoringPipeline:
         
         # Should have elevated risk
         assert riskScore.finalScore > 0.3
-        assert riskScore.riskLevel in [RiskLevel.MEDIUM, RiskLevel.HIGH, RiskLevel.CRITICAL]
+        assert riskScore.riskLevel in [RiskLevel.SUSPICIOUS, RiskLevel.DANGEROUS, RiskLevel.CRITICAL]
         assert riskScore.confidence > 0.6
         
         # Should have suspicious reasons
@@ -273,9 +273,9 @@ class TestScoringPipeline:
         
         # Legit should score lower than suspicious
         assert legitScore.finalScore < suspiciousScore.finalScore
-        # Risk level ordering: safe=0, low=1, medium=2, high=3, critical=4
-        riskOrder = {RiskLevel.SAFE: 0, RiskLevel.LOW: 1, RiskLevel.MEDIUM: 2,
-                     RiskLevel.HIGH: 3, RiskLevel.CRITICAL: 4}
+        # Risk level ordering: safe=0, suspicious=1, dangerous=2, critical=3
+        riskOrder = {RiskLevel.SAFE: 0, RiskLevel.SUSPICIOUS: 1,
+                     RiskLevel.DANGEROUS: 2, RiskLevel.CRITICAL: 3}
         assert riskOrder[legitScore.riskLevel] <= riskOrder[suspiciousScore.riskLevel]
 
 
@@ -346,7 +346,7 @@ class TestEndToEndMLPipeline:
         
         # 3. Score (pass URL string, not FeatureSet)
         riskScore = scoreUrl(url, osintData=legitOsintData)
-        assert riskScore.riskLevel in [RiskLevel.SAFE, RiskLevel.LOW]
+        assert riskScore.riskLevel == RiskLevel.SAFE
         assert riskScore.finalScore < 0.4
         
         # 4. Verify components exist and are low risk
@@ -369,8 +369,8 @@ class TestEndToEndMLPipeline:
         
         # 3. Score
         riskScore = scoreUrl(url, osintData=suspiciousOsintData)
-        assert riskScore.riskLevel in [RiskLevel.MEDIUM, RiskLevel.HIGH, RiskLevel.CRITICAL]
-        assert riskScore.finalScore > 0.3  # Lowered from 0.5
+        assert riskScore.riskLevel in [RiskLevel.SUSPICIOUS, RiskLevel.DANGEROUS, RiskLevel.CRITICAL]
+        assert riskScore.finalScore > 0.3 # Lowered from 0.5
         
         # 4. Verify reasons provided
         assert len(riskScore.reasons) > 0

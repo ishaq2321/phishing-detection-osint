@@ -39,14 +39,12 @@ from osint.schemas import (
 
 class TestDataSourceEnum:
     """Tests for DataSource enumeration."""
-    
+
     def test_allSourcesExist(self):
         """All expected data sources should exist."""
         assert DataSource.WHOIS.value == "whois"
         assert DataSource.DNS.value == "dns"
         assert DataSource.REPUTATION.value == "reputation"
-        assert DataSource.SSL.value == "ssl"
-        assert DataSource.HTTP_HEADERS.value == "http_headers"
 
 
 class TestLookupStatusEnum:
@@ -413,7 +411,7 @@ class TestReputationResult:
         checks = [
             ReputationCheck(source=ReputationSource.VIRUSTOTAL, isMalicious=True),
             ReputationCheck(source=ReputationSource.ABUSEIPDB, isMalicious=True),
-            ReputationCheck(source=ReputationSource.PHISHTANK, isMalicious=False),
+            ReputationCheck(source=ReputationSource.INTERNAL, isMalicious=False),
         ]
         
         result = ReputationResult(

@@ -51,24 +51,24 @@ class TestHelperFunctions:
     def test_determineThreatLevel_safe(self):
         """Test threat level determination for safe content."""
         assert determineThreatLevel(0.0) == ThreatLevel.SAFE
-        assert determineThreatLevel(0.2) == ThreatLevel.SAFE
-        assert determineThreatLevel(0.39) == ThreatLevel.SAFE
-    
+        assert determineThreatLevel(0.1) == ThreatLevel.SAFE
+        assert determineThreatLevel(0.29) == ThreatLevel.SAFE
+
     def test_determineThreatLevel_suspicious(self):
         """Test threat level determination for suspicious content."""
+        assert determineThreatLevel(0.3) == ThreatLevel.SUSPICIOUS
         assert determineThreatLevel(0.4) == ThreatLevel.SUSPICIOUS
-        assert determineThreatLevel(0.5) == ThreatLevel.SUSPICIOUS
-        assert determineThreatLevel(0.59) == ThreatLevel.SUSPICIOUS
-    
+        assert determineThreatLevel(0.49) == ThreatLevel.SUSPICIOUS
+
     def test_determineThreatLevel_dangerous(self):
         """Test threat level determination for dangerous content."""
+        assert determineThreatLevel(0.5) == ThreatLevel.DANGEROUS
         assert determineThreatLevel(0.6) == ThreatLevel.DANGEROUS
-        assert determineThreatLevel(0.7) == ThreatLevel.DANGEROUS
-        assert determineThreatLevel(0.79) == ThreatLevel.DANGEROUS
-    
+        assert determineThreatLevel(0.69) == ThreatLevel.DANGEROUS
+
     def test_determineThreatLevel_critical(self):
         """Test threat level determination for critical content."""
-        assert determineThreatLevel(0.8) == ThreatLevel.CRITICAL
+        assert determineThreatLevel(0.7) == ThreatLevel.CRITICAL
         assert determineThreatLevel(0.9) == ThreatLevel.CRITICAL
         assert determineThreatLevel(1.0) == ThreatLevel.CRITICAL
     

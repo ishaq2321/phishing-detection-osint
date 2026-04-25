@@ -26,10 +26,21 @@ import type { HistoryEntry } from "@/types";
 import { cn } from "@/lib/utils";
 
 function formatRelativeTime(iso: string): string {
-  // Parse ISO string and ensure UTC handling
-  const date = new Date(iso);
-  if (isNaN(date.getTime())) return "unknown";
+  // Ensure ISO string has UTC marker - backend sends UTC times without Z suffix
+  const isoWithZ = iso.endsWith('Z') || iso.includes('+') ? iso : iso + 'Z';
+  const date = new Date(isoWithZ);
   
+  if (isNaN(date.getTime())) {
+    // Fallback: try parsing as-is if adding Z failed
+    const fallbackDate = new Date(iso);
+    if (isNaN(fallbackDate.getTime())) return "unknown";
+    return formatRelativeTimeInternal(fallbackDate);
+  }
+  
+  return formatRelativeTimeInternal(date);
+}
+
+function formatRelativeTimeInternal(date: Date): string {
   const diff = Date.now() - date.getTime();
   const seconds = Math.floor(diff / 1000);
   const mins = Math.floor(seconds / 60);

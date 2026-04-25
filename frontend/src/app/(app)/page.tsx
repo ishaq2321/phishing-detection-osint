@@ -26,14 +26,22 @@ import type { HistoryEntry } from "@/types";
 import { cn } from "@/lib/utils";
 
 function formatRelativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
+  // Parse ISO string and ensure UTC handling
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return "unknown";
+  
+  const diff = Date.now() - date.getTime();
+  const seconds = Math.floor(diff / 1000);
+  const mins = Math.floor(seconds / 60);
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  
+  if (seconds < 10) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
 }
 
 function formatDateGroup(iso: string): string {
@@ -79,10 +87,18 @@ export default function DashboardPage() {
   // SSR-safe: start with empty array, load data in useEffect
   const [recentEntries, setRecentEntries] = useState<HistoryEntry[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [, setTick] = useState(0); // Used to force re-render for time updates
 
   useEffect(() => {
     setMounted(true);
     setRecentEntries(getHistory().slice(0, 10));
+    
+    // Update relative times every 30 seconds
+    const interval = setInterval(() => {
+      setTick(t => t + 1);
+    }, 30000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const stats = useMemo(() => {

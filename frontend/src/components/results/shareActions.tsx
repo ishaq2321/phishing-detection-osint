@@ -16,6 +16,32 @@ import {
 import type { AnalysisResponse } from "@/types";
 import { showSuccess, showError } from "@/lib/toast";
 
+interface SharePayload {
+  response: AnalysisResponse;
+  content: string;
+  contentType: string;
+  historyId?: string;
+}
+
+function toBase64Url(value: string): string {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+function buildResultLink(payload: SharePayload): string {
+  const params = new URLSearchParams();
+  if (payload.historyId) {
+    params.set("hid", payload.historyId);
+  }
+  params.set("r", toBase64Url(JSON.stringify(payload)));
+  return `${window.location.origin}/results?${params.toString()}`;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                           */
 /* ------------------------------------------------------------------ */
@@ -74,9 +100,18 @@ interface ShareActionsProps {
   result: AnalysisResponse;
   /** The content string that was originally analysed. */
   content: string;
+  /** Content type used during analysis. */
+  contentType?: string;
+  /** Optional history entry ID used for durable deep links. */
+  historyId?: string;
 }
 
-export function ShareActions({ result, content }: ShareActionsProps) {
+export function ShareActions({
+  result,
+  content,
+  contentType = "url",
+  historyId,
+}: ShareActionsProps) {
   const [copiedText, setCopiedText] = useState(false);
   const [copiedJson, setCopiedJson] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -105,14 +140,20 @@ export function ShareActions({ result, content }: ShareActionsProps) {
 
   const copyLink = useCallback(async () => {
     try {
-      await writeToClipboard(window.location.href);
+      const link = buildResultLink({
+        response: result,
+        content,
+        contentType,
+        historyId,
+      });
+      await writeToClipboard(link);
       setCopiedLink(true);
       showSuccess("Link copied to clipboard");
       setTimeout(() => setCopiedLink(false), 2000);
     } catch {
       showError("Failed to copy link");
     }
-  }, []);
+  }, [content, contentType, historyId, result]);
 
   const handlePrint = useCallback(() => {
     window.print();

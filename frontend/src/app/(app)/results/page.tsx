@@ -8,7 +8,9 @@
  * link back to the Analyse page.
  */
 
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Search } from "lucide-react";
 import { LinkButton } from "@/components/ui/linkButton";
 import { Separator } from "@/components/ui/separator";
@@ -37,6 +39,31 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { getEntryById } from "@/lib/storage/historyStore";
+import type { StoredResult } from "@/lib/resultsContext";
+
+function fromBase64Url(value: string): string {
+  const normalized = value
+    .replace(/-/g, "+")
+    .replace(/_/g, "/")
+    .padEnd(Math.ceil(value.length / 4) * 4, "=");
+  const binary = atob(normalized);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function parseResultPayload(param: string | null): StoredResult | null {
+  if (!param) return null;
+  try {
+    const parsed = JSON.parse(fromBase64Url(param)) as StoredResult;
+    if (!parsed?.response || !parsed?.content || !parsed?.contentType) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
 
 /* Dynamically import heavy chart components to reduce initial bundle */
 const ScoreBreakdown = dynamic(
@@ -53,7 +80,9 @@ const ConfidenceBar = dynamic(
 );
 
 export default function ResultsPage() {
-  const { result } = useResult();
+  const searchParams = useSearchParams();
+  const { result, setResult } = useResult();
+  const [restoredResult, setRestoredResult] = useState<StoredResult | null>(null);
   const detailLevel: ResultsDetailLevel =
     typeof window !== "undefined" ? getSetting("resultsDetailLevel") : "detailed";
 
@@ -62,8 +91,46 @@ export default function ResultsPage() {
   const showOsint = detailLevel !== "simple";
   const showFeatures = detailLevel === "expert";
 
+  useEffect(() => {
+    if (result) {
+      setRestoredResult(null);
+      return;
+    }
+
+    const payloadResult = parseResultPayload(searchParams.get("r"));
+    if (payloadResult) {
+      setRestoredResult(payloadResult);
+      setResult(payloadResult);
+      return;
+    }
+
+    const historyId = searchParams.get("hid");
+    if (!historyId) {
+      setRestoredResult(null);
+      return;
+    }
+
+    const entry = getEntryById(historyId);
+    if (!entry) {
+      setRestoredResult(null);
+      return;
+    }
+
+    const hydrated: StoredResult = {
+      response: entry.response,
+      content: entry.content,
+      contentType: entry.contentType,
+      historyId: entry.id,
+    };
+
+    setRestoredResult(hydrated);
+    setResult(hydrated);
+  }, [result, searchParams, setResult]);
+
+  const activeResult = result ?? restoredResult;
+
   /* ── Empty state ──────────────────────────────────────────────── */
-  if (!result) {
+  if (!activeResult) {
     return (
       <div className="space-y-6">
         <div>
@@ -98,7 +165,7 @@ export default function ResultsPage() {
   }
 
   /* ── Results display ──────────────────────────────────────────── */
-  const { response, content, contentType } = result;
+  const { response, content, contentType, historyId } = activeResult;
 
   return (
     <PageTransition>
@@ -120,7 +187,12 @@ export default function ResultsPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <ShareActions result={response} content={content} />
+              <ShareActions
+                result={response}
+                content={content}
+                contentType={contentType}
+                historyId={historyId}
+              />
               <LinkButton href="/analyze" variant="outline" size="sm">
                 <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
                 New Analysis

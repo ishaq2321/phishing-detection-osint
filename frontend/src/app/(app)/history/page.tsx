@@ -88,6 +88,7 @@ export default function HistoryPage() {
         response: entry.response,
         content: entry.content,
         contentType: entry.contentType,
+        historyId: entry.id,
       });
       router.push("/results");
     },

@@ -31,6 +31,8 @@ export interface StoredResult {
   content: string;
   /** The content type that was used (url / email / text / auto). */
   contentType: string;
+  /** Optional history entry ID for durable deep links. */
+  historyId?: string;
 }
 
 /* ------------------------------------------------------------------ */

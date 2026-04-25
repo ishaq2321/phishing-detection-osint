@@ -36,7 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AnalysisProgress } from "@/components/analyze";
+import { AnalysisProgress, type AnalysisPhase } from "@/components/analyze";
 import { LinkButton } from "@/components/ui/linkButton";
 import { useResult } from "@/lib/resultsContext";
 import { addEntry } from "@/lib/storage/historyStore";
@@ -101,6 +101,8 @@ export default function AnalyzePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiComplete, setApiComplete] = useState(false);
   const [responseRef, setResponseRef] = useState<AnalysisResponse | null>(null);
+  const [analysisPhase, setAnalysisPhase] = useState<AnalysisPhase>("idle");
+  const [startedAt, setStartedAt] = useState<number | null>(null);
 
   /* ── Pre-fill from query params (re-analyse action) ────────────── */
   useEffect(() => {
@@ -125,19 +127,24 @@ export default function AnalyzePage() {
     setIsSubmitting(true);
     setApiComplete(false);
     setResponseRef(null);
+    setAnalysisPhase("preparing");
+    setStartedAt(Date.now());
 
     const controller = new AbortController();
     abortRef.current = controller;
 
     try {
       let response: AnalysisResponse;
+      setAnalysisPhase("sending");
 
       if (mode === "url") {
+        setAnalysisPhase("waiting");
         response = await analyzeUrl(
           { url: trimmed },
           { signal: controller.signal },
         );
       } else if (mode === "email") {
+        setAnalysisPhase("waiting");
         response = await analyzeEmail(
           {
             content: trimmed,
@@ -147,16 +154,22 @@ export default function AnalyzePage() {
           { signal: controller.signal },
         );
       } else {
+        setAnalysisPhase("waiting");
         response = await analyzeContent(
           { content: trimmed, contentType: mode },
           { signal: controller.signal },
         );
       }
 
+      setAnalysisPhase("processing");
       setResponseRef(response);
       setApiComplete(true);
+      setAnalysisPhase("complete");
     } catch (error: unknown) {
       setIsSubmitting(false);
+      setApiComplete(false);
+      setAnalysisPhase("idle");
+      setStartedAt(null);
       if (error instanceof DOMException && error.name === "AbortError") return;
 
       const message =
@@ -170,6 +183,8 @@ export default function AnalyzePage() {
     abortRef.current?.abort();
     setIsSubmitting(false);
     setApiComplete(false);
+    setAnalysisPhase("idle");
+    setStartedAt(null);
   }, []);
 
   /* ── Progress finished → navigate ──────────────────────────────── */
@@ -177,13 +192,14 @@ export default function AnalyzePage() {
     if (!responseRef) return;
 
     /* Save to history */
-    addEntry(content.trim(), mode, responseRef);
+    const historyEntry = addEntry(content.trim(), mode, responseRef);
 
     /* Set context for results page */
     setResult({
       response: responseRef,
       content: content.trim(),
       contentType: mode,
+      historyId: historyEntry.id,
     });
 
     router.push("/results");
@@ -364,6 +380,8 @@ export default function AnalyzePage() {
               <CardContent>
                 <AnalysisProgress
                   isComplete={apiComplete}
+                  phase={analysisPhase}
+                  startedAt={startedAt}
                   onFinished={handleProgressFinished}
                 />
               </CardContent>

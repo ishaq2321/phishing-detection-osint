@@ -1,20 +1,19 @@
 "use client";
 
 /**
- * AnalysisProgress — animated step progress bar displayed while an
- * analysis request is in flight.
+ * AnalysisProgress — event-driven progress UI shown while analysis is running.
  *
- * Shows five labelled stages with a time-based simulation, each step
- * advancing automatically.  The component auto-completes the last step
- * when the `isComplete` prop becomes `true`.
+ * Unlike synthetic timer-based progress, this component reflects real
+ * request phases emitted by the analyse page.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
-  Link,
-  Globe,
+  ClipboardCheck,
+  UploadCloud,
+  Server,
+  Sparkles,
   Brain,
-  Calculator,
   CheckCircle2,
   Loader2,
 } from "lucide-react";
@@ -27,18 +26,61 @@ import { cn } from "@/lib/utils";
 /* ------------------------------------------------------------------ */
 
 interface ProgressStep {
+  phase: AnalysisPhase;
   label: string;
   icon: React.ElementType;
-  durationMs: number;
+  description: string;
 }
 
+export type AnalysisPhase =
+  | "idle"
+  | "preparing"
+  | "sending"
+  | "waiting"
+  | "processing"
+  | "complete";
+
 const STEPS: ProgressStep[] = [
-  { label: "Extracting URL features…", icon: Link, durationMs: 1_200 },
-  { label: "Running OSINT checks…", icon: Globe, durationMs: 2_400 },
-  { label: "Analysing text with NLP…", icon: Brain, durationMs: 1_800 },
-  { label: "Calculating final score…", icon: Calculator, durationMs: 1_000 },
-  { label: "Analysis complete!", icon: CheckCircle2, durationMs: 500 },
+  {
+    phase: "preparing",
+    label: "Preparing input",
+    icon: ClipboardCheck,
+    description: "Validating your submission and preparing the request.",
+  },
+  {
+    phase: "sending",
+    label: "Sending request",
+    icon: UploadCloud,
+    description: "Submitting analysis request to backend services.",
+  },
+  {
+    phase: "waiting",
+    label: "Awaiting backend response",
+    icon: Server,
+    description: "Running feature extraction, OSINT checks, and model inference.",
+  },
+  {
+    phase: "processing",
+    label: "Finalising report",
+    icon: Sparkles,
+    description: "Preparing final verdict and risk indicators.",
+  },
+  {
+    phase: "complete",
+    label: "Analysis complete",
+    icon: CheckCircle2,
+    description: "Result is ready. Redirecting to report.",
+  },
 ];
+
+const PHASE_PROGRESS: Record<AnalysisPhase, number> = {
+  idle: 0,
+  preparing: 15,
+  sending: 30,
+  waiting: 70,
+  processing: 90,
+  complete: 100,
+};
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                             */
@@ -47,6 +89,10 @@ const STEPS: ProgressStep[] = [
 interface AnalysisProgressProps {
   /** Whether the real API call has finished. Jumps to 100% when true. */
   isComplete: boolean;
+  /** Current real request phase from the analyse page. */
+  phase: AnalysisPhase;
+  /** Timestamp when submission started (epoch ms). */
+  startedAt: number | null;
   /** Called after the final step finishes its mini-delay. */
   onFinished?: () => void;
 }
@@ -57,48 +103,38 @@ interface AnalysisProgressProps {
 
 export function AnalysisProgress({
   isComplete,
+  phase,
+  startedAt,
   onFinished,
 }: AnalysisProgressProps) {
-  const [activeStep, setActiveStep] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const effectivePhase: AnalysisPhase = isComplete ? "complete" : phase;
+  const activeStep = useMemo(() => {
+    const idx = STEPS.findIndex((s) => s.phase === effectivePhase);
+    return idx === -1 ? 0 : idx;
+  }, [effectivePhase]);
 
-  /* Advance through simulated steps on timers */
+  const progress = PHASE_PROGRESS[effectivePhase];
+  const [elapsedMs, setElapsedMs] = useState(0);
+
   useEffect(() => {
-    if (isComplete) {
-      const frame = requestAnimationFrame(() => {
-        setActiveStep(STEPS.length - 1);
-        setProgress(100);
-      });
-      const id = setTimeout(() => onFinished?.(), 600);
-      return () => {
-        cancelAnimationFrame(frame);
-        clearTimeout(id);
-      };
+    if (!startedAt || effectivePhase === "idle" || effectivePhase === "complete") {
+      setElapsedMs(0);
+      return;
     }
 
-    /* Don't advance past step 3 (penultimate) until real result */
-    if (activeStep >= STEPS.length - 2) return;
+    const tick = () => setElapsedMs(Math.max(0, Date.now() - startedAt));
+    tick();
+    const id = setInterval(tick, 250);
+    return () => clearInterval(id);
+  }, [startedAt, effectivePhase]);
 
-    const step = STEPS[activeStep];
-    const id = setTimeout(() => {
-      setActiveStep((s) => s + 1);
-    }, step.durationMs);
-
+  useEffect(() => {
+    if (!isComplete) return;
+    const id = setTimeout(() => onFinished?.(), 450);
     return () => clearTimeout(id);
-  }, [activeStep, isComplete, onFinished]);
+  }, [isComplete, onFinished]);
 
-  /* Smoothly update progress bar percentage */
-  useEffect(() => {
-    if (isComplete) {
-      const id = requestAnimationFrame(() => setProgress(100));
-      return () => cancelAnimationFrame(id);
-    }
-    const target = Math.round(
-      ((activeStep + 1) / STEPS.length) * 95,
-    );
-    const id = requestAnimationFrame(() => setProgress(target));
-    return () => cancelAnimationFrame(id);
-  }, [activeStep, isComplete]);
+  const elapsedLabel = `${(elapsedMs / 1000).toFixed(1)}s`;
 
   return (
     <div className="space-y-6" role="status" aria-live="polite">
@@ -109,11 +145,18 @@ export function AnalysisProgress({
         aria-label={`Analysis progress: ${progress}%`}
       />
 
+      <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <span>{STEPS[activeStep]?.description}</span>
+        {effectivePhase !== "complete" && effectivePhase !== "idle" && (
+          <span className="tabular-nums">Elapsed: {elapsedLabel}</span>
+        )}
+      </div>
+
       {/* Steps */}
       <div className="space-y-2">
         {STEPS.map((step, idx) => {
           const StepIcon = step.icon;
-          const isDone = idx < activeStep || (idx === activeStep && isComplete);
+          const isDone = idx < activeStep || (idx === activeStep && effectivePhase === "complete");
           const isCurrent = idx === activeStep && !isComplete;
 
           return (
@@ -148,7 +191,7 @@ export function AnalysisProgress({
 
       {/* sr-only live status */}
       <p className="sr-only">
-        {isComplete
+        {effectivePhase === "complete"
           ? "Analysis complete"
           : `Step ${activeStep + 1} of ${STEPS.length}: ${STEPS[activeStep].label}`}
       </p>

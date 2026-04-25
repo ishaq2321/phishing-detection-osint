@@ -16,7 +16,7 @@ test.describe("Navigation", () => {
     await page.goto("/");
 
     /* Dashboard */
-    await expect(page.getByRole("heading", { name: "Welcome to PhishGuard" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "PhishGuard" })).toBeVisible();
 
     /* Analyse */
     await page.getByRole("link", { name: "Analyse" }).first().click();

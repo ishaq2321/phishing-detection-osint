@@ -256,7 +256,7 @@ export function BatchResults({ entries }: BatchResultsProps) {
                   </TableCell>
                   <TableCell className="text-right font-mono text-xs">
                     {entry.status === "done" && entry.response
-                      ? `${(entry.response.analysisTime / 1000).toFixed(1)}s`
+                      ? `${entry.response.analysisTime.toFixed(2)}s`
                       : "—"}
                   </TableCell>
                 </TableRow>

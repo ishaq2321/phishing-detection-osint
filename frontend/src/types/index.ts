@@ -15,3 +15,5 @@ export type {
   AnalyzeUrlRequest,
   AnalyzeEmailRequest,
 } from "./analysis";
+
+export type { HistoryEntry } from "@/lib/storage/historyStore";

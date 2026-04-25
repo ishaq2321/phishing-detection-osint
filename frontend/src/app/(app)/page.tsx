@@ -394,7 +394,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <a
-                href="https://github.com/ishaq2321"
+                href="https://github.com/ishaq2321/phishing-detection-osint"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"

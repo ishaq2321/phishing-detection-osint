@@ -242,6 +242,17 @@ the user regarding the success or failure of network requests, ensuring
 the user is always aware of the system's status during the 1-3 seconds
 required for OSINT queries.
 
+For results delivery, the frontend uses a layered restoration strategy.
+The primary transfer path is an in-memory \texttt{ResultsContext} for
+fast post-analysis navigation. For shareability and cross-session
+reliability, the ``Copy Link'' action serializes the full
+\texttt{AnalysisResponse} payload into a compact URL-safe query value
+(\texttt{r}), optionally alongside a local history identifier
+(\texttt{hid}). On page load, the Results route restores in order:
+context \(\rightarrow\) query payload \(\rightarrow\) history lookup.
+This guarantees that shared report links remain reproducible even in
+private/incognito browser sessions.
+
 \subsection{Visual Presentation and
 Theming}\label{visual-presentation-and-theming}
 
@@ -256,8 +267,11 @@ communicate the threat levels computed by the backend orchestrator:
 green for `Safe', amber for `Suspicious', and red for critical
 `Phishing' indicators. Fluid animations and layout transitions, powered
 by the \texttt{motion} library, are employed to provide immediate visual
-feedback during the analysis lifecycle, elegantly bridging the perceived
-latency gap during external network lookups.
+feedback during the analysis lifecycle. The Analyse page progress
+component is event-driven rather than timer-simulated, exposing concrete
+frontend phases (preparing, sending, waiting, processing, complete)
+plus elapsed time while the request is in-flight. This improves UX
+honesty and makes the loading state auditable during manual QA.
 
 \subsection{System Design Summary}\label{summary-1}
 

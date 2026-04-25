@@ -55,13 +55,13 @@ The Analyse page is the primary interface for submitting content (Figure \ref{fi
 \item \textbf{Enter the content} in the input field. In URL mode, this is a single-line input; in Email and Text modes, a multi-line textarea is provided.
 \item \textbf{Submit the analysis} by clicking the ``Analyse'' button. A five-step progress indicator is displayed during processing:
 \begin{enumerate}
-\item Extracting URL features
-\item Running OSINT checks
-\item Analysing text with NLP
-\item Calculating final score
+\item Preparing input
+\item Sending request
+\item Awaiting backend response
+\item Finalising report
 \item Analysis complete
 \end{enumerate}
-The progress indicator is a client-side animation that runs on a timer to provide visual feedback while the single API request is in flight. Navigation to the Results page occurs automatically once the server response is received.
+The progress indicator is event-driven: each stage corresponds to the actual request lifecycle in the frontend. While waiting for the backend response, an elapsed-time counter is shown. Navigation to the Results page occurs automatically once the server response is received.
 \item \textbf{Cancel if needed} by clicking the ``Cancel'' button that replaces the Analyse button during processing. This stops the network request in progress.
 \item \textbf{Clear the form} using the ``Clear'' ghost-variant button that appears when content has been entered. This resets the content, subject, and sender fields.
 \end{enumerate}
@@ -95,7 +95,7 @@ Upon completion, a success toast notification displays ``Batch analysis complete
 
 \section{Interpreting the Results}
 
-When the backend completes its evaluation, the application navigates to the Results page (Figure \ref{fig:results-page}). This page provides a comprehensive breakdown of the analysis. It is important to note that the Results page is ephemeral: it reads from an in-memory React context, not from persistent storage. If the user refreshes the page or navigates directly to \texttt{/results} via the URL bar, an empty-state card appears with a ``No Results Yet'' title and a ``Go to Analyse'' button. To revisit past analyses, the user should use the History page (Section \ref{sec:history}), which provides persistent storage.
+When the backend completes its evaluation, the application navigates to the Results page (Figure \ref{fig:results-page}). This page provides a comprehensive breakdown of the analysis. The result is first stored in React context for immediate rendering. In addition, ``Copy Link'' now generates a portable deep link containing the result payload, so the report can be reopened after a refresh or in a private/incognito browser window. If no context is available, the Results page attempts restoration from the query payload (\texttt{r}) and then from a local history identifier (\texttt{hid}). If neither is present, an empty-state card appears with a ``No Results Yet'' title and a ``Go to Analyse'' button.
 
 \begin{figure}[htbp]
 \centering
@@ -193,7 +193,7 @@ The Results page provides four action buttons for sharing the analysis, each wit
 \begin{itemize}
 \item \textbf{Copy Summary:} Copies a formatted text report to the clipboard containing the content, verdict, threat level, confidence score, recommendation, and risk indicators. Upon success, the button icon changes to a green checkmark and the label changes to ``Copied!'' for 2 seconds, accompanied by a success toast.
 \item \textbf{Copy JSON:} Copies the raw JSON response from the API, with the same visual feedback and toast notification.
-\item \textbf{Copy Link:} Copies the current page URL, with the same visual feedback and toast notification.
+\item \textbf{Copy Link:} Copies a durable share link (\texttt{/results?hid=\ldots\&r=\ldots}) containing a compact encoded result payload. This allows opening the same report in new tabs, after refresh, and in private/incognito mode, with the same visual feedback and toast notification.
 \item \textbf{Print:} Opens the browser print dialog with a print-optimised layout that hides the navigation sidebar, footer, mobile navigation, sheet overlays, and toast notifications, using white backgrounds and black text optimised for paper output.
 \end{itemize}
 

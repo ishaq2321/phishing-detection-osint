@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Shield,
   ArrowRight,
@@ -76,10 +76,14 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
 }
 
 export default function DashboardPage() {
-  const recentEntries = useState<HistoryEntry[]>(() => {
-    if (typeof window === "undefined") return [] as HistoryEntry[];
-    return getHistory().slice(0, 10);
-  })[0];
+  // SSR-safe: start with empty array, load data in useEffect
+  const [recentEntries, setRecentEntries] = useState<HistoryEntry[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setRecentEntries(getHistory().slice(0, 10));
+  }, []);
 
   const stats = useMemo(() => {
     const total = recentEntries.length;

@@ -444,6 +444,20 @@ export default function SettingsPage() {
                 <dd>
                   Eötvös Loránd University (ELTE) — Faculty of Informatics
                 </dd>
+
+                <dt className="font-medium text-muted-foreground">
+                  Documentation
+                </dt>
+                <dd>
+                  <a
+                    href="https://github.com/ishaq2321/phishing-detection-osint/tree/main/docs"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary underline-offset-4 hover:underline"
+                  >
+                    GitHub docs folder
+                  </a>
+                </dd>
               </dl>
             </CardContent>
           </Card>

@@ -113,6 +113,55 @@ BRAND_PATTERNS: list[PatternDefinition] = [
         description="Potential Dropbox impersonation",
         checkDomain=True,
     ),
+    PatternDefinition(
+        patternType="brand_impersonation",
+        pattern=re.compile(r"bankofamerica[^a-z]|[^a-z]bankofamerica|boa[^a-z]", re.IGNORECASE),
+        severity=0.9,
+        description="Potential Bank of America impersonation",
+        checkDomain=True,
+    ),
+    PatternDefinition(
+        patternType="brand_impersonation",
+        pattern=re.compile(r"wellsfargo[^a-z]|[^a-z]wellsfargo", re.IGNORECASE),
+        severity=0.9,
+        description="Potential Wells Fargo impersonation",
+        checkDomain=True,
+    ),
+    PatternDefinition(
+        patternType="brand_impersonation",
+        pattern=re.compile(r"chase[^a-z]|[^a-z]chase(?!r|d|n|y|ing)", re.IGNORECASE),
+        severity=0.85,
+        description="Potential Chase impersonation",
+        checkDomain=True,
+    ),
+    PatternDefinition(
+        patternType="brand_impersonation",
+        pattern=re.compile(r"irs[^a-z]|[^a-z]irs(?![^a-z])", re.IGNORECASE),
+        severity=0.9,
+        description="Potential IRS impersonation",
+        checkDomain=True,
+    ),
+    PatternDefinition(
+        patternType="brand_impersonation",
+        pattern=re.compile(r"fedex[^a-z]|[^a-z]fedex", re.IGNORECASE),
+        severity=0.85,
+        description="Potential FedEx impersonation",
+        checkDomain=True,
+    ),
+    PatternDefinition(
+        patternType="brand_impersonation",
+        pattern=re.compile(r"dhl[^a-z]|[^a-z]dhl(?![^a-z])", re.IGNORECASE),
+        severity=0.85,
+        description="Potential DHL impersonation",
+        checkDomain=True,
+    ),
+    PatternDefinition(
+        patternType="brand_impersonation",
+        pattern=re.compile(r"usps[^a-z]|[^a-z]usps(?![^a-z])", re.IGNORECASE),
+        severity=0.85,
+        description="Potential USPS impersonation",
+        checkDomain=True,
+    ),
 ]
 
 # URL obfuscation patterns

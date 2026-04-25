@@ -51,7 +51,7 @@ import {
   type MaxHistoryEntries,
   type AutoClearDays,
 } from "@/lib/storage/settingsStore";
-import { clearHistory, getHistoryCount } from "@/lib/storage/historyStore";
+import { clearHistory, getHistoryCount, pruneHistory } from "@/lib/storage/historyStore";
 import { showSuccess, showWarning, showError } from "@/lib/toast";
 import { APP_NAME, APP_VERSION, APP_TAGLINE } from "@/lib/constants";
 import { PageTransition } from "@/components/ui/pageTransition";
@@ -91,6 +91,17 @@ export default function SettingsPage() {
     <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
       const updated = updateSetting(key, value);
       setSettings(updated);
+
+      if (key === "maxHistoryEntries" || key === "autoClearDays") {
+        const removed = pruneHistory();
+        if (removed > 0) {
+          showWarning(
+            "History pruned",
+            `${removed} old ${removed === 1 ? "entry" : "entries"} removed to match the new setting.`,
+          );
+        }
+        setHistoryCount(getHistoryCount());
+      }
     },
     [],
   );

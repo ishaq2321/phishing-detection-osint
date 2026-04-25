@@ -1,19 +1,19 @@
 /**
  * History store — localStorage-backed CRUD for past analysis results.
  *
- * Persists up to `MAX_ENTRIES` records using FIFO eviction.  Every
- * public function is synchronous and safe to call on the server
+ * Respects `maxHistoryEntries` and `autoClearDays` from settingsStore.
+ * Every public function is synchronous and safe to call on the server
  * (returns empty data when `window` is unavailable).
  */
 
 import type { AnalysisResponse, ThreatLevel } from "@/types";
+import { getSetting } from "@/lib/storage/settingsStore";
 
 /* ------------------------------------------------------------------ */
-/*  Constants                                                         */
+/* Constants */
 /* ------------------------------------------------------------------ */
 
 const STORAGE_KEY = "phishguard:history";
-const MAX_ENTRIES = 100;
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -80,7 +80,7 @@ export function getEntryById(id: string): HistoryEntry | null {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Write                                                             */
+/* Write */
 /* ------------------------------------------------------------------ */
 
 /** Persist the current entries list. */
@@ -89,11 +89,36 @@ function persist(entries: HistoryEntry[]): void {
 }
 
 /**
+ * Remove entries whose `analyzedAt` is older than the configured
+ * `autoClearDays` setting.  Called automatically on every mutation.
+ */
+function purgeExpired(entries: HistoryEntry[]): HistoryEntry[] {
+  const autoClearDays = getSetting("autoClearDays");
+  if (autoClearDays === 0) return entries;
+
+  const cutoff = Date.now() - autoClearDays * 24 * 60 * 60 * 1000;
+  return entries.filter((e) => new Date(e.analyzedAt).getTime() >= cutoff);
+}
+
+/**
+ * Enforce the `maxHistoryEntries` cap from settings.
+ * Removes the oldest entries (at the end of the list) when over limit.
+ */
+function enforceMaxEntries(entries: HistoryEntry[]): HistoryEntry[] {
+  const maxEntries = getSetting("maxHistoryEntries");
+  if (entries.length > maxEntries) {
+    return entries.slice(0, maxEntries);
+  }
+  return entries;
+}
+
+/**
  * Add a new analysis result to history.
  *
  * - Generates a unique ID.
  * - Prepends to the list (newest first).
- * - Evicts the oldest entry when the cap is reached.
+ * - Purges expired entries based on `autoClearDays` setting.
+ * - Enforces `maxHistoryEntries` cap from settings.
  */
 export function addEntry(
   content: string,
@@ -111,18 +136,16 @@ export function addEntry(
     response,
   };
 
-  const entries = getHistory();
+  let entries = getHistory();
   entries.unshift(entry);
-
-  if (entries.length > MAX_ENTRIES) {
-    entries.length = MAX_ENTRIES;
-  }
+  entries = purgeExpired(entries);
+  entries = enforceMaxEntries(entries);
 
   persist(entries);
   return entry;
 }
 
-/** Delete a single entry by ID.  Returns `true` if found & removed. */
+/** Delete a single entry by ID. Returns `true` if found & removed. */
 export function deleteEntry(id: string): boolean {
   const entries = getHistory();
   const idx = entries.findIndex((e) => e.id === id);
@@ -137,6 +160,27 @@ export function clearHistory(): void {
   if (isClient()) {
     localStorage.removeItem(STORAGE_KEY);
   }
+}
+
+/**
+ * Immediately enforce the current `maxHistoryEntries` and
+ * `autoClearDays` settings on the stored history.
+ *
+ * Call this whenever the user changes a history-related setting
+ * so the effect is visible right away (not just on the next `addEntry`).
+ *
+ * Returns the number of entries removed.
+ */
+export function pruneHistory(): number {
+  if (!isClient()) return 0;
+  const before = getHistory();
+  let entries = purgeExpired(before);
+  entries = enforceMaxEntries(entries);
+  const removed = before.length - entries.length;
+  if (removed > 0) {
+    persist(entries);
+  }
+  return removed;
 }
 
 /* ------------------------------------------------------------------ */

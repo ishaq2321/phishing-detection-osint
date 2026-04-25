@@ -29,6 +29,7 @@ import {
   FeatureCards,
 } from "@/components/results";
 import { useResult } from "@/lib/resultsContext";
+import { getSetting, type ResultsDetailLevel } from "@/lib/storage/settingsStore";
 import {
   Card,
   CardContent,
@@ -53,6 +54,13 @@ const ConfidenceBar = dynamic(
 
 export default function ResultsPage() {
   const { result } = useResult();
+  const detailLevel: ResultsDetailLevel =
+    typeof window !== "undefined" ? getSetting("resultsDetailLevel") : "detailed";
+
+  const showReasons = detailLevel !== "simple";
+  const showContent = detailLevel !== "simple";
+  const showOsint = detailLevel !== "simple";
+  const showFeatures = detailLevel === "expert";
 
   /* ── Empty state ──────────────────────────────────────────────── */
   if (!result) {
@@ -102,9 +110,13 @@ export default function ResultsPage() {
               <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 Analysis Results
               </h1>
-              <p className="text-sm text-muted-foreground sm:text-base">
-                Detailed phishing detection report
-              </p>
+        <p className="text-sm text-muted-foreground sm:text-base">
+          {detailLevel === "simple"
+            ? "Phishing detection verdict"
+            : detailLevel === "expert"
+              ? "Comprehensive phishing detection report"
+              : "Detailed phishing detection report"}
+        </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -124,68 +136,82 @@ export default function ResultsPage() {
 
         <Separator />
 
-        {/* Two-column grid: reasons + content */}
+      {/* Two-column grid: reasons + content */}
+      {(showReasons || showContent) && (
         <StaggerGroup className="grid gap-6 lg:grid-cols-2">
-          <StaggerItem>
-            <ReasonsList reasons={response.verdict.reasons} />
-          </StaggerItem>
-          <StaggerItem>
-            <ContentPreview
-              content={content}
-              contentType={contentType}
-              analyzedAt={response.analyzedAt}
-              analysisTime={response.analysisTime}
-            />
-          </StaggerItem>
+          {showReasons && (
+            <StaggerItem>
+              <ReasonsList reasons={response.verdict.reasons} />
+            </StaggerItem>
+          )}
+          {showContent && (
+            <StaggerItem>
+              <ContentPreview
+                content={content}
+                contentType={contentType}
+                analyzedAt={response.analyzedAt}
+                analysisTime={response.analysisTime}
+              />
+            </StaggerItem>
+          )}
         </StaggerGroup>
+      )}
 
-        {/* OSINT intelligence cards */}
-        <Separator />
-        <SlideUp delay={0.1}>
-          <div>
-            <h2 className="mb-4 text-lg font-semibold tracking-tight">
-              OSINT Intelligence
-            </h2>
-            <OsintCards osint={response.osint} />
-          </div>
-        </SlideUp>
+      {/* OSINT intelligence cards */}
+      {showOsint && (
+        <>
+          <Separator />
+          <SlideUp delay={0.1}>
+            <div>
+              <h2 className="mb-4 text-lg font-semibold tracking-tight">
+                OSINT Intelligence
+              </h2>
+              <OsintCards osint={response.osint} />
+            </div>
+          </SlideUp>
+        </>
+      )}
 
-        {/* Feature extraction & detected tactics */}
-        <Separator />
-        <SlideUp delay={0.15}>
-          <div>
-            <h2 className="mb-4 text-lg font-semibold tracking-tight">
-              Feature Extraction
-            </h2>
-            <FeatureCards features={response.features} />
-          </div>
-        </SlideUp>
+      {/* Feature extraction & detected tactics */}
+      {showFeatures && (
+        <>
+          <Separator />
+          <SlideUp delay={0.15}>
+            <div>
+              <h2 className="mb-4 text-lg font-semibold tracking-tight">
+                Feature Extraction
+              </h2>
+              <FeatureCards features={response.features} />
+            </div>
+          </SlideUp>
+        </>
+      )}
 
-        {/* Score visualisation */}
-        <Separator />
-        <SlideUp delay={0.2}>
-          <div>
-            <h2 className="mb-4 text-lg font-semibold tracking-tight">
-              Score Visualisation
-            </h2>
-            <StaggerGroup className="grid gap-4 lg:grid-cols-3">
-              <StaggerItem>
-                <ScoreBreakdown
-                  confidenceScore={response.verdict.confidenceScore}
-                />
-              </StaggerItem>
-              <StaggerItem>
-                <ThreatGauge score={response.verdict.confidenceScore} />
-              </StaggerItem>
-              <StaggerItem>
-                <ConfidenceBar
-                  confidenceScore={response.verdict.confidenceScore}
-                  threatLevel={response.verdict.threatLevel}
-                />
-              </StaggerItem>
-            </StaggerGroup>
-          </div>
-        </SlideUp>
+      {/* Score visualisation */}
+      <Separator />
+      <SlideUp delay={0.2}>
+        <div>
+          <h2 className="mb-4 text-lg font-semibold tracking-tight">
+            Score Visualisation
+          </h2>
+          <StaggerGroup className="grid gap-4 lg:grid-cols-3">
+            <StaggerItem>
+              <ScoreBreakdown
+                confidenceScore={response.verdict.confidenceScore}
+              />
+            </StaggerItem>
+            <StaggerItem>
+              <ThreatGauge score={response.verdict.confidenceScore} />
+            </StaggerItem>
+            <StaggerItem>
+              <ConfidenceBar
+                confidenceScore={response.verdict.confidenceScore}
+                threatLevel={response.verdict.threatLevel}
+              />
+            </StaggerItem>
+          </StaggerGroup>
+        </div>
+      </SlideUp>
       </div>
     </PageTransition>
   );

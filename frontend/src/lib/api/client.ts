@@ -9,11 +9,12 @@
  */
 
 import { API_BASE_URL } from "@/lib/constants";
+import { getSetting } from "@/lib/storage/settingsStore";
 import { ApiError, NetworkError, ValidationError } from "./errors";
 import type { ValidationDetail } from "./errors";
 
 /* ------------------------------------------------------------------ */
-/*  Configuration                                                     */
+/* Configuration */
 /* ------------------------------------------------------------------ */
 
 /** Default timeout for all requests (ms). */
@@ -24,6 +25,20 @@ const DEFAULT_HEADERS: HeadersInit = {
   "Content-Type": "application/json",
   Accept: "application/json",
 };
+
+/**
+ * Resolve the effective API base URL.
+ *
+ * Priority:
+ * 1. User-configured `apiUrl` in localStorage settings (via settingsStore)
+ * 2. Build-time `NEXT_PUBLIC_API_URL` env var
+ * 3. Hardcoded default `http://localhost:8000`
+ */
+function resolveBaseUrl(): string {
+  const userUrl = getSetting("apiUrl");
+  if (userUrl && userUrl.trim() !== "") return userUrl.replace(/\/+$/, "");
+  return API_BASE_URL;
+}
 
 /* ------------------------------------------------------------------ */
 /*  Request options                                                   */
@@ -68,7 +83,8 @@ export async function apiClient<T>(
   });
 
   /* ---- Build the Request ---------------------------------------- */
-  const url = `${API_BASE_URL}${path}`;
+  const baseUrl = resolveBaseUrl();
+  const url = `${baseUrl}${path}`;
 
   const fetchInit: RequestInit = {
     ...init,

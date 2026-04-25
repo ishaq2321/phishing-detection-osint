@@ -71,12 +71,15 @@ OSINT_FEATURE_NAMES: list[str] = FEATURE_NAMES[17:]
 # =============================================================================
 
 class RiskLevel(str, Enum):
-    """Risk level classification for phishing detection."""
-    
+    """Risk level classification for phishing detection.
+
+    Aligned with the system-wide ThreatLevel thresholds:
+    SAFE < 0.3, SUSPICIOUS < 0.5, DANGEROUS < 0.7, CRITICAL >= 0.7
+    """
+
     SAFE = "safe"
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
+    SUSPICIOUS = "suspicious"
+    DANGEROUS = "dangerous"
     CRITICAL = "critical"
 
 
@@ -642,12 +645,12 @@ class RiskScore(BaseModel):
     @property
     def isPhishing(self) -> bool:
         """Determine if URL is classified as phishing."""
-        return self.riskLevel in (RiskLevel.HIGH, RiskLevel.CRITICAL)
-    
+        return self.riskLevel in (RiskLevel.DANGEROUS, RiskLevel.CRITICAL)
+
     @property
     def isSuspicious(self) -> bool:
         """Determine if URL is suspicious but not confirmed phishing."""
-        return self.riskLevel == RiskLevel.MEDIUM
+        return self.riskLevel == RiskLevel.SUSPICIOUS
     
     @property
     def componentBreakdown(self) -> dict[str, float]:

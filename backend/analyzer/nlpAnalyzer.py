@@ -93,21 +93,10 @@ AUTHORITY_TERMS = [
 
 # Known brands commonly impersonated
 COMMON_BRANDS = [
-    "PayPal",
-    "Microsoft",
-    "Apple",
-    "Amazon",
-    "Google",
-    "Facebook",
-    "Instagram",
-    "Netflix",
-    "Bank of America",
-    "Wells Fargo",
-    "Chase",
-    "IRS",
-    "FedEx",
-    "DHL",
-    "USPS",
+    "PayPal", "Microsoft", "Apple", "Amazon", "Google",
+    "Facebook", "Instagram", "Netflix", "LinkedIn", "Dropbox",
+    "Bank of America", "Wells Fargo", "Chase",
+    "IRS", "FedEx", "DHL", "USPS",
 ]
 
 # Credential and sensitive info requests
@@ -135,6 +124,53 @@ SUSPICIOUS_ACTIONS = [
     "open the attachment",
     "follow this link",
     "visit this page",
+]
+
+# Emotional manipulation phrases
+EMOTIONAL_PHRASES = [
+    "you have been selected",
+    "congratulations",
+    "you are a winner",
+    "once in a lifetime",
+    "don't miss out",
+    "exclusive offer",
+    "special deal just for you",
+    "you deserve",
+    "limited spots",
+    "act now or lose",
+]
+
+# Monetary request phrases
+MONETARY_PHRASES = [
+    "wire transfer",
+    "send money",
+    "payment required",
+    "processing fee",
+    "advance fee",
+    "transfer funds",
+    "pay now",
+    "send payment",
+    "outstanding balance",
+    "overdue payment",
+    "claim your prize",
+    "lottery winnings",
+    "inheritance",
+    "unclaimed funds",
+    "beneficiary",
+]
+
+# Social proof / trust signals
+SOCIAL_PROOF_PHRASES = [
+    "millions of users",
+    "trusted by",
+    "as seen on",
+    "verified by",
+    "certified",
+    "award-winning",
+    "number one",
+    "most popular",
+    "everyone is using",
+    "join millions",
 ]
 
 
@@ -210,6 +246,21 @@ class NlpAnalyzer(BaseAnalyzer):
         self.actionMatcher = PhraseMatcher(self.nlp.vocab, attr="LOWER")
         actionPatterns = [self.nlp.make_doc(text) for text in SUSPICIOUS_ACTIONS]
         self.actionMatcher.add("ACTION", actionPatterns)
+
+        # Emotional manipulation matcher
+        self.emotionalMatcher = PhraseMatcher(self.nlp.vocab, attr="LOWER")
+        emotionalPatterns = [self.nlp.make_doc(text) for text in EMOTIONAL_PHRASES]
+        self.emotionalMatcher.add("EMOTIONAL", emotionalPatterns)
+
+        # Monetary request matcher
+        self.monetaryMatcher = PhraseMatcher(self.nlp.vocab, attr="LOWER")
+        monetaryPatterns = [self.nlp.make_doc(text) for text in MONETARY_PHRASES]
+        self.monetaryMatcher.add("MONETARY", monetaryPatterns)
+
+        # Social proof matcher
+        self.socialProofMatcher = PhraseMatcher(self.nlp.vocab, attr="LOWER")
+        socialProofPatterns = [self.nlp.make_doc(text) for text in SOCIAL_PROOF_PHRASES]
+        self.socialProofMatcher.add("SOCIAL_PROOF", socialProofPatterns)
     
     async def analyze(
         self,
@@ -281,19 +332,43 @@ class NlpAnalyzer(BaseAnalyzer):
         indicators.extend(actionIndicators)
         if actionIndicators:
             detectedTactics.add(PhishingTactic.LINK_MANIPULATION)
-        
+
+        # Detect emotional manipulation
+        emotionalIndicators = self._detectEmotionalManipulation(doc)
+        indicators.extend(emotionalIndicators)
+        if emotionalIndicators:
+            detectedTactics.add(PhishingTactic.EMOTIONAL_MANIPULATION)
+
+        # Detect monetary requests
+        monetaryIndicators = self._detectMonetaryRequests(doc)
+        indicators.extend(monetaryIndicators)
+        if monetaryIndicators:
+            detectedTactics.add(PhishingTactic.MONETARY_REQUEST)
+
+        # Detect social proof
+        socialProofIndicators = self._detectSocialProof(doc)
+        indicators.extend(socialProofIndicators)
+        if socialProofIndicators:
+            detectedTactics.add(PhishingTactic.SOCIAL_PROOF)
+
         # Detect links (URL-specific)
         if contentType in [ContentType.EMAIL, ContentType.TEXT]:
             linkIndicators = self._detectLinkManipulation(content)
             indicators.extend(linkIndicators)
             if linkIndicators:
                 detectedTactics.add(PhishingTactic.LINK_MANIPULATION)
+
+            # Detect attachment malware indicators
+            attachmentIndicators = self._detectAttachmentMalware(content, doc)
+            indicators.extend(attachmentIndicators)
+            if attachmentIndicators:
+                detectedTactics.add(PhishingTactic.ATTACHMENT_MALWARE)
         
         # Calculate confidence score
         confidenceScore = self._calculateConfidence(indicators, detectedTactics)
         
         # Determine verdict
-        isPhishing = confidenceScore >= 0.6
+        isPhishing = confidenceScore >= 0.5
         threatLevel = determineThreatLevel(confidenceScore)
         
         # Generate reasons
@@ -411,7 +486,7 @@ class NlpAnalyzer(BaseAnalyzer):
         """Detect suspicious action requests."""
         indicators: list[DetectedIndicator] = []
         matches = self.actionMatcher(doc)
-        
+
         for matchId, start, end in matches:
             span = doc[start:end]
             indicators.append(
@@ -423,7 +498,106 @@ class NlpAnalyzer(BaseAnalyzer):
                     position=span.start_char,
                 )
             )
-        
+
+        return indicators
+
+    def _detectEmotionalManipulation(self, doc: Doc) -> list[DetectedIndicator]:
+        """Detect emotional manipulation and appeal phrases."""
+        indicators: list[DetectedIndicator] = []
+        matches = self.emotionalMatcher(doc)
+
+        for matchId, start, end in matches:
+            span = doc[start:end]
+            indicators.append(
+                DetectedIndicator(
+                    category="emotional_manipulation",
+                    description=f"Emotional manipulation detected: '{span.text}'",
+                    severity=0.5,
+                    evidence=span.text,
+                    position=span.start_char,
+                )
+            )
+
+        return indicators
+
+    def _detectMonetaryRequests(self, doc: Doc) -> list[DetectedIndicator]:
+        """Detect monetary request and financial lure phrases."""
+        indicators: list[DetectedIndicator] = []
+        matches = self.monetaryMatcher(doc)
+
+        for matchId, start, end in matches:
+            span = doc[start:end]
+            indicators.append(
+                DetectedIndicator(
+                    category="monetary_request",
+                    description=f"Monetary request detected: '{span.text}'",
+                    severity=0.7,
+                    evidence=span.text,
+                    position=span.start_char,
+                )
+            )
+
+        return indicators
+
+    def _detectSocialProof(self, doc: Doc) -> list[DetectedIndicator]:
+        """Detect fake social proof and trust signals."""
+        indicators: list[DetectedIndicator] = []
+        matches = self.socialProofMatcher(doc)
+
+        for matchId, start, end in matches:
+            span = doc[start:end]
+            indicators.append(
+                DetectedIndicator(
+                    category="social_proof",
+                    description=f"Social proof / trust signal detected: '{span.text}'",
+                    severity=0.4,
+                    evidence=span.text,
+                    position=span.start_char,
+                )
+            )
+
+        return indicators
+
+    def _detectAttachmentMalware(
+        self, content: str, doc: Doc
+    ) -> list[DetectedIndicator]:
+        """Detect attachment-related malware indicators."""
+        indicators: list[DetectedIndicator] = []
+        suspiciousExtensions = [
+            ".exe", ".scr", ".bat", ".cmd", ".vbs", ".js",
+            ".zip", ".rar", ".7z", ".docm", ".xlsm", ".pptm",
+        ]
+        contentLower = content.lower()
+        for ext in suspiciousExtensions:
+            if ext in contentLower:
+                indicators.append(
+                    DetectedIndicator(
+                        category="attachment_malware",
+                        description=f"Suspicious attachment extension detected: '{ext}'",
+                        severity=0.8,
+                        evidence=ext,
+                    )
+                )
+
+        # Check for attachment-related phrases with action context
+        attachmentActionPhrases = [
+            "download the attachment",
+            "open the attachment",
+            "see attached",
+            "find attached",
+            "attached file",
+        ]
+        for phrase in attachmentActionPhrases:
+            if phrase in contentLower:
+                indicators.append(
+                    DetectedIndicator(
+                        category="attachment_malware",
+                        description=f"Attachment action request: '{phrase}'",
+                        severity=0.65,
+                        evidence=phrase,
+                    )
+                )
+
         return indicators
     
     def _detectLinkManipulation(self, content: str) -> list[DetectedIndicator]:
@@ -518,6 +692,18 @@ class NlpAnalyzer(BaseAnalyzer):
         
         if PhishingTactic.LINK_MANIPULATION in tactics:
             reasons.append("Contains suspicious links or URLs")
+
+        if PhishingTactic.EMOTIONAL_MANIPULATION in tactics:
+            reasons.append("Uses emotional manipulation or appeal to greed")
+
+        if PhishingTactic.MONETARY_REQUEST in tactics:
+            reasons.append("Requests money transfer or mentions financial lure")
+
+        if PhishingTactic.ATTACHMENT_MALWARE in tactics:
+            reasons.append("References suspicious attachments or file types")
+
+        if PhishingTactic.SOCIAL_PROOF in tactics:
+            reasons.append("Uses fake social proof or trust signals")
         
         # Add high-severity indicator details
         highSeverity = [ind for ind in indicators if ind.severity > 0.7]

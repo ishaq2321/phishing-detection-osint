@@ -59,13 +59,12 @@ class ScoringWeights:
             raise ValueError(f"Weights must sum to 1.0, got {total}")
 
 
-# Risk level thresholds
+# Risk level thresholds (aligned with system-wide ThreatLevel)
 RISK_THRESHOLDS = {
-    RiskLevel.SAFE: 0.2,
-    RiskLevel.LOW: 0.4,
-    RiskLevel.MEDIUM: 0.6,
-    RiskLevel.HIGH: 0.8,
-    # CRITICAL is anything above HIGH
+    RiskLevel.SAFE: 0.3,
+    RiskLevel.SUSPICIOUS: 0.5,
+    RiskLevel.DANGEROUS: 0.7,
+    # CRITICAL is anything above DANGEROUS
 }
 
 
@@ -328,21 +327,22 @@ def calculateFeatureScore(features: FeatureSet) -> tuple[float, list[str]]:
 def determineRiskLevel(score: float) -> RiskLevel:
     """
     Determine categorical risk level from numerical score.
-    
+
+    Uses the system-wide unified thresholds:
+    safe < 0.3, suspicious < 0.5, dangerous < 0.7, critical >= 0.7
+
     Args:
         score: Risk score (0-1)
-        
+
     Returns:
         RiskLevel: Categorical risk level
     """
     if score < RISK_THRESHOLDS[RiskLevel.SAFE]:
         return RiskLevel.SAFE
-    elif score < RISK_THRESHOLDS[RiskLevel.LOW]:
-        return RiskLevel.LOW
-    elif score < RISK_THRESHOLDS[RiskLevel.MEDIUM]:
-        return RiskLevel.MEDIUM
-    elif score < RISK_THRESHOLDS[RiskLevel.HIGH]:
-        return RiskLevel.HIGH
+    elif score < RISK_THRESHOLDS[RiskLevel.SUSPICIOUS]:
+        return RiskLevel.SUSPICIOUS
+    elif score < RISK_THRESHOLDS[RiskLevel.DANGEROUS]:
+        return RiskLevel.DANGEROUS
     else:
         return RiskLevel.CRITICAL
 
@@ -664,7 +664,7 @@ def quickScore(url: str) -> float:
 
 def isPhishing(
     url: str,
-    threshold: float = 0.6,
+    threshold: float = 0.5,
     osintData: Optional[object] = None,
 ) -> bool:
     """

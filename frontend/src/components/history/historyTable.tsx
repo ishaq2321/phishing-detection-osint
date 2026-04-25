@@ -36,6 +36,7 @@ import {
   Trash2,
 } from "lucide-react";
 import type { ThreatLevel } from "@/types";
+import type { LucideIcon } from "lucide-react";
 import type { HistoryEntry } from "@/lib/storage/historyStore";
 import { THREAT_LEVEL_MAP } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
@@ -156,12 +157,13 @@ function buildColumns(
       cell: ({ getValue }) => {
         const level = getValue<ThreatLevel>();
         const meta = THREAT_LEVEL_MAP[level];
+        const LevelIcon = meta.icon;
         return (
           <Badge
             variant="secondary"
             className={BADGE_COLOUR[level]}
           >
-            {meta.icon} {meta.label}
+            <LevelIcon className="mr-1 h-3 w-3" aria-hidden="true" /> {meta.label}
           </Badge>
         );
       },
@@ -283,6 +285,7 @@ function MobileCard({
   onDelete: (e: HistoryEntry) => void;
 }) {
   const meta = THREAT_LEVEL_MAP[entry.threatLevel];
+  const LevelIcon = meta.icon;
   const date = new Date(entry.analyzedAt);
 
   return (
@@ -297,7 +300,7 @@ function MobileCard({
           </Badge>
         </div>
         <Badge variant="secondary" className={BADGE_COLOUR[entry.threatLevel]}>
-          {meta.icon} {meta.label}
+          <LevelIcon className="mr-1 h-3 w-3" aria-hidden="true" /> {meta.label}
         </Badge>
       </div>
 
@@ -344,12 +347,12 @@ function MobileCard({
 /*  Threat-level filter options                                       */
 /* ------------------------------------------------------------------ */
 
-const THREAT_FILTER_OPTIONS: { value: string; label: string }[] = [
+const THREAT_FILTER_OPTIONS: { value: string; label: string; icon?: LucideIcon }[] = [
   { value: "all", label: "All Levels" },
-  { value: "safe", label: "✅ Safe" },
-  { value: "suspicious", label: "⚠️ Suspicious" },
-  { value: "dangerous", label: "🔴 Dangerous" },
-  { value: "critical", label: "🚨 Critical" },
+  { value: "safe", label: "Safe", icon: THREAT_LEVEL_MAP.safe.icon },
+  { value: "suspicious", label: "Suspicious", icon: THREAT_LEVEL_MAP.suspicious.icon },
+  { value: "dangerous", label: "Dangerous", icon: THREAT_LEVEL_MAP.dangerous.icon },
+  { value: "critical", label: "Critical", icon: THREAT_LEVEL_MAP.critical.icon },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -429,11 +432,17 @@ export function HistoryTable({
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {THREAT_FILTER_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
+            {THREAT_FILTER_OPTIONS.map((opt) => {
+              const FilterIcon = opt.icon;
+              return (
+                <SelectItem key={opt.value} value={opt.value}>
+                  <span className="flex items-center gap-1.5">
+                    {FilterIcon && <FilterIcon className="h-3.5 w-3.5" />}
+                    {opt.label}
+                  </span>
+                </SelectItem>
+              );
+            })}
           </SelectGroup>
         </SelectContent>
       </Select>

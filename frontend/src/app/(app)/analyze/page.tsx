@@ -377,7 +377,7 @@ export default function AnalyzePage() {
             <FadeIn delay={0.1}>
               <Card
                 className={cn(
-                  "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30",
+                  "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/50",
                 )}
               >
                 <CardContent className="flex items-start gap-3 pt-4">

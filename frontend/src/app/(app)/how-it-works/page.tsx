@@ -212,8 +212,9 @@ export default function HowItWorksPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  1. Architecture Overview                                 */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <AnimatedSection className="space-y-4">
+      <AnimatedSection className="space-y-4 rounded-lg border-l-4 border-primary/60 bg-primary/[0.02] px-5 py-4">
         <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">1</span>
           <BookOpen className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Architecture Overview</h2>
         </div>
@@ -232,8 +233,9 @@ export default function HowItWorksPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  2. Text Analysis                                         */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <AnimatedSection className="space-y-4">
+      <AnimatedSection className="space-y-4 rounded-lg border-l-4 border-blue-500/60 bg-blue-500/[0.02] px-5 py-4">
         <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white">2</span>
           <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           <h2 className="text-lg font-semibold">Text Analysis</h2>
         </div>
@@ -269,8 +271,9 @@ export default function HowItWorksPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  3. URL Feature Analysis                                  */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <AnimatedSection className="space-y-4">
+      <AnimatedSection className="space-y-4 rounded-lg border-l-4 border-amber-500/60 bg-amber-500/[0.02] px-5 py-4">
         <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">3</span>
           <Link2 className="h-5 w-5 text-amber-600 dark:text-amber-400" />
           <h2 className="text-lg font-semibold">URL Feature Analysis</h2>
         </div>
@@ -303,8 +306,9 @@ export default function HowItWorksPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  4. OSINT Enrichment                                      */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <AnimatedSection className="space-y-4">
+      <AnimatedSection className="space-y-4 rounded-lg border-l-4 border-green-500/60 bg-green-500/[0.02] px-5 py-4">
         <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white">4</span>
           <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
           <h2 className="text-lg font-semibold">OSINT Enrichment</h2>
         </div>
@@ -338,8 +342,9 @@ export default function HowItWorksPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  5. Scoring Algorithm                                     */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <AnimatedSection className="space-y-4">
+      <AnimatedSection className="space-y-4 rounded-lg border-l-4 border-purple-500/60 bg-purple-500/[0.02] px-5 py-4">
         <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-purple-500 text-xs font-bold text-white">5</span>
           <Calculator className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Scoring Algorithm</h2>
         </div>
@@ -449,8 +454,9 @@ export default function HowItWorksPage() {
       {/* ══════════════════════════════════════════════════════════ */}
       {/*  6. Threat Levels                                         */}
       {/* ══════════════════════════════════════════════════════════ */}
-      <AnimatedSection className="space-y-4">
+      <AnimatedSection className="space-y-4 rounded-lg border-l-4 border-rose-500/60 bg-rose-500/[0.02] px-5 py-4">
         <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-xs font-bold text-white">6</span>
           <Shield className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">Threat Levels</h2>
         </div>
@@ -468,7 +474,7 @@ export default function HowItWorksPage() {
                   <div className="flex items-center gap-2">
                     <Icon className={`h-5 w-5 ${meta.colorClass}`} />
                     <CardTitle className={`text-base ${meta.colorClass}`}>
-                      {meta.icon} {meta.label}
+                      {meta.label}
                     </CardTitle>
                     <Badge variant="outline" className="ml-auto tabular-nums text-xs">
                       {range}

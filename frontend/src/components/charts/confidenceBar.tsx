@@ -52,6 +52,7 @@ export function ConfidenceBar({
 }: ConfidenceBarProps) {
   const percent = useCountUp(confidenceScore * 100, 1000);
   const meta = THREAT_LEVEL_MAP[threatLevel];
+  const LevelIcon = meta.icon;
 
   return (
     <Card>
@@ -89,7 +90,7 @@ export function ConfidenceBar({
               meta.colorClass,
             )}
           >
-            {meta.icon} {meta.label}
+            <LevelIcon className="h-3.5 w-3.5" aria-hidden="true" /> {meta.label}
           </span>
         </div>
 

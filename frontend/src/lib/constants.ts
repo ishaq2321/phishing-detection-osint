@@ -16,50 +16,53 @@ export const API_BASE_URL =
 /*  Threat-level presentation                                         */
 /* ------------------------------------------------------------------ */
 
+import {
+  ShieldCheck,
+  ShieldAlert,
+  ShieldX,
+  Skull,
+  type LucideIcon,
+} from "lucide-react";
 import type { ThreatLevel } from "@/types";
 
 interface ThreatLevelMeta {
   label: string;
-  icon: string;
+  icon: LucideIcon;
   colorClass: string;
   bgClass: string;
   borderClass: string;
 }
 
-/**
- * Maps each threat level to its display label, icon, and Tailwind
- * colour classes for consistent presentation across the UI.
- */
 export const THREAT_LEVEL_MAP: Record<ThreatLevel, ThreatLevelMeta> = {
   safe: {
     label: "Safe",
-    icon: "✅",
+    icon: ShieldCheck,
     colorClass: "text-green-600 dark:text-green-400",
     bgClass: "bg-green-50 dark:bg-green-950",
     borderClass: "border-green-200 dark:border-green-800",
   },
   suspicious: {
     label: "Suspicious",
-    icon: "⚠️",
+    icon: ShieldAlert,
     colorClass: "text-amber-600 dark:text-amber-400",
     bgClass: "bg-amber-50 dark:bg-amber-950",
     borderClass: "border-amber-200 dark:border-amber-800",
   },
   dangerous: {
     label: "Dangerous",
-    icon: "🔴",
+    icon: ShieldX,
     colorClass: "text-red-600 dark:text-red-400",
     bgClass: "bg-red-50 dark:bg-red-950",
     borderClass: "border-red-200 dark:border-red-800",
   },
   critical: {
     label: "Critical",
-    icon: "🚨",
+    icon: Skull,
     colorClass: "text-violet-600 dark:text-violet-400",
     bgClass: "bg-violet-50 dark:bg-violet-950",
     borderClass: "border-violet-200 dark:border-violet-800",
   },
-} as const;
+};
 
 /* ------------------------------------------------------------------ */
 /*  Scoring weights (mirrors backend/api/orchestrator.py)             */

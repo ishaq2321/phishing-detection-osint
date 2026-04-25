@@ -104,6 +104,7 @@ export function ThreatGauge({ score }: ThreatGaugeProps) {
 
   const level = threatLevelFromScore(score);
   const meta = THREAT_LEVEL_MAP[level];
+  const LevelIcon = meta.icon;
 
   return (
     <Card>
@@ -199,7 +200,7 @@ export function ThreatGauge({ score }: ThreatGaugeProps) {
                 meta.colorClass,
               )}
             >
-              {meta.icon} {meta.label}
+              <LevelIcon className="h-4 w-4" aria-hidden="true" /> {meta.label}
             </span>
           </div>
         </div>

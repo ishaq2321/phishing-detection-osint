@@ -27,7 +27,7 @@ test.describe("History", () => {
 
     /* Entry should exist */
     await expect(page.getByText("example.com").first()).toBeVisible();
-    await expect(page.getByText(/✅ Safe/i).first()).toBeVisible();
+    await expect(page.getByText("Safe").first()).toBeVisible();
 
     /* Click view via row actions */
     await page.getByLabel("Row actions").first().click();

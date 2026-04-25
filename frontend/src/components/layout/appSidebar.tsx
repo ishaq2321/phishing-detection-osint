@@ -61,13 +61,13 @@ interface NavLinkProps {
 
 function NavLink({ href, title, Icon, isActive, collapsed }: NavLinkProps) {
   const linkClasses = cn(
-    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors min-h-[44px]",
+    "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all min-h-[44px]",
     "hover:bg-accent hover:text-accent-foreground",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
     isActive
-      ? "bg-accent text-accent-foreground"
-      : "text-muted-foreground",
-    collapsed && "justify-center px-2",
+      ? "bg-accent text-accent-foreground border-l-2 border-primary rounded-l-none"
+      : "border-l-2 border-transparent text-muted-foreground hover:border-muted-foreground/30",
+    collapsed && "justify-center px-2 border-l-0 rounded-l-lg",
   );
 
   if (collapsed) {
@@ -115,23 +115,25 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Brand */}
-      <div
-        className={cn(
-          "flex h-14 items-center border-b px-4",
-          collapsed && "justify-center px-2",
-        )}
-      >
-        <Link
-          href="/"
-          className="flex items-center gap-2 rounded-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={collapsed ? `${APP_NAME} — Go to dashboard` : undefined}
-        >
-          <Logo className="h-5 w-5" />
-          {!collapsed && (
-            <span className="text-base tracking-tight">{APP_NAME}</span>
+<div
+          className={cn(
+            "flex h-14 items-center border-b px-4",
+            collapsed && "justify-center px-2",
           )}
-        </Link>
-      </div>
+        >
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 rounded-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={collapsed ? `${APP_NAME} — Go to dashboard` : undefined}
+          >
+            <div className="rounded-lg bg-primary/10 p-1.5">
+              <Logo className="h-5 w-5 text-primary" />
+            </div>
+            {!collapsed && (
+              <span className="text-base tracking-tight">{APP_NAME}</span>
+            )}
+          </Link>
+        </div>
 
       {/* Navigation */}
       <ScrollArea className="flex-1 px-2 py-3">

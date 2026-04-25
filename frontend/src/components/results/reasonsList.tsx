@@ -13,6 +13,7 @@ import {
   Link2,
   Globe,
   AlertTriangle,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Card,
@@ -74,8 +75,9 @@ export function ReasonsList({ reasons }: ReasonsListProps) {
   if (reasons.length === 0) {
     return (
       <Card>
-        <CardContent className="py-6 text-center text-sm text-muted-foreground">
-          ✅ No risk indicators found.
+        <CardContent className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+          <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" aria-hidden="true" />
+          No risk indicators found.
         </CardContent>
       </Card>
     );

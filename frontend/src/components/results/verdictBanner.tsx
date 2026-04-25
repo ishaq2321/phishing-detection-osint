@@ -7,12 +7,6 @@
  * score, and recommendation text.
  */
 
-import {
-  ShieldCheck,
-  ShieldAlert,
-  ShieldX,
-  Skull,
-} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -20,19 +14,15 @@ import { THREAT_LEVEL_MAP } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { VerdictResult } from "@/types";
 
-/* ------------------------------------------------------------------ */
-/*  Icon for each threat level                                        */
-/* ------------------------------------------------------------------ */
-
-const threatIcons = {
-  safe: ShieldCheck,
-  suspicious: ShieldAlert,
-  dangerous: ShieldX,
-  critical: Skull,
-} as const;
+const GLOW_CLASS: Record<string, string> = {
+  safe: "",
+  suspicious: "",
+  dangerous: "shadow-[0_0_24px_4px_rgba(239,68,68,0.15)] dark:shadow-[0_0_24px_4px_rgba(239,68,68,0.25)]",
+  critical: "shadow-[0_0_32px_8px_rgba(139,92,246,0.2)] dark:shadow-[0_0_32px_8px_rgba(139,92,246,0.35)]",
+};
 
 /* ------------------------------------------------------------------ */
-/*  Component                                                         */
+/* Component */
 /* ------------------------------------------------------------------ */
 
 interface VerdictBannerProps {
@@ -41,12 +31,17 @@ interface VerdictBannerProps {
 
 export function VerdictBanner({ verdict }: VerdictBannerProps) {
   const meta = THREAT_LEVEL_MAP[verdict.threatLevel];
-  const Icon = threatIcons[verdict.threatLevel];
+  const Icon = meta.icon;
   const animatedScore = useCountUp(verdict.confidenceScore * 100, 1200);
 
   return (
     <Card
-      className={cn("overflow-hidden border-2", meta.borderClass, meta.bgClass)}
+      className={cn(
+        "overflow-hidden border-2 transition-shadow",
+        meta.borderClass,
+        meta.bgClass,
+        GLOW_CLASS[verdict.threatLevel],
+      )}
     >
       <CardContent className="flex flex-col items-center gap-4 py-8 sm:flex-row sm:gap-8 sm:py-10">
         {/* Icon + phishing status */}
@@ -55,8 +50,8 @@ export function VerdictBanner({ verdict }: VerdictBannerProps) {
             className={cn(
               "rounded-full p-4",
               verdict.isPhishing
-                ? "bg-red-100 dark:bg-red-900/30"
-                : "bg-green-100 dark:bg-green-900/30",
+                ? "bg-red-100 dark:bg-red-900/50"
+                : "bg-green-100 dark:bg-green-900/50",
             )}
           >
             <Icon
@@ -69,7 +64,7 @@ export function VerdictBanner({ verdict }: VerdictBannerProps) {
           </div>
           <span
             className={cn(
-              "text-lg font-bold uppercase tracking-wide",
+              "text-sm font-bold uppercase tracking-widest",
               verdict.isPhishing
                 ? "text-red-600 dark:text-red-400"
                 : "text-green-600 dark:text-green-400",
@@ -102,7 +97,7 @@ export function VerdictBanner({ verdict }: VerdictBannerProps) {
               meta.borderClass,
             )}
           >
-            {meta.icon} {meta.label}
+            <Icon className="h-3.5 w-3.5" aria-hidden="true" /> {meta.label}
           </Badge>
 
           {/* Recommendation */}

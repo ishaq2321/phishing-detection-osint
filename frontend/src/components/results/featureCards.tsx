@@ -244,7 +244,7 @@ function DetectedTacticsCard({ tactics }: DetectedTacticsCardProps) {
               aria-hidden="true"
             />
             <p className="text-sm font-medium text-green-700 dark:text-green-300">
-              No suspicious tactics detected ✅
+              No suspicious tactics detected
             </p>
           </div>
         </CardContent>

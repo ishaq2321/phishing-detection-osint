@@ -95,6 +95,24 @@ data/phishtank/*.json
 data/phishtank/*.csv
 *.log
 
+# LaTeX compilation artifacts (root only)
+/*.aux
+/*.bbl
+/*.blg
+/*.bcf
+/*.idx
+/*.ilg
+/*.ind
+/*.lof
+/*.log
+/*.nlo
+/*.out
+/*.pdf
+/*.run.xml
+/*.synctex.gz
+/*.toc
+/elteikthesis_en.*
+
 # ── ML Training Artifacts ───────────────────────────────────────
 data/raw/
 data/processed/

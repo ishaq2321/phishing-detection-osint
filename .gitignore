@@ -2,12 +2,19 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
 # C extensions
 *.so
 
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+
 # Distribution / packaging
-.Python
 build/
 develop-eggs/
 dist/
@@ -28,61 +35,20 @@ wheels/
 *.manifest
 *.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Translations
-*.mo
-*.pot
-
 # Environments
 .env
-.venv
-env/
+.env.local
+.env.*.local
+.venv/
 venv/
 ENV/
 env.bak/
 venv.bak/
 
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# VS Code
-.vscode/
-*.code-workspace
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
 # IDE
 .idea/
+.vscode/
+*.code-workspace
 *.swp
 *.swo
 
@@ -90,17 +56,28 @@ dmypy.json
 .DS_Store
 Thumbs.db
 
-# Project specific
+# Jupyter
+.ipynb_checkpoints/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Project specific — data
 data/phishtank/*.json
 data/phishtank/*.csv
 *.log
+*.npy
+*.npz
 
-# node_modules
+# node_modules (all locations)
 node_modules/
 */node_modules/
-docs/diagrams/mermaid/node_modules/
+backend/node_modules/
+frontend/node_modules/
 
-# LaTeX compilation artifacts (root only)
+# LaTeX compilation artifacts (root)
 elteikthesis_en.aux
 elteikthesis_en.bbl
 elteikthesis_en.blg
@@ -115,8 +92,9 @@ elteikthesis_en.out
 elteikthesis_en.run.xml
 elteikthesis_en.synctex.gz
 elteikthesis_en.toc
+texput.log
 
-# LaTeX compilation artifacts (docs/latex_source/)
+# LaTeX compilation artifacts (all subdirs)
 docs/latex_source/*.aux
 docs/latex_source/*.bbl
 docs/latex_source/*.blg
@@ -131,19 +109,33 @@ docs/latex_source/*.out
 docs/latex_source/*.run.xml
 docs/latex_source/*.synctex.gz
 docs/latex_source/*.toc
+docs/latex_source/*.bak
+docs/latex_source/merge_*.py
 docs/latex_source/elteikthesis_en.pdf
+docs/latex_source/chapters/*.bak
+docs/latex_source/chapters/*.aux
 
-# ── ML Training Artifacts ───────────────────────────────────────
+# ML Training Artifacts
 data/raw/
 data/processed/
-data/evaluation/
-*.npy
-*.npz
 notebooks/.ipynb_checkpoints/
 
-# ── Frontend (Next.js) ──────────────────────────────────────────
+# Frontend (Next.js)
 frontend/.next/
 frontend/out/
-frontend/node_modules/
-frontend/.env.local
-frontend/.env*.local
+frontend/tsconfig.tsbuildinfo
+frontend/playwright-report/
+frontend/test-results/
+frontend/__tests__/e2e/
+
+# MCP agents
+.mcp/
+
+# Personal / TDK
+TDK_ABSTRACT.*
+"Ishaq Muhammad"*
+
+# pyright / pytest
+pyrightconfig.json
+pytest.ini
+render.yaml

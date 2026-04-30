@@ -1,103 +1,222 @@
 classDiagram
-class AnalyzeRequest {
-<<Pydantic>>
-+str content
-+str contentType "auto" | "url" | "email" | "text"
-+validateContent(v: str) str
-}
+    direction TB
 
-class AnalysisResponse {
-<<Pydantic>>
-+bool success
-+VerdictResult verdict
-+OsintSummary osint
-+FeatureSummary features
-+float analysisTime ms
-+datetime analyzedAt
-+str error
-}
+    class BaseModel {
+        <<abstract>>
+        +model_validate(data)
+        +model_dump()
+    }
 
-class VerdictResult {
-<<Pydantic>>
-+bool isPhishing
-+str threatLevel "safe" | "suspicious" | "dangerous" | "critical"
-+float confidenceScore 0.0-1.0
-+list~str~ reasons
-+str recommendation
-}
+    class AnalyzeRequest {
+        +str content
+        +str contentType = "auto"
+        +validateContent(v: str) str
+    }
 
-class OsintSummary {
-<<Pydantic>>
-+str domain
-+int domainAgeDays
-+str registrar
-+bool isPrivate
-+bool hasValidDns
-+float reputationScore
-+bool inBlacklists
-}
+    class UrlRequest {
+        +str url
+        +validateUrl(v: str) str
+    }
 
-class FeatureSummary {
-<<Pydantic>>
-+int urlFeatures
-+int textFeatures
-+int osintFeatures
-+int totalRiskIndicators
-+list~str~ detectedTactics
-}
+    class EmailRequest {
+        +str content
+        +Optional[str] subject = None
+        +Optional[str] sender = None
+        +validateContent(v: str) str
+    }
 
-class FeatureSet {
-<<Pydantic>>
-+str url
-+str domain
-+UrlFeatures urlFeatures
-+OsintFeatures osintFeatures
-+float extractionDurationMs
-+toVector ndarray 29
-+toModelVector ndarray 21
-}
+    class ModelStatusResponse {
+        +bool loaded
+        +int featureCount
+        +list[str] featureNames
+    }
 
-class UrlFeatures {
-<<Pydantic>>
-+int urlLength
-+int domainLength
-+int subdomainCount
-+int pathDepth
-+bool hasIpAddress
-+bool hasAtSymbol
-+bool hasDoubleSlash
-+bool hasDashInDomain
-+bool hasUnderscoreInDomain
-+bool isHttps
-+bool hasPortNumber
-+bool hasSuspiciousTld
-+bool hasEncodedChars
-+bool hasSuspiciousKeywords
-+float digitRatio
-+int specialCharCount
-+int queryParamCount
-}
+    class VerdictResult {
+        +bool isPhishing
+        +float confidenceScore
+        +str threatLevel
+        +list[str] reasons
+        +str recommendation
+    }
 
-class OsintFeatures {
-<<Pydantic>>
-+int domainAgeDays
-+bool isNewlyRegistered
-+bool isYoungDomain
-+bool hasPrivacyProtection
-+bool hasValidMx
-+bool usesCdn
-+int dnsRecordCount
-+bool hasValidDns
-+float reputationScore
-+int maliciousSourceCount
-+bool isKnownMalicious
-+bool hasValidWhois
-}
+    class OsintSummary {
+        +str domain
+        +Optional[int] domainAgeDays
+        +Optional[str] registrar
+        +bool isPrivate
+        +bool hasValidDns
+        +float reputationScore
+        +bool inBlacklists
+    }
 
-AnalyzeRequest ..> AnalysisResponse : initiates
-AnalysisResponse "1" *-- "1" VerdictResult : contains
-AnalysisResponse "1" *-- "0..1" OsintSummary : contains
-AnalysisResponse "1" *-- "1" FeatureSummary : contains
-FeatureSummary ..> FeatureSet : derived from
-FeatureSet "1" *-- "1" UrlFeatures : contains
-FeatureSet "1" *-- "1" OsintFeatures : contains
+    class FeatureSummary {
+        +int urlFeatures
+        +int textFeatures
+        +int osintFeatures
+        +int totalRiskIndicators
+        +list[str] detectedTactics
+    }
+
+    class AnalysisResponse {
+        +bool success
+        +VerdictResult verdict
+        +Optional[OsintSummary] osint
+        +FeatureSummary features
+        +float analysisTime
+        +datetime analyzedAt
+        +Optional[str] error
+    }
+
+    class HealthResponse {
+        +str status
+        +str version
+        +datetime timestamp
+        +dict[str, bool] services
+    }
+
+    class RiskLevel {
+        <<enumeration>>
+        +SAFE
+        +SUSPICIOUS
+        +DANGEROUS
+        +CRITICAL
+    }
+
+    class FeatureCategory {
+        <<enumeration>>
+        +URL_STRUCTURE
+        +DOMAIN_ANALYSIS
+        +OSINT_DERIVED
+        +REPUTATION
+    }
+
+    class UrlFeatures {
+        +int urlLength
+        +int domainLength
+        +int subdomainCount
+        +int pathDepth
+        +bool hasIpAddress
+        +bool hasAtSymbol
+        +bool hasDoubleSlash
+        +bool hasDashInDomain
+        +bool hasUnderscoreInDomain
+        +bool isHttps
+        +bool hasPortNumber
+        +bool hasSuspiciousTld
+        +bool hasEncodedChars
+        +bool hasSuspiciousKeywords
+        +float digitRatio
+        +int specialCharCount
+        +int queryParamCount
+        +suspiciousFeatureCount$ int
+        +isHighlyStructured$ bool
+    }
+
+    class OsintFeatures {
+        +Optional[int] domainAgeDays
+        +bool isNewlyRegistered
+        +bool isYoungDomain
+        +bool hasPrivacyProtection
+        +bool hasValidMx
+        +bool usesCdn
+        +int dnsRecordCount
+        +bool hasValidDns
+        +float reputationScore
+        +int maliciousSourceCount
+        +bool isKnownMalicious
+        +bool hasValidWhois
+        +osintRiskIndicators$ int
+        +dataCompleteness$ float
+    }
+
+    class FeatureSet {
+        +str url
+        +str domain
+        +UrlFeatures urlFeatures
+        +OsintFeatures osintFeatures
+        +datetime extractedAt
+        +float extractionDurationMs
+        +totalRiskIndicators$ int
+        +hasCompleteData$ bool
+        +toVector() ndarray (29)
+        +toUrlVector() ndarray (17)
+        +toOsintVector() ndarray (12)
+        +toModelVector() ndarray (21)
+    }
+
+    class ScoreComponent {
+        +str name
+        +float rawScore
+        +float weight
+        +FeatureCategory category
+        +list[str] factors
+        +weightedScore$ float
+    }
+
+    class RiskScore {
+        +str url
+        +str domain
+        +float finalScore
+        +RiskLevel riskLevel
+        +float confidence
+        +list[ScoreComponent] components
+        +list[str] reasons
+        +datetime scoredAt
+        +isPhishing$ bool
+        +isSuspicious$ bool
+    }
+
+    class SuspiciousPattern {
+        +str patternType
+        +str matchedValue
+        +float severity
+        +str description
+    }
+
+    class UrlAnalysisResult {
+        +str url
+        +str scheme
+        +str domain
+        +Optional[str] subdomain
+        +str tld
+        +str path
+        +Optional[str] query
+        +Optional[str] fragment
+        +list[SuspiciousPattern] suspiciousPatterns
+        +float structuralScore
+        +list[str] analysisNotes
+        +datetime analyzedAt
+        +patternCount$ int
+        +maxPatternSeverity$ float
+        +averagePatternSeverity$ float
+    }
+
+    BaseModel <|-- AnalyzeRequest
+    BaseModel <|-- UrlRequest
+    BaseModel <|-- EmailRequest
+    BaseModel <|-- ModelStatusResponse
+    BaseModel <|-- VerdictResult
+    BaseModel <|-- OsintSummary
+    BaseModel <|-- FeatureSummary
+    BaseModel <|-- AnalysisResponse
+    BaseModel <|-- HealthResponse
+    BaseModel <|-- UrlFeatures
+    BaseModel <|-- OsintFeatures
+    BaseModel <|-- FeatureSet
+    BaseModel <|-- ScoreComponent
+    BaseModel <|-- RiskScore
+    BaseModel <|-- SuspiciousPattern
+    BaseModel <|-- UrlAnalysisResult
+
+    AnalyzeRequest ..> AnalysisResponse : initiates
+    AnalysisResponse "1" *-- "1" VerdictResult : contains
+    AnalysisResponse "1" *-- "0..1" OsintSummary : contains
+    AnalysisResponse "1" *-- "1" FeatureSummary : contains
+    VerdictResult ..> RiskLevel : references
+    RiskScore ..> RiskLevel : references
+    ScoreComponent ..> FeatureCategory : references
+    FeatureSummary ..> FeatureSet : derives data from
+    FeatureSet "1" *-- "1" UrlFeatures : contains
+    FeatureSet "1" *-- "1" OsintFeatures : contains
+    RiskScore "1" *-- "0..*" ScoreComponent : contains
+    UrlAnalysisResult "1" *-- "0..*" SuspiciousPattern : contains

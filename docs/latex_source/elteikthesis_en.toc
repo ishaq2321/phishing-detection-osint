@@ -15,171 +15,171 @@
 \contentsline {subsection}{\numberline {1.5.1}Phishing Attack Landscape}{14}{subsection.1.5.1}%
 \contentsline {subsubsection}{Definition and Characteristics}{14}{section*.2}%
 \contentsline {subsubsection}{Taxonomy of Phishing Attacks}{16}{section*.3}%
-\contentsline {subsubsection}{Social Engineering Tactics}{17}{section*.5}%
-\contentsline {subsubsection}{Evolution and Trends}{19}{section*.6}%
+\contentsline {subsubsection}{Social Engineering Tactics}{18}{section*.5}%
+\contentsline {subsubsection}{Evolution and Trends}{18}{section*.6}%
 \contentsline {subsection}{\numberline {1.5.2}Traditional Detection Methods}{19}{subsection.1.5.2}%
 \contentsline {subsubsection}{Blacklist-Based Approaches}{19}{section*.7}%
 \contentsline {subsubsection}{Heuristic Rule-Based Systems}{20}{section*.8}%
-\contentsline {subsubsection}{Visual Similarity Detection}{21}{section*.9}%
+\contentsline {subsubsection}{Visual Similarity Detection}{20}{section*.9}%
 \contentsline {subsubsection}{Comparison and Limitations}{21}{section*.10}%
 \contentsline {subsection}{\numberline {1.5.3}Machine Learning for Phishing Detection}{22}{subsection.1.5.3}%
 \contentsline {subsubsection}{Feature-Based Classification}{22}{section*.11}%
-\contentsline {subsubsection}{ML Algorithm Comparison}{23}{section*.12}%
+\contentsline {subsubsection}{ML Algorithm Comparison}{22}{section*.12}%
 \contentsline {subsubsection}{Deep Learning Approaches}{24}{section*.13}%
-\contentsline {subsubsection}{Explainable AI for Phishing Detection}{25}{section*.14}%
-\contentsline {subsection}{\numberline {1.5.4}Open-Source Intelligence (OSINT) for Phishing Detection}{26}{subsection.1.5.4}%
-\contentsline {subsubsection}{OSINT Overview}{26}{section*.15}%
-\contentsline {subsubsection}{WHOIS Domain Registration Data}{27}{section*.16}%
-\contentsline {subsubsection}{DNS Infrastructure Analysis}{28}{section*.17}%
-\contentsline {subsubsection}{Reputation Databases}{29}{section*.18}%
-\contentsline {subsubsection}{OSINT Integration Workflow}{30}{section*.19}%
-\contentsline {subsection}{\numberline {1.5.5}Gap Analysis and Research Positioning}{30}{subsection.1.5.5}%
-\contentsline {subsubsection}{Identified Gaps in Existing Work}{30}{section*.21}%
+\contentsline {subsubsection}{Explainable AI for Phishing Detection}{24}{section*.14}%
+\contentsline {subsection}{\numberline {1.5.4}Open-Source Intelligence (OSINT) for Phishing Detection}{25}{subsection.1.5.4}%
+\contentsline {subsubsection}{OSINT Overview}{25}{section*.15}%
+\contentsline {subsubsection}{WHOIS Domain Registration Data}{26}{section*.16}%
+\contentsline {subsubsection}{DNS Infrastructure Analysis}{27}{section*.17}%
+\contentsline {subsubsection}{Reputation Databases}{28}{section*.18}%
+\contentsline {subsubsection}{OSINT Integration Workflow}{29}{section*.19}%
+\contentsline {subsection}{\numberline {1.5.5}Gap Analysis and Research Positioning}{29}{subsection.1.5.5}%
+\contentsline {subsubsection}{Identified Gaps in Existing Work}{29}{section*.21}%
 \contentsline {subsubsection}{PhishGuard Positioning}{30}{section*.22}%
-\contentsline {section}{\numberline {1.6}Summary}{32}{section.1.6}%
-\contentsline {section}{\numberline {1.7}Thesis Structure}{32}{section.1.7}%
-\contentsline {chapter}{\numberline {2}User Documentation}{34}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Problem Statement}{34}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Methods Used}{34}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Accessing the Application}{35}{section.2.3}%
-\contentsline {section}{\numberline {2.4}Using the Program}{35}{section.2.4}%
-\contentsline {subsection}{\numberline {2.4.1}The Dashboard}{35}{subsection.2.4.1}%
-\contentsline {subsection}{\numberline {2.4.2}Single Analysis}{35}{subsection.2.4.2}%
-\contentsline {subsection}{\numberline {2.4.3}Batch Analysis}{38}{subsection.2.4.3}%
-\contentsline {section}{\numberline {2.5}Interpreting the Results}{39}{section.2.5}%
-\contentsline {subsection}{\numberline {2.5.1}Content Preview}{39}{subsection.2.5.1}%
-\contentsline {subsection}{\numberline {2.5.2}Verdict Banner}{40}{subsection.2.5.2}%
-\contentsline {subsection}{\numberline {2.5.3}Risk Indicators}{40}{subsection.2.5.3}%
-\contentsline {subsection}{\numberline {2.5.4}OSINT Intelligence}{41}{subsection.2.5.4}%
-\contentsline {subsection}{\numberline {2.5.5}Feature Extraction and Detected Tactics}{42}{subsection.2.5.5}%
-\contentsline {subsection}{\numberline {2.5.6}Score Visualisation}{42}{subsection.2.5.6}%
-\contentsline {subsection}{\numberline {2.5.7}Share and Export Actions}{43}{subsection.2.5.7}%
-\contentsline {section}{\numberline {2.6}Analysis History}{44}{section.2.6}%
-\contentsline {subsection}{\numberline {2.6.1}Viewing and Searching History}{44}{subsection.2.6.1}%
-\contentsline {subsection}{\numberline {2.6.2}History Actions}{45}{subsection.2.6.2}%
-\contentsline {subsection}{\numberline {2.6.3}Exporting History}{45}{subsection.2.6.3}%
-\contentsline {section}{\numberline {2.7}How It Works Page}{46}{section.2.7}%
-\contentsline {section}{\numberline {2.8}Settings Page}{46}{section.2.8}%
-\contentsline {section}{\numberline {2.9}Additional Features}{48}{section.2.9}%
-\contentsline {subsection}{\numberline {2.9.1}Keyboard Shortcuts}{48}{subsection.2.9.1}%
-\contentsline {subsection}{\numberline {2.9.2}Responsive Design}{49}{subsection.2.9.2}%
-\contentsline {subsection}{\numberline {2.9.3}Loading States}{49}{subsection.2.9.3}%
-\contentsline {subsection}{\numberline {2.9.4}Toast Notifications}{49}{subsection.2.9.4}%
-\contentsline {subsection}{\numberline {2.9.5}Error Handling}{50}{subsection.2.9.5}%
-\contentsline {subsection}{\numberline {2.9.6}Backend Health Indicator}{51}{subsection.2.9.6}%
-\contentsline {subsection}{\numberline {2.9.7}Print Support}{51}{subsection.2.9.7}%
-\contentsline {subsection}{\numberline {2.9.8}Accessibility}{51}{subsection.2.9.8}%
-\contentsline {chapter}{\numberline {3}Developer Documentation}{52}{chapter.3}%
-\contentsline {section}{\numberline {3.1}System Design}{52}{section.3.1}%
-\contentsline {subsection}{\numberline {3.1.1}Detailed Problem Specification}{52}{subsection.3.1.1}%
-\contentsline {subsection}{\numberline {3.1.2}Logical and Physical Structure}{52}{subsection.3.1.2}%
-\contentsline {subsubsection}{The Tech Stack}{52}{section*.34}%
-\contentsline {subsection}{\numberline {3.1.3}Architectural Overview}{53}{subsection.3.1.3}%
-\contentsline {subsection}{\numberline {3.1.4}High-Level Data Flow}{53}{subsection.3.1.4}%
-\contentsline {subsection}{\numberline {3.1.5}Input Modality Detection}{53}{subsection.3.1.5}%
-\contentsline {subsection}{\numberline {3.1.6}Asynchronous OSINT Orchestration}{54}{subsection.3.1.6}%
-\contentsline {section}{\numberline {3.2}The API and Scoring Engine}{56}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}Weighted Verdict Combination}{56}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}Ephemeral History Store}{57}{subsection.3.2.2}%
-\contentsline {subsection}{\numberline {3.2.3}Pydantic Schema Contracts}{57}{subsection.3.2.3}%
-\contentsline {subsection}{\numberline {3.2.4}Frontend Architecture}{59}{subsection.3.2.4}%
-\contentsline {subsection}{\numberline {3.2.5}Component-Based Structure}{59}{subsection.3.2.5}%
-\contentsline {subsection}{\numberline {3.2.6}State Management and Client-Server Interaction}{59}{subsection.3.2.6}%
-\contentsline {subsection}{\numberline {3.2.7}Visual Presentation and Theming}{60}{subsection.3.2.7}%
-\contentsline {subsection}{\numberline {3.2.8}System Design Summary}{60}{subsection.3.2.8}%
-\contentsline {section}{\numberline {3.3}System Architecture and Overview}{61}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}Backend Framework and Initialization}{61}{subsection.3.3.1}%
-\contentsline {subsection}{\numberline {3.3.2}The Analysis Orchestrator}{62}{subsection.3.3.2}%
-\contentsline {section}{\numberline {3.4}Deployment and Infrastructure}{62}{section.3.4}%
-\contentsline {section}{\numberline {3.5}Integration and Weighting Mechanisms}{63}{section.3.5}%
-\contentsline {subsection}{\numberline {3.5.1}The 15-Second Concurrency Window}{63}{subsection.3.5.1}%
-\contentsline {subsection}{\numberline {3.5.2}Content-Specific Scoring Pipelines}{63}{subsection.3.5.2}%
-\contentsline {subsection}{\numberline {3.5.3}The Phishing Threshold and Threat Boundaries}{63}{subsection.3.5.3}%
-\contentsline {section}{\numberline {3.6}Quality Assurance and Testing}{64}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}Testing Plan and Results}{64}{subsection.3.6.1}%
-\contentsline {subsubsection}{Backend Testing Methodology}{64}{section*.39}%
-\contentsline {paragraph}{Environment Isolation and Fixture Management}{64}{section*.40}%
-\contentsline {paragraph}{Dependency Inversion and OSINT Mocking}{65}{section*.41}%
-\contentsline {subsubsection}{Integration and Smoke Testing}{65}{section*.42}%
-\contentsline {paragraph}{Service Level Agreement (SLA) Validation}{65}{section*.43}%
-\contentsline {subsubsection}{Frontend Quality Assurance}{66}{section*.44}%
-\contentsline {paragraph}{Component and State Validation}{66}{section*.45}%
-\contentsline {paragraph}{End-to-End (E2E) Browser Automation}{66}{section*.46}%
-\contentsline {subsubsection}{Static Analysis and Type Safety}{66}{section*.47}%
-\contentsline {chapter}{\numberline {4}Methodology: Feature Engineering, OSINT, and NLP}{68}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Dataset Collection and Preprocessing}{68}{section.4.1}%
-\contentsline {subsection}{\numberline {4.1.1}Data Aggregation}{68}{subsection.4.1.1}%
-\contentsline {subsection}{\numberline {4.1.2}Cleaning and Balancing}{68}{subsection.4.1.2}%
-\contentsline {section}{\numberline {4.2}Feature Engineering Pipeline}{69}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Lexical and Structural Features (17 Dimensions)}{71}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}OSINT Infrastructure Features (4 Dimensions)}{72}{subsection.4.2.2}%
-\contentsline {section}{\numberline {4.3}Model Selection and Optimization}{72}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}The XGBoost Algorithm}{72}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}Bayesian Hyperparameter Optimization (Optuna)}{72}{subsection.4.3.2}%
-\contentsline {section}{\numberline {4.4}Model Explainability via SHAP}{73}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Open-Source Intelligence in Phishing Detection}{74}{section.4.5}%
-\contentsline {section}{\numberline {4.6}Asynchronous Execution and Resilience}{74}{section.4.6}%
-\contentsline {section}{\numberline {4.7}DNS Infrastructure Analysis}{75}{section.4.7}%
-\contentsline {subsection}{\numberline {4.7.1}Mail Exchange (MX) Validation}{75}{subsection.4.7.1}%
-\contentsline {subsection}{\numberline {4.7.2}CDN Masking Detection}{75}{subsection.4.7.2}%
-\contentsline {subsection}{\numberline {4.7.3}Infrastructure Volume and Validity}{75}{subsection.4.7.3}%
-\contentsline {section}{\numberline {4.8}WHOIS Domain Analysis}{76}{section.4.8}%
-\contentsline {subsection}{\numberline {4.8.1}Domain Age and Registration Proximity}{76}{subsection.4.8.1}%
-\contentsline {subsection}{\numberline {4.8.2}Privacy Protection Heuristics}{76}{subsection.4.8.2}%
-\contentsline {section}{\numberline {4.9}Third-Party Threat Intelligence}{76}{section.4.9}%
-\contentsline {section}{\numberline {4.10}Semantic Evaluation in Threat Detection}{77}{section.4.10}%
-\contentsline {section}{\numberline {4.11}The spaCy NLP Pipeline Architecture}{77}{section.4.11}%
-\contentsline {subsection}{\numberline {4.11.1}Pipeline Initialization and Matchers}{78}{subsection.4.11.1}%
-\contentsline {section}{\numberline {4.12}Tactical Heuristics and Feature Extraction}{78}{section.4.12}%
-\contentsline {subsection}{\numberline {4.12.1}Urgency and Threat Indicators}{78}{subsection.4.12.1}%
-\contentsline {subsection}{\numberline {4.12.2}Authority and Brand Impersonation}{79}{subsection.4.12.2}%
-\contentsline {subsection}{\numberline {4.12.3}Financial and Credential Solicitation}{79}{subsection.4.12.3}%
-\contentsline {subsection}{\numberline {4.12.4}Psychological Manipulation and Trust Signals}{79}{subsection.4.12.4}%
-\contentsline {subsection}{\numberline {4.12.5}In-Text Link Manipulation}{80}{subsection.4.12.5}%
-\contentsline {section}{\numberline {4.13}Scoring Orchestration and Output}{81}{section.4.13}%
-\contentsline {subsection}{\numberline {4.13.1}The Scoring Algorithm}{81}{subsection.4.13.1}%
-\contentsline {subsection}{\numberline {4.13.2}Orchestrator Integration}{81}{subsection.4.13.2}%
-\contentsline {chapter}{\numberline {5}Scoring Engine and Evaluation}{82}{chapter.5}%
-\contentsline {section}{\numberline {5.1}The Orchestration of Intelligence}{82}{section.5.1}%
-\contentsline {section}{\numberline {5.2}The ML Predictor Architecture}{82}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}Thread-Safe Initialization}{82}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}Inference Execution}{83}{subsection.5.2.2}%
-\contentsline {section}{\numberline {5.3}The Phishing Scorer Module}{83}{section.5.3}%
-\contentsline {subsection}{\numberline {5.3.1}Explanatory Heuristics}{83}{subsection.5.3.1}%
-\contentsline {subsection}{\numberline {5.3.2}Graceful Heuristic Fallback}{84}{subsection.5.3.2}%
-\contentsline {section}{\numberline {5.4}Risk Level Determination}{84}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Reason Prioritization}{85}{subsection.5.4.1}%
-\contentsline {section}{\numberline {5.5}Evaluation Methodology}{85}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Hyperparameter Optimization}{85}{section.5.6}%
-\contentsline {section}{\numberline {5.7}Empirical Performance Metrics}{86}{section.5.7}%
-\contentsline {subsection}{\numberline {5.7.1}Error Analysis and Confusion Matrix}{87}{subsection.5.7.1}%
-\contentsline {section}{\numberline {5.8}Feature Explainability and SHAP Analysis}{87}{section.5.8}%
-\contentsline {subsection}{\numberline {5.8.1}OSINT Ablation Study}{87}{subsection.5.8.1}%
-\contentsline {chapter}{\numberline {6}Conclusion and Discussion}{89}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Interpretation of Results}{89}{section.6.1}%
-\contentsline {subsection}{\numberline {6.1.1}The Paradox of Threat Intelligence: Explainability versus Predictive Power}{89}{subsection.6.1.1}%
-\contentsline {subsection}{\numberline {6.1.2}Architectural Trade-offs: Latency and Concurrency}{90}{subsection.6.1.2}%
-\contentsline {subsection}{\numberline {6.1.3}Graceful Degradation and Deterministic Fallbacks}{91}{subsection.6.1.3}%
-\contentsline {section}{\numberline {6.2}Threat Modeling and Limitations}{91}{section.6.2}%
-\contentsline {subsection}{\numberline {6.2.1}Linguistic Constraints and Homograph Attacks}{92}{subsection.6.2.1}%
-\contentsline {subsection}{\numberline {6.2.2}Image-Based Exploitation and OCR Deficiencies}{92}{subsection.6.2.2}%
-\contentsline {subsection}{\numberline {6.2.3}Compromised Legitimate Infrastructure}{93}{subsection.6.2.3}%
-\contentsline {section}{\numberline {6.3}Comparison with State-of-the-Art Solutions}{93}{section.6.3}%
-\contentsline {section}{\numberline {6.4}The Operational Cost of Classification Errors}{94}{section.6.4}%
-\contentsline {section}{\numberline {6.5}The Shifting Paradigm of HTTPS in Phishing}{95}{section.6.5}%
-\contentsline {section}{\numberline {6.6}Explainable AI (XAI) and Security Awareness}{95}{section.6.6}%
-\contentsline {section}{\numberline {6.7}Concept Drift and Future-Proofing}{96}{section.6.7}%
-\contentsline {section}{\numberline {6.8}Conclusion}{97}{section.6.8}%
-\contentsline {subsection}{\numberline {6.8.1}Summary of Contributions}{97}{subsection.6.8.1}%
-\contentsline {section}{\numberline {6.9}Fulfillment of Research Objectives}{98}{section.6.9}%
-\contentsline {section}{\numberline {6.10}Future Work: Algorithmic Enhancements}{98}{section.6.10}%
-\contentsline {subsection}{\numberline {6.10.1}Dynamic Online Learning and Concept Drift Mitigation}{98}{subsection.6.10.1}%
-\contentsline {subsection}{\numberline {6.10.2}Transitioning from NLP Heuristics to Large Language Models (LLMs)}{99}{subsection.6.10.2}%
-\contentsline {section}{\numberline {6.11}Future Work: Architectural Scaling and Expansion}{99}{section.6.11}%
-\contentsline {subsection}{\numberline {6.11.1}Event-Driven Microservices}{99}{subsection.6.11.1}%
-\contentsline {subsection}{\numberline {6.11.2}Optical Character Recognition (OCR) Integration}{100}{subsection.6.11.2}%
-\contentsline {subsection}{\numberline {6.11.3}Concluding Remarks}{100}{subsection.6.11.3}%
-\contentsline {chapter}{Project Links}{101}{chapter*.51}%
-\contentsline {chapter}{Acknowledgements}{102}{chapter*.53}%
-\contentsline {chapter}{Bibliography}{103}{section*.54}%
-\contentsline {chapter}{List of Figures}{106}{section*.56}%
+\contentsline {section}{\numberline {1.6}Summary}{31}{section.1.6}%
+\contentsline {section}{\numberline {1.7}Thesis Structure}{31}{section.1.7}%
+\contentsline {chapter}{\numberline {2}User Documentation}{33}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Problem Statement}{33}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Methods Used}{33}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Accessing the Application}{34}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Using the Program}{34}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}The Dashboard}{34}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Single Analysis}{34}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Batch Analysis}{37}{subsection.2.4.3}%
+\contentsline {section}{\numberline {2.5}Interpreting the Results}{38}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Content Preview}{38}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Verdict Banner}{39}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}Risk Indicators}{39}{subsection.2.5.3}%
+\contentsline {subsection}{\numberline {2.5.4}OSINT Intelligence}{40}{subsection.2.5.4}%
+\contentsline {subsection}{\numberline {2.5.5}Feature Extraction and Detected Tactics}{41}{subsection.2.5.5}%
+\contentsline {subsection}{\numberline {2.5.6}Score Visualisation}{41}{subsection.2.5.6}%
+\contentsline {subsection}{\numberline {2.5.7}Share and Export Actions}{42}{subsection.2.5.7}%
+\contentsline {section}{\numberline {2.6}Analysis History}{43}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}Viewing and Searching History}{43}{subsection.2.6.1}%
+\contentsline {subsection}{\numberline {2.6.2}History Actions}{44}{subsection.2.6.2}%
+\contentsline {subsection}{\numberline {2.6.3}Exporting History}{44}{subsection.2.6.3}%
+\contentsline {section}{\numberline {2.7}How It Works Page}{45}{section.2.7}%
+\contentsline {section}{\numberline {2.8}Settings Page}{45}{section.2.8}%
+\contentsline {section}{\numberline {2.9}Additional Features}{47}{section.2.9}%
+\contentsline {subsection}{\numberline {2.9.1}Keyboard Shortcuts}{47}{subsection.2.9.1}%
+\contentsline {subsection}{\numberline {2.9.2}Responsive Design}{48}{subsection.2.9.2}%
+\contentsline {subsection}{\numberline {2.9.3}Loading States}{48}{subsection.2.9.3}%
+\contentsline {subsection}{\numberline {2.9.4}Toast Notifications}{48}{subsection.2.9.4}%
+\contentsline {subsection}{\numberline {2.9.5}Error Handling}{49}{subsection.2.9.5}%
+\contentsline {subsection}{\numberline {2.9.6}Backend Health Indicator}{50}{subsection.2.9.6}%
+\contentsline {subsection}{\numberline {2.9.7}Print Support}{50}{subsection.2.9.7}%
+\contentsline {subsection}{\numberline {2.9.8}Accessibility}{50}{subsection.2.9.8}%
+\contentsline {chapter}{\numberline {3}Developer Documentation}{51}{chapter.3}%
+\contentsline {section}{\numberline {3.1}System Design}{51}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Detailed Problem Specification}{51}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Logical and Physical Structure}{51}{subsection.3.1.2}%
+\contentsline {subsubsection}{The Tech Stack}{51}{section*.34}%
+\contentsline {subsection}{\numberline {3.1.3}Architectural Overview}{52}{subsection.3.1.3}%
+\contentsline {subsection}{\numberline {3.1.4}High-Level Data Flow}{52}{subsection.3.1.4}%
+\contentsline {subsection}{\numberline {3.1.5}Input Modality Detection}{52}{subsection.3.1.5}%
+\contentsline {subsection}{\numberline {3.1.6}Asynchronous OSINT Orchestration}{53}{subsection.3.1.6}%
+\contentsline {section}{\numberline {3.2}The API and Scoring Engine}{55}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Weighted Verdict Combination}{55}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Ephemeral History Store}{56}{subsection.3.2.2}%
+\contentsline {subsection}{\numberline {3.2.3}Pydantic Schema Contracts}{56}{subsection.3.2.3}%
+\contentsline {subsection}{\numberline {3.2.4}Frontend Architecture}{57}{subsection.3.2.4}%
+\contentsline {subsection}{\numberline {3.2.5}Component-Based Structure}{57}{subsection.3.2.5}%
+\contentsline {subsection}{\numberline {3.2.6}State Management and Client-Server Interaction}{58}{subsection.3.2.6}%
+\contentsline {subsection}{\numberline {3.2.7}Visual Presentation and Theming}{58}{subsection.3.2.7}%
+\contentsline {subsection}{\numberline {3.2.8}System Design Summary}{59}{subsection.3.2.8}%
+\contentsline {section}{\numberline {3.3}System Architecture and Overview}{59}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Backend Framework and Initialization}{59}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}The Analysis Orchestrator}{60}{subsection.3.3.2}%
+\contentsline {section}{\numberline {3.4}Deployment and Infrastructure}{61}{section.3.4}%
+\contentsline {section}{\numberline {3.5}Integration and Weighting Mechanisms}{61}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}The 15-Second Concurrency Window}{61}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Content-Specific Scoring Pipelines}{62}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}The Phishing Threshold and Threat Boundaries}{62}{subsection.3.5.3}%
+\contentsline {section}{\numberline {3.6}Quality Assurance and Testing}{62}{section.3.6}%
+\contentsline {subsection}{\numberline {3.6.1}Testing Plan and Results}{62}{subsection.3.6.1}%
+\contentsline {subsubsection}{Backend Testing Methodology}{62}{section*.39}%
+\contentsline {paragraph}{Environment Isolation and Fixture Management}{63}{section*.40}%
+\contentsline {paragraph}{Dependency Inversion and OSINT Mocking}{63}{section*.41}%
+\contentsline {subsubsection}{Integration and Smoke Testing}{63}{section*.42}%
+\contentsline {paragraph}{Service Level Agreement (SLA) Validation}{64}{section*.43}%
+\contentsline {subsubsection}{Frontend Quality Assurance}{64}{section*.44}%
+\contentsline {paragraph}{Component and State Validation}{64}{section*.45}%
+\contentsline {paragraph}{End-to-End (E2E) Browser Automation}{64}{section*.46}%
+\contentsline {subsubsection}{Static Analysis and Type Safety}{65}{section*.47}%
+\contentsline {chapter}{\numberline {4}Methodology: Feature Engineering, OSINT, and NLP}{66}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Dataset Collection and Preprocessing}{66}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Data Aggregation}{66}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Cleaning and Balancing}{66}{subsection.4.1.2}%
+\contentsline {section}{\numberline {4.2}Feature Engineering Pipeline}{67}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Lexical and Structural Features (17 Dimensions)}{69}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}OSINT Infrastructure Features (4 Dimensions)}{69}{subsection.4.2.2}%
+\contentsline {section}{\numberline {4.3}Model Selection and Optimization}{70}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}The XGBoost Algorithm}{70}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Bayesian Hyperparameter Optimization (Optuna)}{70}{subsection.4.3.2}%
+\contentsline {section}{\numberline {4.4}Model Explainability via SHAP}{70}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Open-Source Intelligence in Phishing Detection}{71}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Asynchronous Execution and Resilience}{72}{section.4.6}%
+\contentsline {section}{\numberline {4.7}DNS Infrastructure Analysis}{72}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}Mail Exchange (MX) Validation}{72}{subsection.4.7.1}%
+\contentsline {subsection}{\numberline {4.7.2}CDN Masking Detection}{73}{subsection.4.7.2}%
+\contentsline {subsection}{\numberline {4.7.3}Infrastructure Volume and Validity}{73}{subsection.4.7.3}%
+\contentsline {section}{\numberline {4.8}WHOIS Domain Analysis}{73}{section.4.8}%
+\contentsline {subsection}{\numberline {4.8.1}Domain Age and Registration Proximity}{73}{subsection.4.8.1}%
+\contentsline {subsection}{\numberline {4.8.2}Privacy Protection Heuristics}{74}{subsection.4.8.2}%
+\contentsline {section}{\numberline {4.9}Third-Party Threat Intelligence}{74}{section.4.9}%
+\contentsline {section}{\numberline {4.10}Semantic Evaluation in Threat Detection}{75}{section.4.10}%
+\contentsline {section}{\numberline {4.11}The spaCy NLP Pipeline Architecture}{75}{section.4.11}%
+\contentsline {subsection}{\numberline {4.11.1}Pipeline Initialization and Matchers}{75}{subsection.4.11.1}%
+\contentsline {section}{\numberline {4.12}Tactical Heuristics and Feature Extraction}{76}{section.4.12}%
+\contentsline {subsection}{\numberline {4.12.1}Urgency and Threat Indicators}{76}{subsection.4.12.1}%
+\contentsline {subsection}{\numberline {4.12.2}Authority and Brand Impersonation}{77}{subsection.4.12.2}%
+\contentsline {subsection}{\numberline {4.12.3}Financial and Credential Solicitation}{77}{subsection.4.12.3}%
+\contentsline {subsection}{\numberline {4.12.4}Psychological Manipulation and Trust Signals}{77}{subsection.4.12.4}%
+\contentsline {subsection}{\numberline {4.12.5}In-Text Link Manipulation}{78}{subsection.4.12.5}%
+\contentsline {section}{\numberline {4.13}Scoring Orchestration and Output}{78}{section.4.13}%
+\contentsline {subsection}{\numberline {4.13.1}The Scoring Algorithm}{79}{subsection.4.13.1}%
+\contentsline {subsection}{\numberline {4.13.2}Orchestrator Integration}{79}{subsection.4.13.2}%
+\contentsline {chapter}{\numberline {5}Scoring Engine and Evaluation}{80}{chapter.5}%
+\contentsline {section}{\numberline {5.1}The Orchestration of Intelligence}{80}{section.5.1}%
+\contentsline {section}{\numberline {5.2}The ML Predictor Architecture}{80}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Thread-Safe Initialization}{80}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Inference Execution}{81}{subsection.5.2.2}%
+\contentsline {section}{\numberline {5.3}The Phishing Scorer Module}{81}{section.5.3}%
+\contentsline {subsection}{\numberline {5.3.1}Explanatory Heuristics}{81}{subsection.5.3.1}%
+\contentsline {subsection}{\numberline {5.3.2}Graceful Heuristic Fallback}{82}{subsection.5.3.2}%
+\contentsline {section}{\numberline {5.4}Risk Level Determination}{82}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Reason Prioritization}{83}{subsection.5.4.1}%
+\contentsline {section}{\numberline {5.5}Evaluation Methodology}{83}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Hyperparameter Optimization}{83}{section.5.6}%
+\contentsline {section}{\numberline {5.7}Empirical Performance Metrics}{84}{section.5.7}%
+\contentsline {subsection}{\numberline {5.7.1}Error Analysis and Confusion Matrix}{85}{subsection.5.7.1}%
+\contentsline {section}{\numberline {5.8}Feature Explainability and SHAP Analysis}{85}{section.5.8}%
+\contentsline {subsection}{\numberline {5.8.1}OSINT Ablation Study}{85}{subsection.5.8.1}%
+\contentsline {chapter}{\numberline {6}Conclusion and Discussion}{87}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Interpretation of Results}{87}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}The Paradox of Threat Intelligence: Explainability versus Predictive Power}{87}{subsection.6.1.1}%
+\contentsline {subsection}{\numberline {6.1.2}Architectural Trade-offs: Latency and Concurrency}{88}{subsection.6.1.2}%
+\contentsline {subsection}{\numberline {6.1.3}Graceful Degradation and Deterministic Fallbacks}{89}{subsection.6.1.3}%
+\contentsline {section}{\numberline {6.2}Threat Modeling and Limitations}{89}{section.6.2}%
+\contentsline {subsection}{\numberline {6.2.1}Linguistic Constraints and Homograph Attacks}{90}{subsection.6.2.1}%
+\contentsline {subsection}{\numberline {6.2.2}Image-Based Exploitation and OCR Deficiencies}{90}{subsection.6.2.2}%
+\contentsline {subsection}{\numberline {6.2.3}Compromised Legitimate Infrastructure}{91}{subsection.6.2.3}%
+\contentsline {section}{\numberline {6.3}Comparison with State-of-the-Art Solutions}{91}{section.6.3}%
+\contentsline {section}{\numberline {6.4}The Operational Cost of Classification Errors}{92}{section.6.4}%
+\contentsline {section}{\numberline {6.5}The Shifting Paradigm of HTTPS in Phishing}{93}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Explainable AI (XAI) and Security Awareness}{93}{section.6.6}%
+\contentsline {section}{\numberline {6.7}Concept Drift and Future-Proofing}{94}{section.6.7}%
+\contentsline {section}{\numberline {6.8}Conclusion}{95}{section.6.8}%
+\contentsline {subsection}{\numberline {6.8.1}Summary of Contributions}{95}{subsection.6.8.1}%
+\contentsline {section}{\numberline {6.9}Fulfillment of Research Objectives}{96}{section.6.9}%
+\contentsline {section}{\numberline {6.10}Future Work: Algorithmic Enhancements}{96}{section.6.10}%
+\contentsline {subsection}{\numberline {6.10.1}Dynamic Online Learning and Concept Drift Mitigation}{96}{subsection.6.10.1}%
+\contentsline {subsection}{\numberline {6.10.2}Transitioning from NLP Heuristics to Large Language Models (LLMs)}{97}{subsection.6.10.2}%
+\contentsline {section}{\numberline {6.11}Future Work: Architectural Scaling and Expansion}{97}{section.6.11}%
+\contentsline {subsection}{\numberline {6.11.1}Event-Driven Microservices}{97}{subsection.6.11.1}%
+\contentsline {subsection}{\numberline {6.11.2}Optical Character Recognition (OCR) Integration}{98}{subsection.6.11.2}%
+\contentsline {subsection}{\numberline {6.11.3}Concluding Remarks}{98}{subsection.6.11.3}%
+\contentsline {chapter}{Project Links}{99}{chapter*.51}%
+\contentsline {chapter}{Acknowledgements}{100}{chapter*.53}%
+\contentsline {chapter}{Bibliography}{101}{section*.54}%
+\contentsline {chapter}{List of Figures}{104}{section*.56}%

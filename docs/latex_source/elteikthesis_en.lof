@@ -1,24 +1,24 @@
 \babel@toc {english}{}\relax 
 \babel@toc {english}{}\relax 
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {1.1}{\ignorespaces Phishing Attack Taxonomy\relax }}{18}{figure.caption.4}%
-\contentsline {figure}{\numberline {1.2}{\ignorespaces OSINT Data Collection and Feature Engineering Pipeline\relax }}{30}{figure.caption.20}%
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Phishing Attack Taxonomy\relax }}{17}{figure.caption.4}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces OSINT Data Collection and Feature Engineering Pipeline\relax }}{29}{figure.caption.20}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces The PhishGuard Dashboard with capability cards, navigation buttons, and System Overview\relax }}{36}{figure.caption.23}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces The Analyse page showing input type selector and content field\relax }}{36}{figure.caption.24}%
-\contentsline {figure}{\numberline {2.3}{\ignorespaces Batch Analysis page with URL input and results table\relax }}{38}{figure.caption.25}%
-\contentsline {figure}{\numberline {2.4}{\ignorespaces The Results page displaying the verdict banner, risk indicators, and score visualisation\relax }}{39}{figure.caption.26}%
-\contentsline {figure}{\numberline {2.5}{\ignorespaces Risk Indicators card showing detected phishing signals\relax }}{41}{figure.caption.28}%
-\contentsline {figure}{\numberline {2.6}{\ignorespaces OSINT Intelligence section showing domain, DNS, and reputation data\relax }}{41}{figure.caption.29}%
-\contentsline {figure}{\numberline {2.7}{\ignorespaces Score Visualisation showing the ML/NLP breakdown, threat gauge, and confidence bar\relax }}{43}{figure.caption.30}%
-\contentsline {figure}{\numberline {2.8}{\ignorespaces Analysis History page with search, filter, and export capabilities\relax }}{44}{figure.caption.31}%
-\contentsline {figure}{\numberline {2.9}{\ignorespaces Settings page with API configuration, display preferences, and history management\relax }}{47}{figure.caption.32}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces The PhishGuard Dashboard with capability cards, navigation buttons, and System Overview\relax }}{35}{figure.caption.23}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces The Analyse page showing input type selector and content field\relax }}{35}{figure.caption.24}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Batch Analysis page with URL input and results table\relax }}{37}{figure.caption.25}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces The Results page displaying the verdict banner, risk indicators, and score visualisation\relax }}{38}{figure.caption.26}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Risk Indicators card showing detected phishing signals\relax }}{40}{figure.caption.28}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces OSINT Intelligence section showing domain, DNS, and reputation data\relax }}{40}{figure.caption.29}%
+\contentsline {figure}{\numberline {2.7}{\ignorespaces Score Visualisation showing the ML/NLP breakdown, threat gauge, and confidence bar\relax }}{42}{figure.caption.30}%
+\contentsline {figure}{\numberline {2.8}{\ignorespaces Analysis History page with search, filter, and export capabilities\relax }}{43}{figure.caption.31}%
+\contentsline {figure}{\numberline {2.9}{\ignorespaces Settings page with API configuration, display preferences, and history management\relax }}{46}{figure.caption.32}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces High-Level System Data Flow separating the Next.js Presentation layer, FastAPI Application Orchestrator, ML Pipeline, and Async OSINT\relax }}{54}{figure.caption.35}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Sequence Diagram illustrating parallel execution of Structural Features, NLP Analysis, and the strict 15.0s OSINT timeout\relax }}{55}{figure.caption.36}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces UML Class Diagram defining the strict Pydantic data contracts enforcing backend type safety\relax }}{58}{figure.caption.37}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces The End-to-End User Journey, illustrating the transition from input submission to reviewing Explainable AI (SHAP) metrics\relax }}{61}{figure.caption.38}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces High-Level System Data Flow separating the Next.js Presentation layer, FastAPI Application Orchestrator, ML Pipeline, and Async OSINT\relax }}{53}{figure.caption.35}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Sequence Diagram illustrating parallel execution of Structural Features, NLP Analysis, and the strict 15.0s OSINT timeout\relax }}{54}{figure.caption.36}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces UML Class Diagram defining the strict Pydantic data contracts enforcing backend type safety\relax }}{57}{figure.caption.37}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces The End-to-End User Journey, illustrating the transition from input submission to reviewing Explainable AI (SHAP) metrics\relax }}{59}{figure.caption.38}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces SHAP Feature Importance Analysis (Beeswarm Plot)\relax }}{73}{figure.caption.48}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces SHAP Feature Importance Analysis (Beeswarm Plot)\relax }}{71}{figure.caption.48}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }

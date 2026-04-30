@@ -95,23 +95,43 @@ data/phishtank/*.json
 data/phishtank/*.csv
 *.log
 
+# node_modules
+node_modules/
+*/node_modules/
+docs/diagrams/mermaid/node_modules/
+
 # LaTeX compilation artifacts (root only)
-/*.aux
-/*.bbl
-/*.blg
-/*.bcf
-/*.idx
-/*.ilg
-/*.ind
-/*.lof
-/*.log
-/*.nlo
-/*.out
-/*.pdf
-/*.run.xml
-/*.synctex.gz
-/*.toc
-/elteikthesis_en.*
+elteikthesis_en.aux
+elteikthesis_en.bbl
+elteikthesis_en.blg
+elteikthesis_en.bcf
+elteikthesis_en.idx
+elteikthesis_en.ilg
+elteikthesis_en.ind
+elteikthesis_en.lof
+elteikthesis_en.log
+elteikthesis_en.nlo
+elteikthesis_en.out
+elteikthesis_en.run.xml
+elteikthesis_en.synctex.gz
+elteikthesis_en.toc
+
+# LaTeX compilation artifacts (docs/latex_source/)
+docs/latex_source/*.aux
+docs/latex_source/*.bbl
+docs/latex_source/*.blg
+docs/latex_source/*.bcf
+docs/latex_source/*.idx
+docs/latex_source/*.ilg
+docs/latex_source/*.ind
+docs/latex_source/*.lof
+docs/latex_source/*.log
+docs/latex_source/*.nlo
+docs/latex_source/*.out
+docs/latex_source/*.run.xml
+docs/latex_source/*.synctex.gz
+docs/latex_source/*.toc
+docs/latex_source/elteikthesis_en.pdf
 
 # ── ML Training Artifacts ───────────────────────────────────────
 data/raw/

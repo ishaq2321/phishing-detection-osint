@@ -56,6 +56,11 @@ python -m backend.ml.training.trainModel
 # 5) Produce all evaluation artefacts (metrics, ablation, plots, SHAP)
 python -m backend.ml.training.evaluateModel
 python -m backend.ml.training.shapAnalysis
+
+# 6) (Optional) Produce extended SHAP visualisations — signed mean,
+#    variance, and inter-feature correlation heatmap. This only needs
+#    the persisted shap_values.npy, not the raw X matrix.
+python -m backend.ml.training.shapVisualisationExtra  # NEW as of 2026-07-17
 ```
 
 ### Why the raw data is not in the repo

@@ -31,7 +31,7 @@ the final score, supplemented by NLP text analysis at 15%.
 - **Interactive visualisations** — Score charts, threat gauges, confidence bars
 - **Full-featured UI** — Dark/light theme, keyboard shortcuts, responsive design
 - **Configurable results detail** — Simple (verdict only), Detailed (+reasons+OSINT), Expert (+features)
-- **725 automated tests** — Backend (592 pytest), frontend (133 Jest)
+- **761 automated tests** — Backend (600 pytest), frontend (133 Jest), E2E (28 Playwright)
 
 ## 🛠️ Tech Stack
 
@@ -43,7 +43,7 @@ the final score, supplemented by NLP text analysis at 15%.
 | NLP         | spaCy 3.7 (en_core_web_sm)                           |
 | ML          | XGBoost 3.2, SHAP 0.49, Optuna 4.7, scikit-learn 1.4 |
 | OSINT       | python-whois, dnspython, aiohttp                     |
-| Testing     | pytest 8, Jest 30                               |
+| Testing     | pytest 8, Jest 30, Playwright 1.45                |
 | Deployment  | Vercel (frontend), Render.com (backend)              |
 
 ## 📁 Project Structure
@@ -62,8 +62,9 @@ the final score, supplemented by NLP text analysis at 15%.
 ├── docs/                 # Documentation & research
 │   ├── latex_source/     # LaTeX thesis source
 │   ├── diagrams/         # Architecture diagrams (Mermaid)
-│   ├── PhishGuard_Thesis.pdf  # Final compiled thesis
+│   │   ├── PhishGuard_Thesis.pdf  # Final compiled thesis (also in latex_source/)
 │   ├── API.md            # API Documentation
+│   ├── DEPLOYMENT_SETUP.md  # How to configure Vercel + Render
 │   ├── INSTALLATION.md   # Local Setup Guide
 │   └── PRIVACY.md        # Privacy Policy
 ├── frontend/             # Next.js 16 web application
@@ -74,8 +75,9 @@ the final score, supplemented by NLP text analysis at 15%.
 │   │   ├── lib/          # API client, stores, utilities
 │   │   └── types/        # TypeScript type definitions
 │   ├── __tests__/        # Jest unit tests (133 tests)
+│   ├── e2e/              # Playwright E2E browser tests (28 tests)
 │   └── public/           # Static assets (logo, favicon, PWA icons)
-├── tests/                # Backend tests (592 tests)
+├── tests/                # Backend tests (600 pytest tests)
 │   ├── unit/             # Unit tests for all modules
 │   └── integration/      # Full pipeline integration tests
 └── README.md
@@ -175,7 +177,7 @@ curl -X POST http://localhost:8000/api/analyze/url \
 
 ## 🧪 Running Tests
 
-### Backend Tests (592 tests)
+### Backend Tests (600 tests)
 
 ```bash
 # Run all tests
@@ -192,21 +194,23 @@ python -m pytest tests/integration/ -v
 python -m pytest tests/ --cov=backend --cov-report=html
 ```
 
-### Frontend Tests (133 tests)
+### Frontend Tests (133 Jest tests + 28 Playwright E2E)
 
 ```bash
 cd frontend
-npm test            # Run all Jest tests
+npm test            # Run all Jest tests (133)
 npm test -- --watch # Watch mode
+npx playwright test # Run Playwright E2E (28)
 ```
 
 ### All Tests Summary
 
 | Layer        | Framework   | Tests | Command                          |
 |--------------|-------------|-------|----------------------------------|
-| Backend      | pytest      | 592   | `python -m pytest tests/`        |
-| Frontend    | Jest        | 133   | `cd frontend && npm test`        |
-| **Total**    |             | **725** |                                |
+| Backend      | pytest      | 600   | `python -m pytest tests/`        |
+| Frontend     | Jest        | 133   | `cd frontend && npm test`        |
+| E2E          | Playwright  | 28    | `cd frontend && npx playwright test` |
+| **Total**    |             | **761** |                                |
 
 ## 🏗️ Architecture
 
@@ -276,7 +280,7 @@ The backend deploys automatically from the `main` branch using the
 
 ## 📚 Documentation
 
-- [Complete Thesis Document](docs/THESIS_COMPLETE_DOCUMENT.md) — The final 19,500+ word BSc thesis document
+- [Thesis (LaTeX source)](docs/latex_source/) — Source for the final submitted BSc thesis PDF (6 chapters, ~120 pages)
 - [API Documentation](docs/API.md) — Detailed backend REST endpoints
 - [Installation Guide](docs/INSTALLATION.md) — Instructions for local environment setup
 - [User Journey](docs/USER_JOURNEY.md) — Expected workflows for different user types

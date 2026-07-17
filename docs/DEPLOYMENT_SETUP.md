@@ -1,4 +1,5 @@
 # Deployment Setup Guide — Controlling When Deployments Trigger
+*(Last updated: 2026-07-17 — verify ignoreCommand is active on Vercel)*
 
 Both **Vercel** (frontend) and **Render** (backend) are configured by
 default to auto-deploy on every push to `main`. Editing documentation,

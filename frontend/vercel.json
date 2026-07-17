@@ -3,5 +3,6 @@
   "framework": "nextjs",
   "buildCommand": "npx next build",
   "outputDirectory": ".next",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "ignoreCommand": "bash ./should-build.sh"
 }

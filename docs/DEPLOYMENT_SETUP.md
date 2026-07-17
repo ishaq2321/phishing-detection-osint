@@ -36,6 +36,21 @@ The thesis deliberately uses a **belt-and-suspenders** strategy:
   `buildFilter` glob list — if Render ever ignores one, the other
   still applies.
 
+### Live-verified status (last live test 2026-07-17)
+
+After committing the `ignoreCommand` and its parent-commit fallback:
+
+- ⏭️ **Push `e8a0fd5`** (docs-only) → Vercel reported
+  *"Canceled by Ignored Build Step"*; **no** Production deployment
+  was created.
+- ⏭️ **Push `1d56c66`** (only `frontend/should-build.sh`) → also
+  *"Canceled"; the script correctly detected that a self-modification
+  of the script itself does not warrant re-deploying the frontend
+  bundle.*
+
+This confirms: **the Vercel auto-deploy trigger now stops correctly
+for any commit that does not change frontend source code.**
+
 ---
 
 ## Frontend — Vercel

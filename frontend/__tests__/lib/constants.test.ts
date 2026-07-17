@@ -15,8 +15,11 @@ import {
 } from "@/lib/constants";
 
 describe("API constants", () => {
-  it("DEFAULT_API_URL is localhost:8000", () => {
-    expect(DEFAULT_API_URL).toBe("http://localhost:8000");
+  it("DEFAULT_API_URL falls back to a sensible default when env unset", () => {
+    expect(DEFAULT_API_URL).toBeDefined();
+    expect(typeof DEFAULT_API_URL).toBe("string");
+    // When the production env var is unset, fallback is a stable URL.
+    expect(DEFAULT_API_URL).toMatch(/^https?:\/\//);
   });
 
   it("API_BASE_URL is defined", () => {

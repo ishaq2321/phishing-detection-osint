@@ -31,7 +31,7 @@ the final score, supplemented by NLP text analysis at 15%.
 - **Interactive visualisations** — Score charts, threat gauges, confidence bars
 - **Full-featured UI** — Dark/light theme, keyboard shortcuts, responsive design
 - **Configurable results detail** — Simple (verdict only), Detailed (+reasons+OSINT), Expert (+features)
-- **761 automated tests** — Backend (600 pytest), frontend (133 Jest), E2E (28 Playwright)
+- **758 automated tests** — Backend (597 pytest), frontend (133 Jest), E2E (28 Playwright)
 
 ## 🛠️ Tech Stack
 
@@ -77,7 +77,7 @@ the final score, supplemented by NLP text analysis at 15%.
 │   ├── __tests__/        # Jest unit tests (133 tests)
 │   ├── e2e/              # Playwright E2E browser tests (28 tests)
 │   └── public/           # Static assets (logo, favicon, PWA icons)
-├── tests/                # Backend tests (600 pytest tests)
+├── tests/                # Backend tests (597 pytest tests)
 │   ├── unit/             # Unit tests for all modules
 │   └── integration/      # Full pipeline integration tests
 └── README.md
@@ -177,7 +177,9 @@ curl -X POST http://localhost:8000/api/analyze/url \
 
 ## 🧪 Running Tests
 
-### Backend Tests (600 tests)
+### Backend Tests (597 tests)
+
+Validate api/services via pytest (`pip install -r backend/requirements.txt` first).
 
 ```bash
 # Run all tests
@@ -198,19 +200,19 @@ python -m pytest tests/ --cov=backend --cov-report=html
 
 ```bash
 cd frontend
-npm test            # Run all Jest tests (133)
-npm test -- --watch # Watch mode
-npx playwright test # Run Playwright E2E (28)
+npx jest --ci           # Run all Jest tests (133)
+npx jest --ci --watch   # Watch mode
+npx playwright test     # Run Playwright E2E (28)
 ```
 
-### All Tests Summary
+### Test Counts (last verified `pytest --collect-only`)
 
-| Layer        | Framework   | Tests | Command                          |
-|--------------|-------------|-------|----------------------------------|
-| Backend      | pytest      | 600   | `python -m pytest tests/`        |
-| Frontend     | Jest        | 133   | `cd frontend && npm test`        |
-| E2E          | Playwright  | 28    | `cd frontend && npx playwright test` |
-| **Total**    |             | **761** |                                |
+| Layer        | Framework   |Tests (counted)  | Command                          |
+|--------------|-------------|------------------|----------------------------------|
+| Backend      | pytest      | 597 (collected) | `python -m pytest tests/`        |
+| Frontend     | Jest        | 133 (passed)     | `cd frontend && npx jest --ci`   |
+| E2E          | Playwright  | 28  (`.spec.ts`) | `cd frontend && npx playwright test` |
+| **Total**    |             | **758**          |                                |
 
 ## 🏗️ Architecture
 

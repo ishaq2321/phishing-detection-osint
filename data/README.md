@@ -74,7 +74,7 @@ python -m backend.ml.training.shapAnalysis
 - The **evaluation reports** with exact numbers reported in the thesis
 - The **SHAP analysis artefacts** (raw values + visualisations)
 - All **ablation study results**
-- The full **test suite** (600 backend pytest tests + 133 frontend Jest
+- The full **test suite** (597 backend pytest tests + 133 frontend Jest
   tests + 28 Playwright E2E browser tests) exercising every published
   metric
 

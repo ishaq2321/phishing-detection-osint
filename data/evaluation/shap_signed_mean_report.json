@@ -1,0 +1,71 @@
+{
+  "feature_signed_mean_shap": {
+    "urlLength": -0.27108240127563477,
+    "domainLength": 0.42899763584136963,
+    "subdomainCount": 0.2201266884803772,
+    "pathDepth": 0.6177225708961487,
+    "hasIpAddress": 0.0,
+    "hasAtSymbol": 0.0,
+    "hasDoubleSlash": 0.0,
+    "hasDashInDomain": -0.0032034453470259905,
+    "hasUnderscoreInDomain": 0.0,
+    "isHttps": 0.15725809335708618,
+    "hasPortNumber": 0.0,
+    "hasSuspiciousTld": 0.00038671333459205925,
+    "hasEncodedChars": 0.0,
+    "hasSuspiciousKeywords": -0.021783702075481415,
+    "digitRatio": -0.05930512025952339,
+    "specialCharCount": 0.0,
+    "queryParamCount": 0.0,
+    "hasValidMx": 0.0028995154425501823,
+    "usesCdn": -0.007295637857168913,
+    "dnsRecordCount": -0.2291087806224823,
+    "hasValidDns": 2.4189266696339473e-05
+  },
+  "interpretation": {
+    "pushing_toward_phishing": [
+      {
+        "feature": "pathDepth",
+        "value": 0.6177225708961487
+      },
+      {
+        "feature": "domainLength",
+        "value": 0.42899763584136963
+      },
+      {
+        "feature": "subdomainCount",
+        "value": 0.2201266884803772
+      },
+      {
+        "feature": "isHttps",
+        "value": 0.15725809335708618
+      },
+      {
+        "feature": "hasValidMx",
+        "value": 0.0028995154425501823
+      }
+    ],
+    "pushing_toward_legitimate": [
+      {
+        "feature": "urlLength",
+        "value": -0.27108240127563477
+      },
+      {
+        "feature": "dnsRecordCount",
+        "value": -0.2291087806224823
+      },
+      {
+        "feature": "digitRatio",
+        "value": -0.05930512025952339
+      },
+      {
+        "feature": "hasSuspiciousKeywords",
+        "value": -0.021783702075481415
+      },
+      {
+        "feature": "usesCdn",
+        "value": -0.007295637857168913
+      }
+    ]
+  }
+}

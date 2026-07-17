@@ -1,50 +1,92 @@
+#################################################################
+# PhishGuard backend — Render Blueprint                       #
+#################################################################
+# Auto-deploy: OFF. Use the manual "Deploy" button on the   #
+# Render dashboard, or hit this service's Deploy Hook URL.   #
+#
+# Path filter: even if auto-deploy were on, only commits    #
+# that change files inside backend/ (or its requirements    #
+# files) would trigger a build. Edits to docs/, frontend/,  #
+# README.md, or any other non-backend path are ignored.     #
+#################################################################
+
 services:
   - type: web
     name: phishguard-api
     runtime: python
-    # ----------------------------------------------------------------
-    # Region and runtime configuration
-    # ----------------------------------------------------------------
     region: frankfurt
     plan: free
-    runtime: python
-    pythonVersion: 3.10.12
 
-    # ----------------------------------------------------------------
-    # Source and build configuration
-    # ----------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # Source and build
+    # ------------------------------------------------------------------
     buildCommand: |
       pip install --upgrade pip
       pip install -r backend/requirements-prod.txt
       python -m spacy download en_core_web_sm
+    # Working directory is repo root on Render by default. The
+    # backend package lives at backend/, so cd into it before
+    # launching uvicorn. main:app is the FastAPI instance inside
+    # backend/main.py.
     startCommand: |
-      cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+      cd backend && exec uvicorn main:app --host 0.0.0.0 --port $PORT
 
-    # ----------------------------------------------------------------
-    # Health check and auto-deploy configuration
-    # ----------------------------------------------------------------
+    # ------------------------------------------------------------------
+    # Deployment behaviour — never auto-deploy on a git push.
+    #   'autoDeployTrigger: off' replaces the deprecated 'autoDeploy: false'
+    #  ipAllowList is deliberately omitted (this is a public API).
+    #  The value MUST be quoted as a string in YAML; otherwise the bare
+    #  token 'off' is parsed as the boolean false, which Render rejects.
+    # ------------------------------------------------------------------
+    autoDeployTrigger: 'off'
+
+    # ------------------------------------------------------------------
+    # Path filter — defence in depth. If Render ever ignores the
+    # autoDeployTrigger setting (e.g. after a service migration),
+    # the buildFilter ensures only meaningful backend changes can
+    # trigger a deploy. glob syntax relative to repo root.
+    # ------------------------------------------------------------------
+    buildFilter:
+      paths:
+        - backend/**/*.py
+        - backend/**/*.txt
+        - backend/**/*.cfg
+        - backend/**/*.toml
+        - backend/main.py
+        - render.yaml
+      ignoredPaths:
+        - docs/**
+        - frontend/**
+        - data/**
+        - .github/**
+        - .vscode/**
+        - "*.md"
+
+    # ------------------------------------------------------------------
+    # Health check
+    # ------------------------------------------------------------------
     healthCheckPath: /api/health
-    autoDeploy: false
-    # When autoDeploy is false Render will NOT deploy on any git push.
-    # Deployments must be triggered manually from the Render dashboard
-    # (or via the Render deploy API/webhook) — giving full control over
-    # when the backend is deployed, independent of documentation edits,
-    # README updates, frontend changes, or any other non-backend commits.
 
-    # ----------------------------------------------------------------
+    # ------------------------------------------------------------------
     # Environment variables
-    # ----------------------------------------------------------------
+    # ------------------------------------------------------------------
     envVars:
       - key: ENVIRONMENT
         value: production
       - key: PYTHONUNBUFFERED
         value: "1"
+      # Pin Python version via env var (Render's documented way). See
+      # https://docs.render.com/python-version for why this is the
+      # full-qualified version string.
+      - key: PYTHON_VERSION
+        value: "3.10.12"
       # Secrets marked sync: false are managed in the Render dashboard
-      # and are NEVER committed to version control.
+      # and are NEVER committed to version control. Render will prompt
+      # for these values on initial Blueprint creation only — to add
+      # new secrets later, set them in the Render dashboard manually.
       - key: VIRUSTOTAL_API_KEY
         sync: false
       - key: ABUSEIPDB_API_KEY
         sync: false
       - key: CORS_ORIGINS
         sync: false
-    # ----------------------------------------------------------------

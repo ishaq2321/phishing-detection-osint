@@ -43,39 +43,28 @@ fi
 # Any change ONLY outside these paths will skip the build (exit 0).
 # ---------------------------------------------------------------------------
 FRONTEND_PATHS=(
-  '^frontend/$'
-  '^frontend/src/'
-  '^frontend/public/'
-  '^frontend/__tests__/'
-  '^frontend/e2e/'
-  '^frontend/eslint\.config\.mjs$'
-  '^frontend/jest\.config\.ts$'
-  '^frontend/next\.config\.ts$'
-  '^frontend/next-env\.d\.ts$'
-  '^frontend/package\.json$'
-  '^frontend/package-lock\.json$'
-  '^frontend/postcss\.config\.mjs$'
-  '^frontend/playwright\.config\.ts$'
-  '^frontend/tsconfig\.json$'
-  '^frontend/vercel\.json$'
-  '^frontend/components\.json$'
-  '^frontend/\.vercelignore$'
+  # The directory itself (e.g. an inadvertent `frontend` change)
+  '^frontend/?$'
+  # Anything nested inside the frontend project
+  '^frontend/'
 )
 
 # ---------------------------------------------------------------------------
 # Inspect changed files using git diff between the previous and current SHA.
+# Use a newline-separated list (passed through 'git diff -z' would be cleaner,
+# but -z output uses NUL separators which are awkward in bash). We rely on
+# `git diff --name-only` which emits one file per line.
 # ---------------------------------------------------------------------------
-CHANGED_FILES
-CHANGED_FILES=$(git diff --name-only "${VERCEL_GIT_PREVIOUS_SHA}" "${VERCEL_GIT_COMMIT_SHA}" 2>/dev/null || true)
+mapfile -t CHANGED_FILES < <(git diff --name-only "${VERCEL_GIT_PREVIOUS_SHA}" "${VERCEL_GIT_COMMIT_SHA}" 2>/dev/null || true)
 
-if [ -z "${CHANGED_FILES}" ]; then
+if [ "${#CHANGED_FILES[@]}" -eq 0 ]; then
   # No changes detected (very rare). Build anyway to be safe.
   echo "No changed files detected. Proceeding with build."
   exit 1
 fi
 
 # Check whether any changed file matches one of the FRONTEND_PATHS.
-for file in ${CHANGED_FILES}; do
+for file in "${CHANGED_FILES[@]}"; do
   for pattern in "${FRONTEND_PATHS[@]}"; do
     if [[ "${file}" =~ ${pattern} ]]; then
       echo "Changed file '${file}' is inside the frontend project. Proceeding with build."
@@ -84,8 +73,11 @@ for file in ${CHANGED_FILES}; do
   done
 done
 
+# Build a human-readable list of changed files for logging.
+PRETTY_FILES=$(printf '  - %s\n' "${CHANGED_FILES[@]}")
+
 # Only non-frontend files were changed — skip the build to save time/resources.
-echo "No frontend files changed in this commit. Only the following files were modified:"
-echo "${CHANGED_FILES}"
+echo "No frontend files changed in this commit. The following files were modified:"
+echo "${PRETTY_FILES}"
 echo "Skipping Vercel build."
 exit 0

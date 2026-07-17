@@ -393,3 +393,19 @@ between raw predictive performance and explainable, context-rich
 intelligence is a deliberate architectural decision discussed further in
 the conclusion (Chapter~\ref{chapter-11-discussion}).
 
+\paragraph{Methodological Note on Evaluation Paradigms}
+
+The accuracy values in Table~\ref{tab:ablation} ($\sim$98--99\%)
+differ from the production model accuracy reported in
+Table~\ref{tab:performance_metrics} (96.45\%) because the two
+evaluations use different paradigms. The ablation study reports
+5-fold stratified cross-validation performance averaged across all
+folds (each fold's AUC has standard deviation 0.001--0.0006), which
+exposes a model to all 33,392 balanced samples during training. The
+production metric, by contrast, is computed once on the strictly
+held-out 5,009-sample test set that was never used for model fitting or
+hyperparameter tuning --- a single deterministic evaluation, lower by
+2--3 percentage points due to the held-out generalisation gap. Both
+numbers are correct under their respective evaluation regimes; the
+table columns should be compared within rows, not across.
+

@@ -1,30 +1,50 @@
-# Render.com Blueprint — PhishGuard Backend
-# ==========================================
-# Auto-deploys from the main branch.
-# Docs: https://docs.render.com/blueprint-spec
-
 services:
   - type: web
     name: phishguard-api
     runtime: python
+    # ----------------------------------------------------------------
+    # Region and runtime configuration
+    # ----------------------------------------------------------------
     region: frankfurt
     plan: free
-    branch: main
-    rootDir: .
+    runtime: python
+    pythonVersion: 3.10.12
+
+    # ----------------------------------------------------------------
+    # Source and build configuration
+    # ----------------------------------------------------------------
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r backend/requirements-prod.txt
+      python -m spacy download en_core_web_sm
+    startCommand: |
+      cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+
+    # ----------------------------------------------------------------
+    # Health check and auto-deploy configuration
+    # ----------------------------------------------------------------
     healthCheckPath: /api/health
-    buildCommand: "pip install -r backend/requirements-prod.txt"
-    startCommand: >
-      uvicorn backend.main:app
-      --host 0.0.0.0
-      --port $PORT
+    autoDeploy: false
+    # When autoDeploy is false Render will NOT deploy on any git push.
+    # Deployments must be triggered manually from the Render dashboard
+    # (or via the Render deploy API/webhook) — giving full control over
+    # when the backend is deployed, independent of documentation edits,
+    # README updates, frontend changes, or any other non-backend commits.
+
+    # ----------------------------------------------------------------
+    # Environment variables
+    # ----------------------------------------------------------------
     envVars:
       - key: ENVIRONMENT
         value: production
-      - key: PYTHON_VERSION
-        value: "3.10.12"
-      - key: CORS_ORIGINS
-        sync: false
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      # Secrets marked sync: false are managed in the Render dashboard
+      # and are NEVER committed to version control.
       - key: VIRUSTOTAL_API_KEY
         sync: false
       - key: ABUSEIPDB_API_KEY
         sync: false
+      - key: CORS_ORIGINS
+        sync: false
+    # ----------------------------------------------------------------

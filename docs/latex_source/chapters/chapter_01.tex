@@ -271,7 +271,7 @@ visual explanations in UI & Achieved \\
 RO5 & Production web application & Deployed system with $<$3s
 response time, responsive UI, API documentation & Achieved \\
 RO6 & Comprehensive evaluation & Test suite $>$500 tests,
-ablation study, performance benchmarks & Achieved (754 tests) \\
+ablation study, performance benchmarks & Achieved (761 tests) \\
 
 \bottomrule
 \end{longtable}
@@ -290,21 +290,34 @@ We conceptualize and implement a highly discriminative, 21-dimensional
 feature vector that pioneers the fusion of 17 traditional lexical URL
 heuristics with 4 dynamic, real-time OSINT infrastructure indicators
 (\texttt{hasValidMx}, \texttt{usesCdn}, \texttt{dnsRecordCount},
-\texttt{hasValidDns}). Through rigorous ablation studies on a massive
-dataset, we empirically demonstrate that the inclusion of live OSINT
-data directly improves the model's test set accuracy by +0.30 percentage
-points and AUC-ROC by +0.06 points. This proves that external
-infrastructure context provides critical, unforgeable signals that pure
-lexical models cannot capture.
+\texttt{hasValidDns}). Through a rigorous ablation study on a massive,
+balanced dataset, we empirically quantify the contribution of live OSINT
+data: while the 4 OSINT features account for 14.36\% of the model's
+total SHAP-based feature importance---providing critical,
+human-readable infrastructure context---their inclusion did not improve
+raw predictive accuracy over the 17-feature lexical baseline (the
+OSINT-augmented model scored marginally lower in pure accuracy, a
+difference well within the bounds of cross-validation variance). This
+finding, detailed in Section~\ref{osint-ablation-study}, reveals that
+the principal value of OSINT integration lies not in ML predictive lift
+but in enabling transparent, explainable threat intelligence: the OSINT
+features supply unforgeable infrastructure signals (domain age, DNS
+validity, CDN usage) that the heuristic \texttt{PhishingScorer} module
+translates into actionable, human-readable justifications for every
+classification---context that purely lexical models cannot provide.
 
 \subsection{State-of-the-Art ML Pipeline
 Implementation}\label{state-of-the-art-ml-pipeline-implementation}
 
 We developed a highly optimized XGBoost gradient boosting classifier
-trained on a massive, highly curated dataset. Originally comprising
-150,391 URLs, the dataset underwent strict deduplication, zero-variance
-filtering, and class-balancing via majority undersampling to eliminate
-bias, resulting in a pristine dataset of 33,392 feature-engineered URLs.
+trained on a massive, highly curated dataset. The initial corpus
+comprised 150,391 raw URLs aggregated from PhishTank, OpenPhish, and
+Tranco ranking lists. This corpus underwent strict deduplication,
+zero-variance filtering, and class-balancing via majority undersampling
+to eliminate the severe class imbalance inherent in real-world phishing
+data (where legitimate URLs vastly outnumber active phishing domains),
+resulting in a perfectly balanced dataset of 33,392 feature-engineered
+URLs---the set used for all training and evaluation.
 Using a 70/15/15 stratified split, this yields 23,374 training samples for model fitting, 5,009 validation samples for hyperparameter optimization, and 5,009 held-out test samples for final evaluation. The model was subjected to 50 trials
 of Bayesian hyperparameter optimization (Optuna) with 5-fold
 cross-validation. The resulting production model achieves exceptional
@@ -361,7 +374,7 @@ production-ready software system. The implementation features a Next.js
 responsive design, dark mode, batch processing) and a robust FastAPI
 backend. Crucially, the system's reliability is mathematically
 guaranteed through a massive, multi-tiered automated test suite
-comprising 754 distinct tests (593 backend \texttt{pytest}
+comprising 761 distinct tests (600 backend \texttt{pytest}
 unit/integration tests, 133 frontend \texttt{Jest} tests, and 28
 \texttt{Playwright} E2E browser tests). This rigorous validation ensures
 the system can be deployed to edge infrastructure with supreme
@@ -488,8 +501,7 @@ credentials & Narrow (public WiFi users) \\
 
 \begin{figure}
 \centering
-\includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/texomony.png}
-\caption{Phishing Attack Taxonomy}
+\caption{Phishing Attack Taxonomy}\label{fig:phishing-taxonomy}
 \end{figure}
 
 \subsubsection{Social Engineering
@@ -767,8 +779,8 @@ Chiew et al.~\cite{chiew2019} & 2019 & Hybrid Ensemble & 48 feat. & 14k
 URLs & 98.11\% & 99.26\% & Combined content + URL \\
 Rao \& Pais \cite{rao2019} & 2019 & Random Forest & 19 URL & 11k
 URLs & 96.76\% & 98.40\% & Feature selection chi-square \\
-Yang et al.~\cite{yang2019} & 2019 & LightGBM & 24 URL & 50k URLs &
-97.30\% & 99.10\% & Gradient boosting \\
+Jayalakshmi et al.~\cite{jayalakshmi2023} & 2023 & LightGBM & 24 URL & 50k
+URLs & 97.30\% & 99.10\% & Gradient boosting \\
 Somesha et al.~\cite{somesha2020} & 2020 & XGBoost & 30 hybrid & 11k
 URLs & 96.68\% & N/A & URL + content + third-party \\
 Buber et al.~\cite{buber2021} & 2021 & Deep Neural Net & 111 feat. & 88k
@@ -776,7 +788,7 @@ URLs & 97.16\% & 99.43\% & Exhaustive feature set \\
 Korkmaz et al.~\cite{korkmaz2022} & 2022 & XGBoost & 20 URL & 20k URLs
 & 98.40\% & 99.70\% & Reduced feature set \\
 \textbf{This Work} & \textbf{2026} & \textbf{XGBoost} &
-\textbf{21 feat.} & \textbf{150k} &
+\textbf{21 feat.} & \textbf{33k (balanced)} &
 \textbf{96.45\%} & \textbf{99.41\%} & \textbf{OSINT + Optuna} \\
 
 \bottomrule
@@ -1149,8 +1161,8 @@ Low-Moderate & Very Low & High (SHAP) \\
 (research only) & No (research only) & Yes (Full-stack) \\
 \textbf{Multi-Modal Input} & No & No & No & Limited & Yes
 (URL/Email/Text) \\
-\textbf{Dataset Size} & N/A & N/A & 10k-88k & 100k-1M & \textbf{150k} \\
-\textbf{Test Coverage} & N/A & N/A & Limited & Limited & Extensive (754
+\textbf{Dataset Size} & N/A & N/A & 10k-88k & 100k-1M & \textbf{33k (balanced)} \\
+\textbf{Test Coverage} & N/A & N/A & Limited & Limited & Extensive (761
 tests) \\
 \textbf{Model Accuracy} & N/A & \textasciitilde85-90\% & 96-98\% &
 97-99\% & \textbf{96.45\%} \\
@@ -1163,14 +1175,16 @@ model) \\
 
 \textbf{PhishGuard's Unique Contributions:} 1. \textbf{OSINT-Enhanced
 ML:} Integrates 4 real-time OSINT features (WHOIS, DNS, reputation) with
-empirical validation via ablation study (+0.30\% accuracy improvement).
-2. \textbf{Explainable Predictions:} SHAP TreeExplainer provides
+empirical validation via ablation study, quantifying OSINT's 14.36\%
+SHAP contribution and its role in enabling explainable, human-readable
+threat intelligence. 2. \textbf{Explainable Predictions:} SHAP TreeExplainer provides
 per-prediction feature importance and visual explanations. 3.
 \textbf{Production-Ready System:} Full-stack web application (Next.js
-frontend + FastAPI backend) deployed to production with 754 automated
+frontend + FastAPI backend) deployed to production with 761 automated
 tests. 4. \textbf{Multi-Modal Analysis:} Supports URL, email (subject +
 sender + body), and free-text input with auto-detection. 5.
-\textbf{Large-Scale Training:} 150,391 feature-engineered URLs with
+\textbf{Large-Scale Training:} 150,391 raw URLs curated and balanced
+into 33,392 feature-engineered training samples with
 Optuna-optimized XGBoost achieving 99.41\% AUC-ROC.
 
 \section{Summary}\label{summary}

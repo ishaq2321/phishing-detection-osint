@@ -381,7 +381,10 @@ system successfully identifies indicators regardless of minor
 punctuation or casing deviations (utilizing the \texttt{attr="LOWER"}
 parameter).
 
-The system initializes ten distinct \texttt{PhraseMatcher} pipelines: 1.
+The system initializes nine \texttt{PhraseMatcher} pipelines and
+supplements them with deterministic regular-expression detectors to
+recognise a total of ten \texttt{PhishingTactic} categories. The
+nine \texttt{PhraseMatcher} pipelines are: 1.
 \texttt{urgencyMatcher}: Detects artificial time pressure. 2.
 \texttt{threatMatcher}: Detects fear-inducing vocabulary. 3.
 \texttt{authorityMatcher}: Detects impersonation of IT or administrative
@@ -393,11 +396,14 @@ Detects emotional manipulation and appeal-to-greed phrases (e.g.,
 ``congratulations,'' ``you have been selected''). 8.
 \texttt{monetaryMatcher}: Detects financial lure and money transfer
 requests (e.g., ``wire transfer,'' ``processing fee,'' ``lottery
-winnings''). 9. \texttt{attachmentMatcher}: Detects suspicious file
-attachments and malware delivery attempts (e.g., ``.exe,'' ``.zip,'' ``open
-the attachment''). 10. \texttt{socialProofMatcher}: Detects fake trust
+winnings''). 9. \texttt{socialProofMatcher}: Detects fake trust
 signals and social proof claims (e.g., ``trusted by millions,'' ``join
-millions of users'').
+millions of users''). The remaining two categories---file attachment
+threats and embedded link manipulation---are detected by dedicated
+regular-expression methods (\texttt{\_detectAttachments} and
+\texttt{\_detectLinkManipulation}) rather than \texttt{PhraseMatcher}
+pipelines, since they require pattern matching on file extensions and
+URL substrings rather than whole-phrase recognition.
 
 \section{Tactical Heuristics and Feature
 Extraction}\label{tactical-heuristics-and-feature-extraction}

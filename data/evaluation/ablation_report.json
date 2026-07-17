@@ -1,0 +1,115 @@
+{
+  "shapAnalysis": {
+    "osintContribution": {
+      "totalMeanAbsShap": 7.980350971221924,
+      "osintMeanAbsShap": 1.1459813117980957,
+      "urlMeanAbsShap": 6.834369659423828,
+      "osintContributionPercent": 14.36,
+      "urlContributionPercent": 85.64,
+      "perFeatureShap": {
+        "urlLength": 3.115572690963745,
+        "pathDepth": 1.6254912614822388,
+        "dnsRecordCount": 0.9074901342391968,
+        "domainLength": 0.78462153673172,
+        "subdomainCount": 0.6087073087692261,
+        "isHttps": 0.3834086060523987,
+        "digitRatio": 0.18124765157699585,
+        "usesCdn": 0.14453040063381195,
+        "hasValidMx": 0.08419769257307053,
+        "hasSuspiciousKeywords": 0.06422595679759979,
+        "hasDashInDomain": 0.058489345014095306,
+        "hasSuspiciousTld": 0.01260575745254755,
+        "hasValidDns": 0.009763139300048351,
+        "hasUnderscoreInDomain": 0.0,
+        "hasDoubleSlash": 0.0,
+        "hasAtSymbol": 0.0,
+        "hasIpAddress": 0.0,
+        "hasEncodedChars": 0.0,
+        "specialCharCount": 0.0,
+        "queryParamCount": 0.0,
+        "hasPortNumber": 0.0
+      }
+    }
+  },
+  "ablationStudy": {
+    "urlOnly": {
+      "featureCount": 17,
+      "features": [
+        "urlLength",
+        "domainLength",
+        "subdomainCount",
+        "pathDepth",
+        "hasIpAddress",
+        "hasAtSymbol",
+        "hasDoubleSlash",
+        "hasDashInDomain",
+        "hasUnderscoreInDomain",
+        "isHttps",
+        "hasPortNumber",
+        "hasSuspiciousTld",
+        "hasEncodedChars",
+        "hasSuspiciousKeywords",
+        "digitRatio",
+        "specialCharCount",
+        "queryParamCount"
+      ],
+      "metrics": {
+        "accuracy": 0.9893390191897654,
+        "precision": 0.9978308026030369,
+        "recall": 0.9808102345415778,
+        "f1": 0.989247311827957,
+        "rocAuc": 0.998049654256891,
+        "cvAucMean": 0.9960339116588672,
+        "cvAucStd": 0.0012234556549644208
+      }
+    },
+    "urlPlusOsint": {
+      "featureCount": 21,
+      "features": [
+        "urlLength",
+        "domainLength",
+        "subdomainCount",
+        "pathDepth",
+        "hasIpAddress",
+        "hasAtSymbol",
+        "hasDoubleSlash",
+        "hasDashInDomain",
+        "hasUnderscoreInDomain",
+        "isHttps",
+        "hasPortNumber",
+        "hasSuspiciousTld",
+        "hasEncodedChars",
+        "hasSuspiciousKeywords",
+        "digitRatio",
+        "specialCharCount",
+        "queryParamCount",
+        "hasValidMx",
+        "usesCdn",
+        "dnsRecordCount",
+        "hasValidDns"
+      ],
+      "metrics": {
+        "accuracy": 0.9840085287846482,
+        "precision": 0.9913419913419913,
+        "recall": 0.976545842217484,
+        "f1": 0.9838882921589689,
+        "rocAuc": 0.9976768608980683,
+        "cvAucMean": 0.9980745726039706,
+        "cvAucStd": 0.0005548557297150266
+      }
+    },
+    "improvement": {
+      "accuracy": -0.005330490405117239,
+      "precision": -0.006488811261045613,
+      "recall": -0.004264392324093813,
+      "f1": -0.0053590196689881076,
+      "rocAuc": -0.00037279335882267617
+    },
+    "osintFeatures": [
+      "usesCdn",
+      "dnsRecordCount",
+      "hasValidDns",
+      "hasValidMx"
+    ]
+  }
+}

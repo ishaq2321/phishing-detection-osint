@@ -1,0 +1,161 @@
+{
+  "testSetSize": 5009,
+  "classDistribution": {
+    "legitimate": 2505,
+    "phishing": 2504
+  },
+  "metrics": {
+    "accuracy": 0.9644639648632461,
+    "precision": 0.9786008230452675,
+    "recall": 0.9496805111821086,
+    "f1": 0.9639237940818808,
+    "rocAuc": 0.9940816450166758,
+    "prAuc": 0.9947952813937092
+  },
+  "confusionMatrix": {
+    "trueNegatives": 2453,
+    "falsePositives": 52,
+    "falseNegatives": 126,
+    "truePositives": 2378
+  },
+  "classificationReport": {
+    "Legitimate": {
+      "precision": 0.951143854207057,
+      "recall": 0.9792415169660679,
+      "f1-score": 0.9649881982690794,
+      "support": 2505.0
+    },
+    "Phishing": {
+      "precision": 0.9786008230452675,
+      "recall": 0.9496805111821086,
+      "f1-score": 0.9639237940818808,
+      "support": 2504.0
+    },
+    "accuracy": 0.9644639648632461,
+    "macro avg": {
+      "precision": 0.9648723386261623,
+      "recall": 0.9644610140740882,
+      "f1-score": 0.9644559961754802,
+      "support": 5009.0
+    },
+    "weighted avg": {
+      "precision": 0.9648695978626529,
+      "recall": 0.9644639648632461,
+      "f1-score": 0.9644561024246503,
+      "support": 5009.0
+    }
+  },
+  "featureImportanceRanking": [
+    {
+      "rank": 1,
+      "feature": "isHttps",
+      "importance": 0.3344793915748596
+    },
+    {
+      "rank": 2,
+      "feature": "hasValidDns",
+      "importance": 0.12569275498390198
+    },
+    {
+      "rank": 3,
+      "feature": "specialCharCount",
+      "importance": 0.0852198600769043
+    },
+    {
+      "rank": 4,
+      "feature": "pathDepth",
+      "importance": 0.07414402067661285
+    },
+    {
+      "rank": 5,
+      "feature": "hasAtSymbol",
+      "importance": 0.054227739572525024
+    },
+    {
+      "rank": 6,
+      "feature": "hasEncodedChars",
+      "importance": 0.05224208906292915
+    },
+    {
+      "rank": 7,
+      "feature": "subdomainCount",
+      "importance": 0.045075673609972
+    },
+    {
+      "rank": 8,
+      "feature": "queryParamCount",
+      "importance": 0.043465789407491684
+    },
+    {
+      "rank": 9,
+      "feature": "domainLength",
+      "importance": 0.04313518479466438
+    },
+    {
+      "rank": 10,
+      "feature": "dnsRecordCount",
+      "importance": 0.0400594137609005
+    },
+    {
+      "rank": 11,
+      "feature": "urlLength",
+      "importance": 0.037556473165750504
+    },
+    {
+      "rank": 12,
+      "feature": "hasValidMx",
+      "importance": 0.020366128534078598
+    },
+    {
+      "rank": 13,
+      "feature": "hasSuspiciousKeywords",
+      "importance": 0.014161447063088417
+    },
+    {
+      "rank": 14,
+      "feature": "usesCdn",
+      "importance": 0.010417495854198933
+    },
+    {
+      "rank": 15,
+      "feature": "digitRatio",
+      "importance": 0.007745436858385801
+    },
+    {
+      "rank": 16,
+      "feature": "hasSuspiciousTld",
+      "importance": 0.0066216979175806046
+    },
+    {
+      "rank": 17,
+      "feature": "hasDashInDomain",
+      "importance": 0.005389292258769274
+    },
+    {
+      "rank": 18,
+      "feature": "hasUnderscoreInDomain",
+      "importance": 0.0
+    },
+    {
+      "rank": 19,
+      "feature": "hasDoubleSlash",
+      "importance": 0.0
+    },
+    {
+      "rank": 20,
+      "feature": "hasIpAddress",
+      "importance": 0.0
+    },
+    {
+      "rank": 21,
+      "feature": "hasPortNumber",
+      "importance": 0.0
+    }
+  ],
+  "charts": [
+    "confusion_matrix.png",
+    "roc_curve.png",
+    "precision_recall_curve.png",
+    "feature_importance.png"
+  ]
+}

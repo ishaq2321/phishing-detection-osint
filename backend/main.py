@@ -26,6 +26,7 @@ from backend.api.rate_limiting import (
 )
 from backend.api.security_headers import addSecurityHeaders
 from backend.config import settings
+from backend.health import markBootComplete
 from backend.logging_config import (
     addRequestIdMiddleware,
     configureStructlog,
@@ -63,6 +64,9 @@ async def lifespan(app: FastAPI):
             "Wildcard CORS origins (*) in production is insecure — "
             "set CORS_ORIGINS to specific origins"
         )
+
+    markBootComplete()
+    logger.info("Application startup complete -- ready to serve traffic")
 
     yield
 

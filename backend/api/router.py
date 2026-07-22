@@ -27,6 +27,12 @@ from .schemas import (
     UrlRequest,
 )
 
+from backend.health import (
+    runDeepChecks,
+    servicesFromChecks,
+    shouldReturn503,
+    uptimeSeconds,
+)
 from backend.ml.predictor import PhishingPredictor
 
 # Create router
@@ -44,49 +50,56 @@ orchestrator = AnalysisOrchestrator()
     "/health",
     response_model=HealthResponse,
     summary="Health Check",
-    description="Check the health status of the API and its dependencies"
+    description=(
+        "Deep health check that actively probes DNS, the XGBoost model, "
+        "and analyzer/orchestrator imports.  Returns 503 only when truly "
+        "unhealthy."
+    ),
 )
-async def healthCheck() -> HealthResponse:
+async def healthCheck(response: Response) -> HealthResponse:
     """
-    Health check endpoint.
-    
-    Returns the current status of the API and all dependent services.
-    
-    Returns:
-        HealthResponse: Health status information
-        
-    Example:
-        GET /api/health
-        
-        Response:
-        {
-            "status": "healthy",
-            "version": "1.0.0",
-            "timestamp": "2026-02-08T12:00:00",
-            "services": {
-                "osint": true,
-                "analyzer": true,
-                "ml": true
-            }
-        }
+    Health check endpoint (Tier 1.5 deep check).
+
+    Actively probes each dependency in parallel:
+
+    * DNS -- resolve ``example.com`` via ``backend.osint``.
+    * ML -- verify ``PhishingPredictor`` is loaded.
+    * Imports -- ``NlpAnalyzer`` + ``AnalysisOrchestrator`` importable.
+
+    Backward-compatible keys::
+
+        status, version, timestamp, services
+
+    New keys::
+
+        checks         -- per-dependency deep report
+        uptimeSeconds  -- seconds since application start
+        ready          -- True once probes have completed at least once
+
+    Returns the standard 200 even when ``status='degraded'`` -- the
+    HTTP layer maps only ``unhealthy`` to a 503 so uptime monitors
+    can flag real outages.
     """
-    # Check if services are available
-    predictor = PhishingPredictor()
-    services = {
-        "osint": True,  # OSINT modules are always available (graceful degradation)
-        "analyzer": True,  # NLP analyzer is always available
-        "ml": predictor.isLoaded,  # True only when XGBoost model is loaded
-    }
-    
-    # Determine overall status
-    allHealthy = all(services.values())
-    status_value = "healthy" if allHealthy else "degraded"
-    
+    checks = await runDeepChecks()
+
+    # Import the aggregator locally to avoid the symbol-resolution
+    # cost on each call -- hot path.
+    from backend.health import _aggregateStatus
+
+    status_value = _aggregateStatus(checks)
+    services = servicesFromChecks(checks)
+
+    if shouldReturn503(status_value):
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+
     return HealthResponse(
         status=status_value,
         version="1.0.0",
         timestamp=datetime.now(),
-        services=services
+        services=services,
+        checks=checks,
+        uptimeSeconds=round(uptimeSeconds(), 2),
+        ready=True,
     )
 
 

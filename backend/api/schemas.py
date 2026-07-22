@@ -343,13 +343,16 @@ class AnalysisResponse(BaseModel):
 class HealthResponse(BaseModel):
     """
     Health check response.
-    
+
     Attributes:
         status: Service status
         version: API version
         timestamp: Current timestamp
         services: Status of dependent services
-        
+        checks: Per-dependency deep-check report (Tier 1.5)
+        uptimeSeconds: Seconds since application start (Tier 1.5)
+        ready: True when the deep check has completed at least once
+
     Example:
         >>> health = HealthResponse(
         ...     status="healthy",
@@ -361,17 +364,38 @@ class HealthResponse(BaseModel):
     status: str = Field(
         ...,
         pattern="^(healthy|degraded|unhealthy)$",
-        description="Service health status"
+        description="Service health status",
     )
     version: str = Field(
         ...,
-        description="API version"
+        description="API version",
     )
     timestamp: datetime = Field(
         default_factory=datetime.now,
-        description="Current timestamp"
+        description="Current timestamp",
     )
     services: dict[str, bool] = Field(
         default_factory=dict,
-        description="Status of dependent services"
+        description="Status of dependent services",
+    )
+    # Tier 1.5 deep-check additions -- ALL OPTIONAL to keep the prior
+    # shallow response shape backward-compatible.
+    checks: Optional[dict[str, dict]] = Field(
+        default=None,
+        description=(
+            "Per-dependency deep-check report.  Each entry has "
+            "``status`` ('up'/'down'), ``latencyMs`` (when measured), "
+            "and ``detail`` (human-readable note on failure)."
+        ),
+    )
+    uptimeSeconds: Optional[float] = Field(
+        default=None,
+        description="Seconds since application startup",
+    )
+    ready: Optional[bool] = Field(
+        default=None,
+        description=(
+            "True when the application has finished initialising and is "
+            "ready to serve traffic."
+        ),
     )

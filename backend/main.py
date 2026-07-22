@@ -26,6 +26,10 @@ from backend.api.rate_limiting import (
 )
 from backend.api.security_headers import addSecurityHeaders
 from backend.config import settings
+from backend.logging_config import (
+    addRequestIdMiddleware,
+    configureStructlog,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +42,12 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """
     Manage application lifespan events.
-    
+
     Handles startup and shutdown tasks like loading models,
     initializing connections, etc.
     """
     # Startup
+    configureStructlog()
     logger.info("Starting Phishing Detection API v1.0.0")
     logger.info("Analyzer Engine: %s", settings.analyzerEngine.value)
     logger.info("Environment: %s", settings.environment.value)
@@ -52,15 +57,15 @@ async def lifespan(app: FastAPI):
         settings.corsMethods,
         settings.corsHeaders,
     )
-    
+
     if settings.corsOrigins == "*" and settings.isProduction:
         logger.warning(
             "Wildcard CORS origins (*) in production is insecure — "
             "set CORS_ORIGINS to specific origins"
         )
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down Phishing Detection API")
 
@@ -139,6 +144,15 @@ app.add_middleware(
     allow_methods=settings.corsMethodsList,
     allow_headers=settings.corsHeadersList,
 )
+
+
+# =============================================================================
+# X-Request-ID (outer-most -- bound to structlog contextvars for
+# the duration of each request).  Registered LAST so it runs FIRST
+# in Starlette's middleware stack.
+# =============================================================================
+
+addRequestIdMiddleware(app)
 
 
 # =============================================================================

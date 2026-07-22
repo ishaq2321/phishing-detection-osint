@@ -13,10 +13,11 @@ Course: BSc Thesis - ELTE Faculty of Informatics
 
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 
 from .historyStore import HistoryEntry, HistoryListResponse, historyStore
 from .orchestrator import AnalysisOrchestrator
+from .rate_limiting import ANALYZE_LIMIT, STATUS_LIMIT, limiter
 from .schemas import (
     AnalysisResponse,
     AnalyzeRequest,
@@ -99,7 +100,8 @@ async def healthCheck() -> HealthResponse:
     summary="ML Model Status",
     description="Return metadata about the loaded XGBoost phishing model",
 )
-async def modelStatus() -> ModelStatusResponse:
+@limiter.limit(STATUS_LIMIT)
+async def modelStatus(request: Request, response: Response) -> ModelStatusResponse:
     """
     Return the ML model's availability and metadata.
 
@@ -124,7 +126,12 @@ async def modelStatus() -> ModelStatusResponse:
     description="Analyze URL or email content for phishing indicators",
     status_code=status.HTTP_200_OK
 )
-async def analyzeContent(request: AnalyzeRequest) -> AnalysisResponse:
+@limiter.limit(ANALYZE_LIMIT)
+async def analyzeContent(
+    request: Request,
+    payload: AnalyzeRequest,
+    response: Response,
+) -> AnalysisResponse:
     """
     Analyze content for phishing indicators.
     
@@ -162,12 +169,12 @@ async def analyzeContent(request: AnalyzeRequest) -> AnalysisResponse:
     """
     try:
         response = await orchestrator.analyze(
-            content=request.content,
-            contentType=request.contentType
+            content=payload.content,
+            contentType=payload.contentType
         )
         historyStore.add(
-            content=request.content,
-            contentType=request.contentType,
+            content=payload.content,
+            contentType=payload.contentType,
             response=response,
         )
         return response
@@ -185,7 +192,12 @@ async def analyzeContent(request: AnalyzeRequest) -> AnalysisResponse:
     description="Analyze a URL for phishing indicators",
     status_code=status.HTTP_200_OK
 )
-async def analyzeUrl(request: UrlRequest) -> AnalysisResponse:
+@limiter.limit(ANALYZE_LIMIT)
+async def analyzeUrl(
+    request: Request,
+    payload: UrlRequest,
+    response: Response,
+) -> AnalysisResponse:
     """
     Analyze a URL for phishing indicators.
     
@@ -209,11 +221,11 @@ async def analyzeUrl(request: UrlRequest) -> AnalysisResponse:
     """
     try:
         response = await orchestrator.analyze(
-            content=request.url,
+            content=payload.url,
             contentType="url"
         )
         historyStore.add(
-            content=request.url,
+            content=payload.url,
             contentType="url",
             response=response,
         )
@@ -232,7 +244,12 @@ async def analyzeUrl(request: UrlRequest) -> AnalysisResponse:
     description="Analyze email content for phishing indicators",
     status_code=status.HTTP_200_OK
 )
-async def analyzeEmail(request: EmailRequest) -> AnalysisResponse:
+@limiter.limit(ANALYZE_LIMIT)
+async def analyzeEmail(
+    request: Request,
+    payload: EmailRequest,
+    response: Response,
+) -> AnalysisResponse:
     """
     Analyze email content for phishing indicators.
     
@@ -258,18 +275,18 @@ async def analyzeEmail(request: EmailRequest) -> AnalysisResponse:
     """
     try:
         # Combine subject and sender info with content
-        fullContent = request.content
-        if request.subject:
-            fullContent = f"Subject: {request.subject}\n\n{fullContent}"
-        if request.sender:
-            fullContent = f"From: {request.sender}\n{fullContent}"
-        
+        fullContent = payload.content
+        if payload.subject:
+            fullContent = f"Subject: {payload.subject}\n\n{fullContent}"
+        if payload.sender:
+            fullContent = f"From: {payload.sender}\n{fullContent}"
+
         response = await orchestrator.analyze(
             content=fullContent,
             contentType="email"
         )
         historyStore.add(
-            content=request.content,
+            content=payload.content,
             contentType="email",
             response=response,
         )

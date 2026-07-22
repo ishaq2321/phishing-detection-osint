@@ -32,5 +32,9 @@ python-dotenv==1.0.0
 # Async Support
 asyncio-throttle==1.0.2
 
+# Rate limiting
+slowapi==0.1.10
+limits==5.8.0
+
 # Logging & Monitoring
 structlog==24.1.0

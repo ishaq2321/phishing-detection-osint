@@ -188,6 +188,19 @@ class Settings(BaseSettings):
     )
 
     # =========================================================================
+    # Authentication
+    # =========================================================================
+
+    apiKeys: Optional[str] = Field(
+        default=None,
+        description=(
+            "Comma-separated list of acceptable X-Api-Key values for "
+            "the heavy analysis endpoints.  Empty / unset disables "
+            "authentication entirely (public-demo posture)."
+        ),
+    )
+
+    # =========================================================================
     # Analysis Thresholds
     # =========================================================================
     

@@ -19,6 +19,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.api import router
+from backend.api.auth import addApiKeyAuth
+from backend.api.rate_limiting import (
+    addRateLimiting,
+    installJsonRateLimitHandler,
+)
+from backend.api.security_headers import addSecurityHeaders
 from backend.config import settings
 
 logger = logging.getLogger(__name__)
@@ -91,6 +97,35 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json"
 )
+
+
+# =============================================================================
+# Security Headers Middleware (HSTS, CSP, X-Frame-Options, etc.)
+# =============================================================================
+
+addSecurityHeaders(app)
+
+
+# =============================================================================
+# API-Key Authentication (optional -- depends on settings.apiKeys)
+#
+# Runs BEFORE rate-limiting so that bad-key requests short-circuit
+# at 401 and never consume a rate-budget slot.
+# =============================================================================
+
+addApiKeyAuth(app)
+
+
+# =============================================================================
+# Rate Limiting (slowapi)
+#
+# /api/health and /api/docs and OpenAPI /* are intentionally NOT limited
+# (the @limiter.limit decorator on each route handler takes care of the
+# heavy ones; the JSON exception handler replaces slowapi's default).
+# =============================================================================
+
+addRateLimiting(app)
+installJsonRateLimitHandler(app)
 
 
 # =============================================================================

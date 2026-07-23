@@ -1,15 +1,15 @@
 [0] Config.pm:307> INFO - This is Biber 2.17
 [0] Config.pm:310> INFO - Logfile is 'elteikthesis_en.blg'
-[140] biber:340> INFO - === Sun Apr 26, 2026, 03:56:36
-[162] Biber.pm:418> INFO - Reading 'elteikthesis_en.bcf'
-[278] Biber.pm:972> INFO - Found 28 citekeys in bib section 0
-[302] Biber.pm:4383> INFO - Processing section 0
-[321] Biber.pm:4574> INFO - Looking for bibtex file 'elteikthesis.bib' for section 0
-[323] bibtex.pm:1713> INFO - LaTeX decoding ...
-[360] bibtex.pm:1518> INFO - Found BibTeX data source 'elteikthesis.bib'
-[666] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[666] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[666] Biber.pm:4203> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
-[666] Biber.pm:4209> INFO - No sort tailoring available for locale 'en-US'
-[700] bbl.pm:654> INFO - Writing 'elteikthesis_en.bbl' with encoding 'UTF-8'
-[712] bbl.pm:757> INFO - Output to elteikthesis_en.bbl
+[71] biber:340> INFO - === Thu Jul 23, 2026, 15:02:25
+[85] Biber.pm:418> INFO - Reading 'elteikthesis_en.bcf'
+[155] Biber.pm:972> INFO - Found 28 citekeys in bib section 0
+[167] Biber.pm:4383> INFO - Processing section 0
+[184] Biber.pm:4574> INFO - Looking for bibtex file 'elteikthesis.bib' for section 0
+[185] bibtex.pm:1713> INFO - LaTeX decoding ...
+[204] bibtex.pm:1518> INFO - Found BibTeX data source 'elteikthesis.bib'
+[363] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[364] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[364] Biber.pm:4203> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
+[364] Biber.pm:4209> INFO - No sort tailoring available for locale 'en-US'
+[384] bbl.pm:654> INFO - Writing 'elteikthesis_en.bbl' with encoding 'UTF-8'
+[394] bbl.pm:757> INFO - Output to elteikthesis_en.bbl

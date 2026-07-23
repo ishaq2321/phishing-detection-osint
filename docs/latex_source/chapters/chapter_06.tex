@@ -110,13 +110,31 @@ OSINT anomalies, and 40\% for combined feature indicators. While this
 static heuristic lacks the non-linear relationship modeling capabilities
 of the trained XGBoost ensemble, it guarantees that the core phishing
 detection pipeline remains operational. The system continues to identify
-overt threats (e.g., IP-based URLs lacking HTTPS with suspicious
-keywords) even when the predictive engine is offline, demonstrating a
-sophisticated defense-in-depth approach to software engineering.
+ overt threats (e.g., IP-based URLs lacking HTTPS with suspicious
+ keywords) even when the predictive engine is offline, demonstrating a
+ sophisticated defense-in-depth approach to software engineering.
+
+This defensive posture is reinforced at the HTTP boundary itself. The
+production deployment ships hardened response headers (HSTS,
+Strict-Transport-Security, Content-Security-Policy with
+\texttt{frame-ancestors\ 'none'}, X-Frame-Options, and a strict
+Referrer-Policy), per-key rate limits that throttle abusive clients
+before they can exhaust OSINT quota, \texttt{X-Api-Key} authentication
+on the heavy analysis routes with SHA-256-digested, constant-time
+key comparison, structured JSON logs with a per-request
+\texttt{X-Request-ID} for incident correlation, and a deep
+\texttt{/api/health} endpoint that probes DNS, the XGBoost model
+load state, and the orchestrator import chain in parallel and
+returns a stratified \texttt{healthy} / \texttt{degraded} /
+\texttt{unhealthy} verdict. Together these hardenings transform the
+detection pipeline into a service that can survive operator
+oversight, opportunistic attackers, and silent dependency drift --
+the three failure modes most likely to occur in the months after
+the system is deployed.
+
 
 \section{Threat Modeling and
 Limitations}\label{threat-modeling-and-limitations}
-
 While the empirical results indicate a highly effective detection
 capability (96.45\% accuracy), a rigorous academic evaluation requires a
 critical analysis of the system's inherent limitations and the potential

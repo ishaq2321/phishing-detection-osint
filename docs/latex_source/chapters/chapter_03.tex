@@ -359,6 +359,109 @@ entity, including discrete categorical scores, confidence metrics, and
 human-readable explanation factors.
 
 
+\section{Production Hardening: Endpoint Security, Observability, and Resilient Monitoring}\label{production-hardening}
+
+A detection system that surfaces ``no threat detected'' for an analysed phishing URL is not the same as a detection system that survives the next six months in production. Beyond the analysis pipeline itself, PhishGuard ships a defence-in-depth posture that protects the API surface, throttles abuse, authenticates callers, emits machine-readable logs, and gives uptime monitors an honest view of dependency health. The following five middleware and module components compose this hardening posture.
+
+\subsection{HTTP Security Headers (OWASP Baseline)}
+
+Following the OWASP Secure Headers Project recommendations, every outgoing response is augmented with hardened HTTP headers through the \texttt{backend/api/security\_headers.py} module, registered as a Starlette HTTP middleware in \texttt{main.py}.
+
+\begin{itemize}
+\item
+  \texttt{X-Content-Type-Options:\ nosniff} -- prevents MIME-confusion attacks in browsers; forces \texttt{application/json} to be treated as \texttt{application/json}.
+\item
+  \texttt{X-Frame-Options:\ DENY} together with CSP \texttt{frame-ancestors\ 'none'} -- disallows any iframe embedding, mitigating clickjacking against the Swagger UI surface.
+\item
+  \texttt{Referrer-Policy:\ strict-origin-when-cross-origin} -- sends only the origin on cross-origin navigation; prevents URL leakage to third parties.
+\item
+  \texttt{Content-Security-Policy:\ default-src\ 'none';\ frame-ancestors\ 'none';\ base-uri\ 'none';\ form-action\ 'none'} -- the most conservative CSP that is compatible with FastAPI's Swagger UI; the docs path is the only place where inline scripts and CDN-loaded styles are permitted.
+\item
+  \texttt{Strict-Transport-Security:\ max-age=31536000;\ includeSubDomains} -- emitted only in production; local development over plain HTTP does not benefit from HSTS and some local proxies misinterpret it.
+\end{itemize}
+
+The middleware binds the production-mode boolean at registration time rather than reading the live \texttt{settings} object inside the closure. This avoids timing-sensitive behaviour of \texttt{pydantic-settings}' \texttt{lru\_cache} during pytest runs where the environment toggles between tests; the production-mode header decisions are made once, deterministically.
+
+\subsection{Rate Limiting via \texttt{slowapi}}
+
+Public OSINT queries cost the system real third-party API quota, and unbounded traffic from a single scraper would burn the budget for legitimate users. The \texttt{backend/api/rate\_limiting.py} module introduces per-key rate budgets via the \texttt{slowapi} library:
+
+\begin{itemize}
+\item
+  Per-IP default: 60 requests per minute -- covers routes that do not carry an explicit \texttt{@limiter.limit} decorator such as \texttt{/api/health} and \texttt{/api/history*}.
+\item
+  Heavy analysis routes (\texttt{/api/analyze}, \texttt{/api/analyze/url}, \texttt{/api/analyze/email}): 30 requests per minute per IP -- each call burns WHOIS, VirusTotal, AbuseIPDB, and XGBoost inference budget.
+\item
+  \texttt{/api/model/status}: 10 requests per minute -- this is a cheap inspection endpoint and does not need a generous budget.
+\end{itemize}
+
+The slowapi key function prefers \texttt{X-Api-Key} headers over \texttt{X-Forwarded-For} chains over the raw remote address. An authenticated caller therefore gets one bucket per API key regardless of which network they connect from, preventing an adversary with a rotating residential proxy from exceeding the budget.
+
+The slowapi exception handler is overridden so that the standard plaintext 429 is replaced with a JSON envelope:
+
+\begin{verbatim}
+{
+  "detail": "Rate limit exceeded",
+  "limit": "30 per 1 minute",
+  "retry_after_seconds": 60
+}
+\end{verbatim}
+
+\texttt{slowapi} supports multiple storage backends. The in-process \texttt{memory://} backend is appropriate for the Render free plan's single-instance topology; production multi-instance deployments can opt into Redis-backed storage by setting \texttt{PHISHGUARD\_RATE\_LIMIT\_URI=redis://...}.
+
+\subsection{Optional X-Api-Key Authentication}
+
+Authentication is the third leg of the defence-in-depth posture. The \texttt{backend/api/auth.py} module registers a middleware that gates the heavy \texttt{/api/analyze*} routes behind an \texttt{X-Api-Key} shared secret. The key list is configured via the \texttt{APIKEYS} environment variable as a comma-separated list.
+
+The implementation has three important properties:
+
+\begin{enumerate}
+\item
+  Configured keys are immediately digested into SHA-256 hex digests at startup; raw key bytes never sit in process memory during operation.
+\item
+  Each incoming key is hashed before comparison, and the digest is matched against the configured set with \texttt{hmac.compare\_digest}, closing the timing-attack window that a naive \texttt{in} test would leave open.
+\item
+  Authentication runs before the rate-limit middleware, so an attacker spamming bad keys short-circuits at 401 and never consumes a rate-budget slot.
+\end{enumerate}
+
+When \texttt{APIKEYS} is unset, the middleware is registered but behaves as a pass-through; this preserves the current public-demo posture and lets operators tighten access by setting one env var. Failures generate a 401 response carrying both a JSON body and a \texttt{WW-Authenticate:\ ApiKey} response header per RFC-7235. Auth is a single decision so the entire route handler short-circuits the rest of the middleware chain.
+
+\subsection{Structured Logging and Request Correlation}
+
+Operational observability is the fourth leg. \texttt{backend/logging\_config.py} replaces the default Python \texttt{logging} formatter with a \texttt{structlog} processor pipeline:
+
+\begin{itemize}
+\item
+  Production (\texttt{LOG\_FORMAT=json} or the production environment flag): one JSON object per line, ISO-8601 UTC timestamps, suitable for log aggregators such as Render's built-in log explorer.
+\item
+  Development / testing: colourised console output (\texttt{structlog.dev.ConsoleRenderer}) for human readability on the operator's terminal.
+\item
+  Standard-library \texttt{logging.getLogger(\_\_name\_\_)} call sites are bridged through the same processor chain via \texttt{ProcessorFormatter}, so existing code requires no refactor and still emits structured records.
+\end{itemize}
+
+A second middleware (\texttt{\_RequestIdMiddleware}) ensures every incoming request carries an \texttt{X-Request-ID} header -- either echoed from the client or generated as a 12-character hex value -- and binds the id into structlog's \texttt{contextvars}. Every log line emitted during that request therefore carries \texttt{request\_id=...} automatically, making post-mortem searches on an aggregation platform a single field-target operation.
+
+The middleware is registered as the outermost layer in \texttt{main.py}, so an operator inspecting a 500-error log line can trace it back to the originating client by the \texttt{X-Request-ID} they were given in the error response.
+
+\subsection{Deep Health Check for Uptime Monitors}
+
+A shallow ``\texttt{/api/health} returns 200'' check lies to an uptime monitor when DNS has stopped resolving or when the XGBoost model silently failed to load. The \texttt{backend/health.py} module replaces the legacy handler with a deep probe that exercises every production-critical dependency in parallel:
+
+\begin{itemize}
+\item
+  \textbf{DNS} -- resolve \texttt{example.com} via \texttt{backend.osint.dnsChecker.DnsChecker}; 3-second bounded timeout prevents a wedged resolver from starving the uptime endpoint.
+\item
+  \textbf{ML} -- instantiate \texttt{PhishingPredictor} and assert \texttt{isLoaded} is \texttt{True}; reports the number of features available to the scoring engine.
+\item
+  \textbf{Imports} -- re-import the analyser and orchestrator modules as a fast-fail sentinel against environment drift.
+\end{itemize}
+
+The three checks run via \texttt{asyncio.gather} so the slowest check (typically the DNS probe) bounds the latency \emph{and} the aggregated endpoint returns within 100--300 milliseconds even on slower connections. Per-check results carry a \texttt{status}, \texttt{latencyMs}, and a human-readable \texttt{detail}; the top-level \texttt{status} collapses to \texttt{healthy} (all checks \texttt{up}), \texttt{degraded} (DNS down but ML/imports up; OSINT queries will gracefully fail individually), or \texttt{unhealthy} (ML or imports down; URL phishing scoring cannot work). HTTP 503 is returned only on \texttt{unhealthy}; the \texttt{degraded} state returns 200 so uptime dashboards see OK but the inspection payload flags the situation. A backward-compatible \texttt{services} key (\texttt{osint}, \texttt{analyzer}, \texttt{ml}) is preserved for the existing client agents and dashboards that read it.
+
+\subsection{Hardening Test Surface}
+
+The five hardening features are covered by 132 new pytest tests: 80 unit tests spanning the helper utilities (digest computation, key parser, formatter helpers, processor chains, aggregation logic) and 52 integration tests covering the end-to-end FastAPI pipeline (header presence on every response, 401 and 429 status mapping, request-id header round-trip, deep health response shape, status-to-HTTP mapping). The full Tier 1 delivery brings the backend test count to 729 distinct pytest cases (with 12 additional long-pipeline integration tests that exercise the real orchestrator and are not included in the fast tier); all 729 fast tests complete in under 90 seconds.
+
 \section{Deployment and
 Infrastructure}\label{deployment-and-infrastructure}
 
@@ -438,7 +541,7 @@ Next.js frontend.
 Methodology}\label{backend-testing-methodology}
 
 The backend testing architecture is constructed upon the \texttt{pytest}
-framework, comprising 758 distinct tests (597 backend \texttt{pytest} unit/integration tests, 133 frontend \texttt{Jest} tests, and 28 \texttt{Playwright} E2E browser tests) distributed
+framework, comprising 890 distinct tests (729 backend \texttt{pytest} unit/integration tests, 133 frontend \texttt{Jest} tests, and 28 \texttt{Playwright} E2E browser tests) distributed
 across the \texttt{tests/unit/} and \texttt{tests/integration/}
 directories. Given the asynchronous nature of the FastAPI orchestrator
 and the underlying Open-Source Intelligence (OSINT) network calls, the

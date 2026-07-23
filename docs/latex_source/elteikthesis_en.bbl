@@ -408,29 +408,36 @@
       \field{pages}{3851\bibrangedash 3873}
       \range{pages}{23}
     \endentry
-    \entry{yang2019}{inproceedings}{}
+    \entry{jayalakshmi2023}{article}{}
       \true{moreauthor}
       \true{morelabelname}
       \name{author}{1}{}{%
-        {{hash=cf33bcda2a93f993c5124cf26991a0f6}{%
-           family={Yang},
-           familyi={Y\bibinitperiod},
-           given={P},
-           giveni={P\bibinitperiod}}}%
+        {{hash=2382d8238100cf3cab91c8723522d295}{%
+           family={Jayalakshmi},
+           familyi={J\bibinitperiod},
+           given={S},
+           giveni={S\bibinitperiod}}}%
       }
-      \strng{namehash}{27b6d101378d95dbe1cbdfc7156cd6dc}
-      \strng{fullhash}{27b6d101378d95dbe1cbdfc7156cd6dc}
-      \strng{bibnamehash}{27b6d101378d95dbe1cbdfc7156cd6dc}
-      \strng{authorbibnamehash}{27b6d101378d95dbe1cbdfc7156cd6dc}
-      \strng{authornamehash}{27b6d101378d95dbe1cbdfc7156cd6dc}
-      \strng{authorfullhash}{27b6d101378d95dbe1cbdfc7156cd6dc}
+      \list{publisher}{1}{%
+        {MDPI}%
+      }
+      \strng{namehash}{c890d062cd229b7d77cf28e1f073f5c3}
+      \strng{fullhash}{c890d062cd229b7d77cf28e1f073f5c3}
+      \strng{bibnamehash}{c890d062cd229b7d77cf28e1f073f5c3}
+      \strng{authorbibnamehash}{c890d062cd229b7d77cf28e1f073f5c3}
+      \strng{authornamehash}{c890d062cd229b7d77cf28e1f073f5c3}
+      \strng{authorfullhash}{c890d062cd229b7d77cf28e1f073f5c3}
       \field{sortinit}{1}
       \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{booktitle}{Proc. IJCAI}
-      \field{title}{MTD: A Multi-Task Deep Learning Framework to Predict Drug-Target Interactions}
-      \field{year}{2019}
+      \field{journaltitle}{Symmetry}
+      \field{number}{1}
+      \field{title}{A Novel Phishing Website Detection Model Based on LightGBM and Domain Name Features}
+      \field{volume}{15}
+      \field{year}{2023}
+      \field{pages}{180}
+      \range{pages}{1}
     \endentry
     \entry{somesha2020}{inproceedings}{}
       \true{moreauthor}

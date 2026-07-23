@@ -26,7 +26,7 @@ from backend.api.rate_limiting import (
 )
 from backend.api.security_headers import addSecurityHeaders
 from backend.config import settings
-from backend.health import markBootComplete
+from backend.health import markBootComplete, registerHealthEndpoints
 from backend.logging_config import (
     addRequestIdMiddleware,
     configureStructlog,
@@ -194,6 +194,9 @@ async def genericExceptionHandler(request, exc: Exception):
 # =============================================================================
 
 app.include_router(router)
+
+# Tier 1.6: Render-style liveness + readiness probes.
+registerHealthEndpoints(app)
 
 
 # =============================================================================

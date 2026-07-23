@@ -458,9 +458,20 @@ A shallow ``\texttt{/api/health} returns 200'' check lies to an uptime monitor w
 
 The three checks run via \texttt{asyncio.gather} so the slowest check (typically the DNS probe) bounds the latency \emph{and} the aggregated endpoint returns within 100--300 milliseconds even on slower connections. Per-check results carry a \texttt{status}, \texttt{latencyMs}, and a human-readable \texttt{detail}; the top-level \texttt{status} collapses to \texttt{healthy} (all checks \texttt{up}), \texttt{degraded} (DNS down but ML/imports up; OSINT queries will gracefully fail individually), or \texttt{unhealthy} (ML or imports down; URL phishing scoring cannot work). HTTP 503 is returned only on \texttt{unhealthy}; the \texttt{degraded} state returns 200 so uptime dashboards see OK but the inspection payload flags the situation. A backward-compatible \texttt{services} key (\texttt{osint}, \texttt{analyzer}, \texttt{ml}) is preserved for the existing client agents and dashboards that read it.
 
+\subsubsection{Liveness / Readiness Probe Split (Kubernetes Semantics)} A naive \texttt{/api/health} endpoint conflates two very different questions, \emph{``is the process alive?''} and \emph{``is the system ready to serve production traffic?''}. The probes must be split because they have very different cost profiles: Render scans the liveness probe every second but the readiness probe only every ten seconds, and a slow readiness endpoint (DNS + ML probes each take hundreds of milliseconds) starves the liveness budget. Two endpoints are therefore exposed, both registered by \texttt{registerHealthEndpoints()} in \texttt{backend/health.py} and mounted under a shared \texttt{APIRouter} with the \texttt{/api/health} prefix:
+
+\begin{itemize}
+\item
+  \texttt{GET /api/health/live} returns 200 in well under fifty milliseconds whenever the FastAPI event loop is alive; it performs no I/O, no probes, no module imports beyond what was required at startup. \texttt{render.yaml} points \texttt{healthCheckPath} at this endpoint so Render's per-second scans never burn the readiness budget.
+\item
+  \texttt{GET /api/health/ready} returns the deep probe envelope (\texttt{status}, \texttt{checks}, \texttt{services}, \texttt{uptimeSeconds}, \texttt{version}). This is what the load balancer should poll when deciding whether to route traffic to a new instance.
+\item
+  \texttt{GET /api/health} is kept as a permanent alias of \texttt{/ready} so external dashboards and existing scripts that hard-coded the path keep working unchanged.
+\end{itemize}
+
 \subsection{Hardening Test Surface}
 
-The five hardening features are covered by 132 new pytest tests: 80 unit tests spanning the helper utilities (digest computation, key parser, formatter helpers, processor chains, aggregation logic) and 52 integration tests covering the end-to-end FastAPI pipeline (header presence on every response, 401 and 429 status mapping, request-id header round-trip, deep health response shape, status-to-HTTP mapping). The full Tier 1 delivery brings the backend test count to 729 distinct pytest cases (with 12 additional long-pipeline integration tests that exercise the real orchestrator and are not included in the fast tier); all 729 fast tests complete in under 90 seconds.
+The five hardening features are covered by 158 new pytest tests: 92 unit tests spanning the helper utilities (digest computation, key parser, formatter helpers, processor chains, aggregation logic, liveness vs readiness split, registerHealthEndpoints idempotence) and 66 integration tests covering the end-to-end FastAPI pipeline (header presence on every response, 401 and 429 status mapping, request-id header round-trip, deep health response shape, status-to-HTTP mapping, liveness latency budget, X-Request-ID across both probe paths). The full Tier 1 delivery brings the backend test count to 755 distinct pytest cases (with 12 additional long-pipeline integration tests that exercise the real orchestrator and are not included in the fast tier); all 743 fast tests complete in well under 90 seconds.
 
 \section{Deployment and
 Infrastructure}\label{deployment-and-infrastructure}
@@ -541,7 +552,7 @@ Next.js frontend.
 Methodology}\label{backend-testing-methodology}
 
 The backend testing architecture is constructed upon the \texttt{pytest}
-framework, comprising 890 distinct tests (729 backend \texttt{pytest} unit/integration tests, 133 frontend \texttt{Jest} tests, and 28 \texttt{Playwright} E2E browser tests) distributed
+framework, comprising 916 distinct tests (755 backend \texttt{pytest} unit/integration tests, 133 frontend \texttt{Jest} tests, and 28 \texttt{Playwright} E2E browser tests) distributed
 across the \texttt{tests/unit/} and \texttt{tests/integration/}
 directories. Given the asynchronous nature of the FastAPI orchestrator
 and the underlying Open-Source Intelligence (OSINT) network calls, the

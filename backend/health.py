@@ -288,6 +288,109 @@ def isUp(checkResult: Optional[dict[str, Any]]) -> bool:
 def shouldReturn503(topLevelStatus: str) -> bool:
     """Decide the HTTP status: 503 only when truly unhealthy."""
     return topLevelStatus == "unhealthy"
+"""
+Append Tier 1.6 helpers to backend/health.py -- clean re-addition
+of liveness/readiness endpoints without the earlier edit mess.
+"""
+
+from fastapi import APIRouter, FastAPI, Response
+from fastapi import status as _status
+
+# App version constant
+APP_VERSION = "1.0.0"
+
+
+async def livenessHandler() -> dict:
+    """Cheap liveness response -- no I/O, no probes.
+
+    Returns ``200 OK`` whenever the FastAPI event loop is running.
+    Render calls this every second (liveness), so it must NEVER
+    touch the network or load any heavy module.
+    """
+    return {
+        "status": "alive",
+        "uptimeSeconds": round(uptimeSeconds(), 2),
+    }
+
+
+async def readinessHandler(response: Response) -> dict:
+    """Deep readiness response -- runs the slow probes.
+
+    Same logic as the legacy ``/api/health`` handler: DNS + ML
+    probes in parallel, ``degraded`` returns 200, ``unhealthy``
+    flips the response code to 503.
+    """
+    checks = await runDeepChecks()
+    status_value = _aggregateStatus(checks)
+    services = servicesFromChecks(checks)
+    if shouldReturn503(status_value):
+        response.status_code = _status.HTTP_503_SERVICE_UNAVAILABLE
+    return {
+        "status": status_value,
+        "version": APP_VERSION,
+        "services": services,
+        "checks": checks,
+        "uptimeSeconds": round(uptimeSeconds(), 2),
+        "ready": True,
+    }
+
+
+def registerHealthEndpoints(app: FastAPI) -> None:
+    """Mount the canonical Render-style probe endpoints.
+
+    Mounts::
+
+        GET /api/health/live   -- cheap, no I/O (Render liveness)
+        GET /api/health/ready  -- deep probes, may 503 (Readiness)
+        GET /api/health        -- alias for /ready (back-compat)
+
+    The legacy ``/api/health`` route mounted by ``router.py``
+    delegates to the same logic via this module's helpers, so the
+    two surfaces stay in lock-step.
+    """
+    router = APIRouter(prefix="/api/health", tags=["ops"])
+
+    @router.get(
+        "/live",
+        summary="Liveness probe",
+        description=(
+            "Cheap endpoint that returns 200 whenever the FastAPI "
+            "process is responsive.  Used by Render's liveness "
+            "probe to detect a wedged event loop."
+        ),
+    )
+    async def _live():
+        return await livenessHandler()
+
+    @router.get(
+        "/ready",
+        summary="Readiness probe",
+        description=(
+            "Deep probe (DNS + ML + import chain) that returns "
+            "200 for ``healthy`` / ``degraded`` and 503 only when "
+            "``unhealthy``."
+        ),
+    )
+    async def _ready(response: Response):
+        return await readinessHandler(response)
+
+    @router.get(
+        "",
+        summary="Legacy health endpoint (alias for /ready)",
+        description=(
+            "Backward-compatible alias for ``/api/health/ready`` "
+            "preserved for the Render ``healthCheckPath`` and the "
+            "pre-Tier-1.6 dashboards."
+        ),
+    )
+    async def _legacy(response: Response):
+        return await readinessHandler(response)
+
+    app.include_router(router)
+    logger.info(
+        "Health endpoints registered: /api/health/live, "
+        "/api/health/ready, /api/health (alias)"
+    )
 
 
 __all__ = [
@@ -297,8 +400,12 @@ __all__ = [
     "markBootComplete",
     "uptimeSeconds",
     "runDeepChecks",
+    "livenessHandler",
+    "readinessHandler",
+    "registerHealthEndpoints",
     "_aggregateStatus",
     "servicesFromChecks",
     "isUp",
     "shouldReturn503",
+    "APP_VERSION",
 ]

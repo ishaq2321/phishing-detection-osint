@@ -63,30 +63,86 @@ services:
         - "*.md"
 
     # ------------------------------------------------------------------
-    # Health check
+    # Health check (Tier 1.6: split liveness/readiness)
+    #
+    # Render probes ``healthCheckPath`` every 10 s.  Two endpoints
+    # are available:
+    #
+    #   /api/health/live   -- no I/O, sub-50 ms; recommended for any
+    #                         high-frequency monitor.  Returns 200
+    #                         whenever the FastAPI event loop is alive.
+    #   /api/health/ready  -- deep DNS + ML probes; recommended for
+    #                         readiness checks (load balancer).  Maps
+    #                         to 503 only when *unhealthy*.
+    #   /api/health        -- kept as an alias for /ready so existing
+    #                         dashboards that baked in the path keep
+    #                         working.
+    #
+    # We point Render at ``/api/health/live`` so the per-second readiness
+    # scans never burn our latency budget on actual DNS queries.
     # ------------------------------------------------------------------
-    healthCheckPath: /api/health
+    healthCheckPath: /api/health/live
 
     # ------------------------------------------------------------------
     # Environment variables
+    #
+    # Two groups:
+    #
+    # 1. Hardcoded values that promote the application to its
+    #    production posture at boot -- no dashboard action required.
+    # 2. Secrets marked ``sync: false`` -- managed ONLY via the Render
+    #    dashboard so they never leak into version control.
     # ------------------------------------------------------------------
     envVars:
+      # -- Core runtime ---------------------------------------------------
       - key: ENVIRONMENT
         value: production
       - key: PYTHONUNBUFFERED
+        # Force Python stdout/stderr to flush on every write -- so
+        # we never lose a log line on a uvicorn reload.
         value: "1"
-      # Pin Python version via env var (Render's documented way). See
-      # https://docs.render.com/python-version for why this is the
-      # full-qualified version string.
       - key: PYTHON_VERSION
+        # Full-qualified version string per
+        # https://docs.render.com/python-version
         value: "3.10.12"
-      # Secrets marked sync: false are managed in the Render dashboard
-      # and are NEVER committed to version control. Render will prompt
-      # for these values on initial Blueprint creation only — to add
-      # new secrets later, set them in the Render dashboard manually.
+
+      # -- Observability (Tier 1.4) ---------------------------------------
+      # Production emits one JSON log object per line via structlog so
+      # Render's built-in log explorer can ingest them cleanly.
+      - key: LOG_FORMAT
+        value: json
+      - key: LOG_LEVEL
+        # INFO by default; bump to DEBUG for incident post-mortems.
+        value: INFO
+
+      # -- Rate-limit knobs (Tier 1.2) ------------------------------------
+      # Each line is documented in backend/api/rate_limiting.py.
+      - key: PHISHGUARD_DEFAULT_RATE_LIMIT
+        value: 60/minute
+      - key: PHISHGUARD_STATUS_RATE_LIMIT
+        value: 10/minute
+      - key: PHISHGUARD_ANALYZE_RATE_LIMIT
+        value: 30/minute
+      - key: PHISHGUARD_RATE_LIMIT_URI
+        # memory:// is appropriate for the Render free-plan single-instance
+        # topology.  Switch to redis://... for multi-instance production.
+        value: memory://
+
+      # -- Health/Readiness timeouts (Tier 1.6) --------------------------
+      - key: PHISHGUARD_HEALTH_DNS_TIMEOUT
+        value: "3.0"
+      - key: PHISHGUARD_HEALTH_ML_TIMEOUT
+        value: "1.0"
+
+      # -- Secrets (managed ONLY via the Render dashboard) ----------------
       - key: VIRUSTOTAL_API_KEY
         sync: false
       - key: ABUSEIPDB_API_KEY
         sync: false
       - key: CORS_ORIGINS
+        sync: false
+      # Tier 1.3 -- gate /api/analyze* with an X-Api-Key header.  Leave
+      # unset to disable authentication (public demo) or set to a
+      # comma-separated list of accepted keys.
+      - key: APIKEYS
         sync: false

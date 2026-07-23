@@ -96,23 +96,24 @@
 \contentsline {subsection}{\numberline {3.4.3}Optional X-Api-Key Authentication}{63}{subsection.3.4.3}%
 \contentsline {subsection}{\numberline {3.4.4}Structured Logging and Request Correlation}{63}{subsection.3.4.4}%
 \contentsline {subsection}{\numberline {3.4.5}Deep Health Check for Uptime Monitors}{64}{subsection.3.4.5}%
+\contentsline {subsubsection}{Liveness / Readiness Probe Split (Kubernetes Semantics)}{65}{section*.39}%
 \contentsline {subsection}{\numberline {3.4.6}Hardening Test Surface}{65}{subsection.3.4.6}%
-\contentsline {section}{\numberline {3.5}Deployment and Infrastructure}{65}{section.3.5}%
+\contentsline {section}{\numberline {3.5}Deployment and Infrastructure}{66}{section.3.5}%
 \contentsline {section}{\numberline {3.6}Integration and Weighting Mechanisms}{66}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}The 15-Second Concurrency Window}{66}{subsection.3.6.1}%
-\contentsline {subsection}{\numberline {3.6.2}Content-Specific Scoring Pipelines}{66}{subsection.3.6.2}%
-\contentsline {subsection}{\numberline {3.6.3}The Phishing Threshold and Threat Boundaries}{66}{subsection.3.6.3}%
+\contentsline {subsection}{\numberline {3.6.1}The 15-Second Concurrency Window}{67}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.2}Content-Specific Scoring Pipelines}{67}{subsection.3.6.2}%
+\contentsline {subsection}{\numberline {3.6.3}The Phishing Threshold and Threat Boundaries}{67}{subsection.3.6.3}%
 \contentsline {section}{\numberline {3.7}Quality Assurance and Testing}{67}{section.3.7}%
 \contentsline {subsection}{\numberline {3.7.1}Testing Plan and Results}{67}{subsection.3.7.1}%
-\contentsline {subsubsection}{Backend Testing Methodology}{67}{section*.39}%
-\contentsline {paragraph}{Environment Isolation and Fixture Management}{67}{section*.40}%
-\contentsline {paragraph}{Dependency Inversion and OSINT Mocking}{68}{section*.41}%
-\contentsline {subsubsection}{Integration and Smoke Testing}{68}{section*.42}%
-\contentsline {paragraph}{Service Level Agreement (SLA) Validation}{68}{section*.43}%
-\contentsline {subsubsection}{Frontend Quality Assurance}{69}{section*.44}%
-\contentsline {paragraph}{Component and State Validation}{69}{section*.45}%
-\contentsline {paragraph}{End-to-End (E2E) Browser Automation}{69}{section*.46}%
-\contentsline {subsubsection}{Static Analysis and Type Safety}{69}{section*.47}%
+\contentsline {subsubsection}{Backend Testing Methodology}{68}{section*.40}%
+\contentsline {paragraph}{Environment Isolation and Fixture Management}{68}{section*.41}%
+\contentsline {paragraph}{Dependency Inversion and OSINT Mocking}{68}{section*.42}%
+\contentsline {subsubsection}{Integration and Smoke Testing}{69}{section*.43}%
+\contentsline {paragraph}{Service Level Agreement (SLA) Validation}{69}{section*.44}%
+\contentsline {subsubsection}{Frontend Quality Assurance}{69}{section*.45}%
+\contentsline {paragraph}{Component and State Validation}{69}{section*.46}%
+\contentsline {paragraph}{End-to-End (E2E) Browser Automation}{70}{section*.47}%
+\contentsline {subsubsection}{Static Analysis and Type Safety}{70}{section*.48}%
 \contentsline {chapter}{\numberline {4}Methodology: Feature Engineering, OSINT, and NLP}{71}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Dataset Collection and Preprocessing}{71}{section.4.1}%
 \contentsline {subsection}{\numberline {4.1.1}Data Aggregation}{71}{subsection.4.1.1}%
@@ -161,13 +162,13 @@
 \contentsline {section}{\numberline {5.7}Empirical Performance Metrics}{89}{section.5.7}%
 \contentsline {subsection}{\numberline {5.7.1}Error Analysis and Confusion Matrix}{90}{subsection.5.7.1}%
 \contentsline {section}{\numberline {5.8}Feature Explainability and SHAP Analysis}{90}{section.5.8}%
-\contentsline {paragraph}{XGBoost Gain-Based Importance}{90}{section*.51}%
-\contentsline {paragraph}{SHAP-Based Importance}{91}{section*.53}%
+\contentsline {paragraph}{XGBoost Gain-Based Importance}{90}{section*.52}%
+\contentsline {paragraph}{SHAP-Based Importance}{91}{section*.54}%
 \contentsline {subsection}{\numberline {5.8.1}OSINT Ablation Study}{92}{subsection.5.8.1}%
-\contentsline {paragraph}{SHAP Contribution}{92}{section*.54}%
-\contentsline {paragraph}{Predictive Performance Comparison}{92}{section*.55}%
-\contentsline {paragraph}{Interpretation}{93}{section*.57}%
-\contentsline {paragraph}{Methodological Note on Evaluation Paradigms}{93}{section*.58}%
+\contentsline {paragraph}{SHAP Contribution}{92}{section*.55}%
+\contentsline {paragraph}{Predictive Performance Comparison}{92}{section*.56}%
+\contentsline {paragraph}{Interpretation}{93}{section*.58}%
+\contentsline {paragraph}{Methodological Note on Evaluation Paradigms}{93}{section*.59}%
 \contentsline {chapter}{\numberline {6}Conclusion and Discussion}{94}{chapter.6}%
 \contentsline {section}{\numberline {6.1}Interpretation of Results}{94}{section.6.1}%
 \contentsline {subsection}{\numberline {6.1.1}The Paradox of Threat Intelligence: Explainability versus Predictive Power}{94}{subsection.6.1.1}%
@@ -192,7 +193,7 @@
 \contentsline {subsection}{\numberline {6.11.1}Event-Driven Microservices}{105}{subsection.6.11.1}%
 \contentsline {subsection}{\numberline {6.11.2}Optical Character Recognition (OCR) Integration}{105}{subsection.6.11.2}%
 \contentsline {subsection}{\numberline {6.11.3}Concluding Remarks}{105}{subsection.6.11.3}%
-\contentsline {chapter}{Project Links}{107}{chapter*.59}%
-\contentsline {chapter}{Acknowledgements}{108}{chapter*.61}%
-\contentsline {chapter}{Bibliography}{109}{section*.62}%
-\contentsline {chapter}{List of Figures}{112}{section*.64}%
+\contentsline {chapter}{Project Links}{107}{chapter*.60}%
+\contentsline {chapter}{Acknowledgements}{108}{chapter*.62}%
+\contentsline {chapter}{Bibliography}{109}{section*.63}%
+\contentsline {chapter}{List of Figures}{112}{section*.65}%

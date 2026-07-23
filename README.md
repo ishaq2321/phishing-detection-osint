@@ -32,7 +32,7 @@ the final score, supplemented by NLP text analysis at 15%.
 - **Full-featured UI** — Dark/light theme, keyboard shortcuts, responsive design
 - **Configurable results detail** — Simple (verdict only), Detailed (+reasons+OSINT), Expert (+features)
 - **Production hardening** — OWASP HTTP security headers, per-key rate limits via `slowapi`, optional `X-Api-Key` auth on heavy routes (sha256-hashed constant-time compare), structlog JSON logs with per-request `X-Request-ID`, and a deep `/api/health` with live DNS+ML probes
-- **890 automated tests** — Backend (729 pytest), frontend (133 Jest), E2E (28 Playwright)
+- **916 automated tests** — Backend (755 pytest), frontend (133 Jest), E2E (28 Playwright)
 
 ## 🛠️ Tech Stack
 
@@ -78,7 +78,7 @@ the final score, supplemented by NLP text analysis at 15%.
 │   ├── __tests__/        # Jest unit tests (133 tests)
 │   ├── e2e/              # Playwright E2E browser tests (28 tests)
 │   └── public/           # Static assets (logo, favicon, PWA icons)
-├── tests/                # Backend tests (729 pytest tests)
+├── tests/                # Backend tests (755 pytest tests)
 │   ├── unit/             # Unit tests for all modules
 │   └── integration/      # Full pipeline integration tests
 └── README.md
@@ -178,7 +178,7 @@ curl -X POST http://localhost:8000/api/analyze/url \
 
 ## 🧪 Running Tests
 
-### Backend Tests (729 tests)
+### Backend Tests (755 tests)
 
 Validate api/services via pytest (`pip install -r backend/requirements.txt` first).
 
@@ -210,10 +210,10 @@ npx playwright test     # Run Playwright E2E (28)
 
 | Layer        | Framework   |Tests (counted)  | Command                          |
 |--------------|-------------|------------------|----------------------------------|
-| Backend      | pytest      | 729 (collected) | `python -m pytest tests/`        |
+| Backend      | pytest      | 755 (collected) | `python -m pytest tests/`        |
 | Frontend     | Jest        | 133 (passed)     | `cd frontend && npx jest --ci`   |
 | E2E          | Playwright  | 28  (`.spec.ts`) | `cd frontend && npx playwright test` |
-| **Total**    |             | **890**          |                                |
+| **Total**    |             | **916**          |                                |
 
 ## 🏗️ Architecture
 

@@ -35,6 +35,8 @@ asyncio-throttle==1.0.2
 # Rate limiting
 slowapi==0.1.10
 limits==5.8.0
+# Optional Redis backend for multi-instance rate-limit storage (Tier 2.2)
+limits[redis]==5.8.0
 
 # Logging & Monitoring
 structlog==24.1.0

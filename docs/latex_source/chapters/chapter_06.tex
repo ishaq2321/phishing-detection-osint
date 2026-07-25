@@ -126,11 +126,29 @@ key comparison, structured JSON logs with a per-request
 \texttt{/api/health} endpoint that probes DNS, the XGBoost model
 load state, and the orchestrator import chain in parallel and
 returns a stratified \texttt{healthy} / \texttt{degraded} /
-\texttt{unhealthy} verdict. Together these hardenings transform the
+\texttt{unhealthy} verdict. Render's liveness probe
+(\texttt{healthCheckPath}) is additionally routed to a side-band cheap
+\texttt{/api/health/live} endpoint so the per-second scan never burns
+the readiness budget. Together these hardenings transform the
 detection pipeline into a service that can survive operator
 oversight, opportunistic attackers, and silent dependency drift --
 the three failure modes most likely to occur in the months after
 the system is deployed.
+
+Operator-side persistence is the second dimension of production
+maturity.  The \texttt{backend/api/historyStore.py} module exposes
+an opt-in SQLite-backed implementation of \texttt{HistoryStore} so
+analysis history survives an application restart; the existing
+in-memory deque remains the default to preserve test determinism.
+The slowapi limiter accepts the standard \texttt{limits}-library
+URI through \texttt{PHISHGUARD\_RATE\_LIMIT\_URI}, so a
+multi-instance Render deployment can swap the in-process bucket for
+a Redis-backed one without a code change.  Finally,
+\texttt{backend/api/feedback.py} materialises operator verdicts
+against past analyses into an append-only JSONL log
+(\texttt{./data/feedback.jsonl}); the companion listing endpoint
+\texttt{GET /api/feedback} returns the parsed record list so an
+analyst dashboard can sanity-check recent submissions.
 
 
 \section{Threat Modeling and

@@ -469,9 +469,99 @@ The three checks run via \texttt{asyncio.gather} so the slowest check (typically
   \texttt{GET /api/health} is kept as a permanent alias of \texttt{/ready} so external dashboards and existing scripts that hard-coded the path keep working unchanged.
 \end{itemize}
 
-\subsection{Hardening Test Surface}
+ \subsection{Hardening Test Surface}
 
-The five hardening features are covered by 158 new pytest tests: 92 unit tests spanning the helper utilities (digest computation, key parser, formatter helpers, processor chains, aggregation logic, liveness vs readiness split, registerHealthEndpoints idempotence) and 66 integration tests covering the end-to-end FastAPI pipeline (header presence on every response, 401 and 429 status mapping, request-id header round-trip, deep health response shape, status-to-HTTP mapping, liveness latency budget, X-Request-ID across both probe paths). The full Tier 1 delivery brings the backend test count to 755 distinct pytest cases (with 12 additional long-pipeline integration tests that exercise the real orchestrator and are not included in the fast tier); all 743 fast tests complete in well under 90 seconds.
+The five hardening features are covered by 158 new pytest tests: 92 unit tests spanning the helper utilities (digest computation, key parser, formatter helpers, processor chains, aggregation logic, liveness vs readiness split, registerHealthEndpoints idempotence) and 66 integration tests covering the end-to-end FastAPI pipeline (header presence on every response, 401 and 429 status mapping, request-id header round-trip, deep health response shape, status-to-HTTP mapping, liveness latency budget, X-Request-ID across both probe paths). Tier 2 adds another 60 pytest tests: 55 unit tests for the SQLite-backed history store, the Redis-ready rate-limit knob, and the JSONL feedback sink, plus 12 integration tests exercising the new ``POST /api/feedback`` and ``GET /api/feedback`` routes end-to-end. The full Tier 1 + Tier 2 delivery brings the backend test count to 815 distinct pytest cases (with 12 additional long-pipeline integration tests that exercise the real orchestrator and are not included in the fast tier); all 815 fast tests complete in well under 90 seconds.
+
+\section{Persistent Operations: Multi-Instance Storage, Feedback, and the Operator Loop}\label{persistent-operations}
+
+The hardening posture documented in Section \ref{production-hardening} answers ``is the process safe?`` -- it keeps the API surface tight, throttles abuse, and gives the operator a trustworthy signal when something is wrong. A separate, equally important operational concern is ``how does the system remember what happened?`` and ``how do operators steer it back on course?`` Three infrastructure changes introduced in Tier 2 close this loop:
+
+\begin{itemize}
+\item
+  \textbf{Durable history storage} -- an opt-in SQLite-backed ``HistoryStore`` survives application restarts and exposes requests that the original FIFO ring buffer could not.
+\item
+  \textbf{Distributed rate-limit accounting} -- the slowapi limiter is re-pointable from the in-process ``memory://`` storage at a shared ``redis://`` backend via the ``PHISHGUARD\_RATE\_LIMIT\_URI`` environment variable, lifting the previous cap of one uvicorn process per region.
+\item
+  \textbf{Operator feedback API} -- the ``POST /api/feedback`` endpoint materialises analyst verdicts into an append-only JSONL log that the upcoming retraining pipeline can consume.
+\end{itemize}
+
+\subsection{SQLite-backed History Store (opt-in)}
+
+The default ``HistoryStore`` keeps the last \texttt{MAX\_ENTRIES} (=100) analyses in a ``collections.deque``; eviction is FIFO and the buffer is wiped on every Render restart. For an operator dashboard that wants to scan yesterday's corrections, that is too brittle.
+
+When \texttt{PHISHGUARD\_PERSIST\_HISTORY=1} is set in the environment, the application startup path in \texttt{lifespan} swaps the deque for a ``SqliteHistoryStore`` defined inside \texttt{backend/api/historyStore.py}. The new backend shares the same wire interface -- \texttt{list}, \texttt{get}, \texttt{add}, \texttt{delete}, \texttt{clear}, \texttt{count} -- so the existing routes (\texttt{/api/history}, \texttt{/api/history/\{id\}}, ``\texttt{DELETE /api/history}``) work unchanged. Capacity is preserved as FIFO; the operator can increase the cap by setting \texttt{PHISHGUARD\_HISTORY\_MAX\_ENTRIES}. The default storage path is \texttt{./data/history.db}.
+
+\subsubsection{Schema and Concurrency}
+
+The schema is applied idempotently on every open::
+
+\begin{verbatim}
+CREATE TABLE IF NOT EXISTS history (
+    id          TEXT PRIMARY KEY,
+    content     TEXT NOT NULL,
+    contentType TEXT NOT NULL,
+    response    TEXT NOT NULL,         -- JSON-encoded AnalysisResponse
+    createdAt   TEXT NOT NULL          -- ISO-8601 UTC
+);
+CREATE INDEX IF NOT EXISTS idx_history_createdAt ON history(createdAt DESC);
+\end{verbatim}
+
+A single \texttt{threading.Lock} guards every connection call. \texttt{sqlite3} is opened with \texttt{check\_same\_thread=False} so calls from any worker thread remain safe under the lock; WAL journaling (\texttt{PRAGMA\_journal\_mode=WAL}) is also enabled so a concurrent reader never blocks a writer. These are exactly the choices the standard ``limits`` library applies to its embedded SQL store, so the operator gets production-tested durability semantics.
+
+\subsubsection{Corruption Tolerance}
+
+If the operator hand-edits the database and produces a malformed row, ``list()`` skips the bad row rather than crashing. The remaining rows continue to surface, and ``count`` still reports the actual DB row count. This is the same recovery policy Postgres and SQL Server use for ``TOAST`` failures -- the read path is robust; the operator chooses when to repair.
+
+\subsection{Distributed Rate-Limit Storage}
+
+The slowapi limiter holds request buckets in process-local memory by default. That is correct for the Render free-plan single-instance topology, but becomes inconsistent the moment a second container is added (\texttt{auto\_scale: min=2}) because each instance's bucket is independent -- a caller scraping one instance sees the full 60/min budget, while a second caller on a sibling instance is unaffected.
+
+The fixer is at the storage layer rather than the algorithm layer. \texttt{slowapi} is built on top of the \texttt{limits} library, which supports a family of compatible backends (memory, Redis, Memcached, MongoDB, DynamoDB); selection is driven by a URI string. We already documented this knob in Section \ref{production-hardening}; Tier 2.2 also binds it concretely::
+
+\begin{itemize}
+\item
+  \texttt{PHISHGUARD\_RATE\_LIMIT\_URI=memory://} (default).  Per-process, zero-infra cost.
+\item
+  \texttt{PHISHGUARD\_RATE\_LIMIT\_URI=redis://host:6379/0}.  Multi-instance; shared state across uvicorn workers.
+\end{itemize}
+
+The Redis backend requires the \texttt{redis} Python package. The \texttt{backend/requirements.txt} and \texttt{requirements-prod.txt} files include the \texttt{limits[redis]} extra which pulls it in transitively; if the platform ships without it, slowapi logs a clear ``'redis' prerequisite not available`` error rather than silently degrading to in-memory. Operators choosing the Redis path then provision Redis Upstash (\verb|https://upstash.com|) and point the URI at it; the limiter converges to exact counts across instances.
+
+\subsection{Operator Feedback Loop}
+
+A detection system that ignores operator corrections cannot improve itself. Tier 2.3 adds the endpoint \texttt{POST /api/feedback} with the request schema::
+
+\begin{verbatim}
+POST /api/feedback
+Content-Type: application/json
+{
+  "historyId": "uuid-of-prior-analysis",
+  "verdict":   "false_negative" | "false_positive" | "correct",
+  "comment":   "human-readable note (optional)",
+  "reporter":  "operator@your-org (optional)"
+}
+\end{verbatim}
+
+The handler validates the body with Pydantic, normalises the verdict against the three documented values, and appends one JSON record per accepted request to the file at \texttt{./data/feedback.jsonl} (overridable via \texttt{PHISHGUARD\_FEEDBACK\_LOG}). Each record carries an opaque UUID, an ISO-8601 \texttt{receivedAt}, and the \texttt{appVersion} that was running when the record landed.
+
+\subsubsection{Append-only JSONL Sink}
+
+The sink in \texttt{backend/api/feedback.py} is a single \texttt{threading.Lock}-guarded append. A concurrent operator batching 30 corrections does not see lines interleaved (verified by a 10-thread x 100-record test in \texttt{tests/unit/test\_feedback.py}); rotated files via \verb|logrotate| are never overwritten because the sink opens with mode \verb|"a"|. The format is intentionally simple: one JSON object per line, terminated by \texttt{\textbackslash n}. Downstream consumers can do::
+
+\begin{verbatim}
+import json
+with open("feedback.jsonl") as f:
+    records = [json.loads(line) for line in f if line.strip()]
+\end{verbatim}
+
+\subsubsection{Companion Listing Endpoint}
+
+\texttt{GET /api/feedback} returns the parsed record list (newest-first) with \texttt{limit} and \texttt{offset} pagination, so an operator dashboard can sanity-check recent submissions without leaving the API. The endpoint is intentionally NOT in the rate-limit default; an analyst batching 30 corrections per day should not be punished at the IP layer.
+
+\subsubsection{Path to Model Retraining}
+
+The feedback sink is the write side of a deliberate two-stage improvement loop. The read side -- a \texttt{backend/ml/training/retrainFromFeedback.py} that pulls high-confidence corrections and folds them into the next Optuna search -- is out of scope for this thesis but the data shape is already aligned: every record carries the original \texttt{historyId} so the pipeline can join feedback against the prior \verb|AnalysisResponse| stored in the history backend.
 
 \section{Deployment and
 Infrastructure}\label{deployment-and-infrastructure}
@@ -552,7 +642,7 @@ Next.js frontend.
 Methodology}\label{backend-testing-methodology}
 
 The backend testing architecture is constructed upon the \texttt{pytest}
-framework, comprising 916 distinct tests (755 backend \texttt{pytest} unit/integration tests, 133 frontend \texttt{Jest} tests, and 28 \texttt{Playwright} E2E browser tests) distributed
+framework, comprising 976 distinct tests (815 backend \texttt{pytest} unit/integration tests, 133 frontend \texttt{Jest} tests, and 28 \texttt{Playwright} E2E browser tests) distributed
 across the \texttt{tests/unit/} and \texttt{tests/integration/}
 directories. Given the asynchronous nature of the FastAPI orchestrator
 and the underlying Open-Source Intelligence (OSINT) network calls, the

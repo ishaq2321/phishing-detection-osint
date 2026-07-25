@@ -20,6 +20,12 @@ from fastapi.responses import JSONResponse
 
 from backend.api import router
 from backend.api.auth import addApiKeyAuth
+from backend.api.feedback import registerFeedbackEndpoints
+from backend.api.historyStore import (
+    SqliteHistoryStore,
+    open_history_store,
+    set_store,
+)
 from backend.api.rate_limiting import (
     addRateLimiting,
     installJsonRateLimitHandler,
@@ -64,6 +70,18 @@ async def lifespan(app: FastAPI):
             "Wildcard CORS origins (*) in production is insecure — "
             "set CORS_ORIGINS to specific origins"
         )
+
+    # Tier 2.1: switch to SQLite-backed history if persistence is opted in.
+    store = open_history_store()
+    set_store(store)
+    if isinstance(store, SqliteHistoryStore):
+        logger.info(
+            "history persistence ENABLED (db=%s, max_entries=%d)",
+            store._dbPath,
+            store._maxEntries,
+        )
+    else:
+        logger.info("history persistence DEFAULT (in-memory deque, fifo)")
 
     markBootComplete()
     logger.info("Application startup complete -- ready to serve traffic")
@@ -197,6 +215,9 @@ app.include_router(router)
 
 # Tier 1.6: Render-style liveness + readiness probes.
 registerHealthEndpoints(app)
+
+# Tier 2.3: Operator feedback loop.
+registerFeedbackEndpoints(app)
 
 
 # =============================================================================

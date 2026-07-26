@@ -150,6 +150,20 @@ against past analyses into an append-only JSONL log
 \texttt{GET /api/feedback} returns the parsed record list so an
 analyst dashboard can sanity-check recent submissions.
 
+Bulk operator workflows are the third dimension.  Section
+\ref{batch-analysis} adds the \texttt{POST /api/analyze/batch}
+endpoint, which closes the frontend's ``Batch -- up to 50 URLs''
+feature by exposing a single-round-trip path that reuses the same
+\texttt{AnalysisOrchestrator::analyze()} pipeline (one round of
+OSINT, ML, and NLP per item) but dispatches the items concurrently
+via \texttt{asyncio.gather}.  A 50-item batch completes in
+approximately the time of a single item rather than 50 times as
+long, while the \texttt{@limiter.limit(ANALYZE\_LIMIT)} decorator
+keeps the operator's bucket accounting identical to the
+single-content routes -- one round trip per minute, not fifty.
+Per-item partial failures are surfaced in-band so a single
+malformed URL never blocks an analyst's triage session.
+
 
 \section{Threat Modeling and
 Limitations}\label{threat-modeling-and-limitations}

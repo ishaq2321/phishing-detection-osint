@@ -14,7 +14,7 @@ Course: BSc Thesis - ELTE Faculty of Informatics
 import asyncio
 import re
 import time
-from typing import Optional
+from typing import Any, Optional
 from urllib.parse import urlparse
 
 from backend.analyzer import AnalysisResult, ContentType, NlpAnalyzer
@@ -400,3 +400,76 @@ class AnalysisOrchestrator:
             totalRiskIndicators=featureSet.totalRiskIndicators + len(textAnalysis.indicators),
             detectedTactics=[tactic.value for tactic in textAnalysis.detectedTactics]
         )
+
+
+    # ------------------------------------------------------------------
+    # Tier 3: batch analysis
+    # ------------------------------------------------------------------
+    async def analyzeBatch(
+        self,
+        items: "list[object]",
+    ) -> tuple[list[Any], int, int]:
+        """Run a batch of analyses concurrently.
+
+        Each item is a small ``SimpleNamespace`` produced by the
+        router layer to keep the orchestrator decoupled from the
+        Pydantic schema: ``item.type``, ``item.url``, ``item.content``,
+        ``item.subject``, ``item.sender``.
+
+        Returns ``(perItemResultList, succeededCount, failedCount)``.
+
+        The per-item list mirrors the input order.  Each element is a
+        tuple ``(outcome, response_or_None, error_or_None)`` where
+        ``outcome`` is one of:
+
+        * ``"ok"``    -> ``response_or_None`` is an ``AnalysisResponse``
+        * ``"error"`` -> ``error_or_None`` carries the exception text
+
+        Concurrency is bounded only by ``asyncio.gather``; the OSINT
+        layer of each individual pipeline does its own retry / timeout
+        so a slow upstream can never block the whole batch.
+        """
+        import asyncio
+        from types import SimpleNamespace
+
+        async def _runOne(item: SimpleNamespace) -> AnalysisResponse:
+            t = (item.type or "auto").lower()
+            if t == "url":
+                if not item.url:
+                    raise ValueError("type=url but url field is empty")
+                return await self.analyze(content=item.url, contentType="url")
+            if t == "email":
+                if not item.content:
+                    raise ValueError("type=email but content field is empty")
+                # Mirror the single-content route's body assembly.
+                full = item.content
+                if item.subject:
+                    full = f"Subject: {item.subject}\n\n{full}"
+                if item.sender:
+                    full = f"From: {item.sender}\n{full}"
+                return await self.analyze(content=full, contentType="email")
+            # ``auto`` and any unknown type -> let the orchestrator detect.
+            if not item.content and not item.url:
+                raise ValueError(
+                    "auto-detect requires url or content (both empty)"
+                )
+            return await self.analyze(
+                content=item.url or item.content,
+                contentType="auto",
+            )
+
+        async def _runner(item: object):
+            """Run with exception captured into the result tuple."""
+            try:
+                resp = await _runOne(item)
+                return ("ok", resp, None)
+            except Exception as exc:  # noqa: BLE001 - we deliberately
+                # catch *everything*; per-item failures must not
+                # cancel sibling tasks.
+                return ("error", None, str(exc) or type(exc).__name__)
+
+        tasks = [asyncio.create_task(_runner(it)) for it in items]
+        results = await asyncio.gather(*tasks)
+        succeeded = sum(1 for r in results if r[0] == "ok")
+        failed = len(results) - succeeded
+        return list(results), succeeded, failed

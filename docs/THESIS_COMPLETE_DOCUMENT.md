@@ -275,7 +275,7 @@ The final objective ensures the reliability and scientific validity of the propo
 | RO3 | High-performance ML classifier | Accuracy >95%, AUC-ROC >95%, F1 >93% on held-out test set | Achieved (96.45% acc, 99.41% AUC) |
 | RO4 | Model explainability via SHAP | Per-prediction feature importance, visual explanations in UI | Achieved |
 | RO5 | Production web application | Deployed system with <3s response time, responsive UI, API documentation | Achieved |
-| RO6 | Comprehensive evaluation | Test suite >500 tests, ablation study, performance benchmarks | Achieved (976 tests) |
+| RO6 | Comprehensive evaluation | Test suite >500 tests, ablation study, performance benchmarks | Achieved (1037 tests) |
 
 ---
 
@@ -303,7 +303,7 @@ We successfully bridge the gap between complex mathematics and user experience b
 We engineer a flexible, context-aware analysis engine capable of automatically detecting and processing three distinct input modalities: raw URLs, raw email source text (subject, sender, body), and unstructured free text. By dynamically routing input through either the XGBoost ML pipeline or a custom spaCy-based Natural Language Processing (NLP) pipeline, the system maintains high accuracy across diverse attack vectors without requiring manual user intervention. The architecture leverages asynchronous Python (`asyncio`) to ensure high-latency network calls (like DNS resolution) do not block system throughput.
 
 ### 1.4.5 Production-Grade Software Engineering and Validation
-Beyond theoretical models, this thesis delivers a fully realized, production-ready software system. The implementation features a Next.js 16 (React 19) frontend utilizing modern UI paradigms (server components, responsive design, dark mode, batch processing) and a robust FastAPI backend. Crucially, the system's reliability is mathematically guaranteed through a massive, multi-tiered automated test suite comprising 976 distinct tests (815 backend `pytest` unit/integration tests, 133 frontend `Jest` tests, and 28 `Playwright` E2E browser tests). This rigorous validation ensures the system can be deployed to edge infrastructure with supreme confidence.
+Beyond theoretical models, this thesis delivers a fully realized, production-ready software system. The implementation features a Next.js 16 (React 19) frontend utilizing modern UI paradigms (server components, responsive design, dark mode, batch processing) and a robust FastAPI backend. Crucially, the system's reliability is mathematically guaranteed through a massive, multi-tiered automated test suite comprising 1037 distinct tests (864 backend `pytest` unit/integration tests, 133 frontend `Jest` tests, and 28 `Playwright` E2E browser tests). This rigorous validation ensures the system can be deployed to edge infrastructure with supreme confidence.
 
 ---
 
@@ -333,7 +333,7 @@ This chapter defines the mathematical orchestration of the system. It presents t
 This chapter transitions from theory to code, providing concrete technical details regarding the practical software construction. It discusses the selection of frameworks (React, Tailwind, FastAPI, Pydantic), specific design patterns employed, and the infrastructure configurations used for live cloud deployment.
 
 **Chapter 9: Testing and Quality Assurance**
-This chapter documents the extreme rigor applied to system validation. It details the execution of the 976-test suite, explaining the strategies used to mock complex external network calls in `pytest`, the component testing methodology in `Jest`, and the browser automation strategies implemented via `Playwright`.
+This chapter documents the extreme rigor applied to system validation. It details the execution of the 1037-test suite, explaining the strategies used to mock complex external network calls in `pytest`, the component testing methodology in `Jest`, and the browser automation strategies implemented via `Playwright`.
 
 **Chapter 10: Results and Evaluation**
 This chapter presents the empirical findings of the research. It provides an exhaustive statistical analysis of the XGBoost classifier's performance, presents confusion matrices, ROC curves, the results of the OSINT ablation study, and benchmarks the application's real-world latency and throughput capabilities.
@@ -856,14 +856,14 @@ This thesis addresses the identified gaps through the following design choices:
 | **Production Web Application** | Yes (API only) | Limited | No (research only) | No (research only) | Yes (Full-stack) |
 | **Multi-Modal Input** | No | No | No | Limited | Yes (URL/Email/Text) |
 | **Dataset Size** | N/A | N/A | 10k-88k | 100k-1M | **150k** |
-| **Test Coverage** | N/A | N/A | Limited | Limited | Extensive (976 tests) |
+| **Test Coverage** | N/A | N/A | Limited | Limited | Extensive (1037 tests) |
 | **Model Accuracy** | N/A | ~85-90% | 96-98% | 97-99% | **96.45%** |
 | **Open Source** | Yes (data) | Varies | Rare | Rare | Yes (code + model) |
 
 **PhishGuard's Unique Contributions:**
 1. **OSINT-Enhanced ML:** Integrates 4 real-time OSINT features (WHOIS, DNS, reputation) with empirical validation via ablation study (+0.30% accuracy improvement).
 2. **Explainable Predictions:** SHAP TreeExplainer provides per-prediction feature importance and visual explanations.
-3. **Production-Ready System:** Full-stack web application (Next.js frontend + FastAPI backend) deployed to production with 976 automated tests.
+3. **Production-Ready System:** Full-stack web application (Next.js frontend + FastAPI backend) deployed to production with 1037 automated tests.
 4. **Multi-Modal Analysis:** Supports URL, email (subject + sender + body), and free-text input with auto-detection.
 5. **Large-Scale Training:** 150,391 feature-engineered URLs with Optuna-optimized XGBoost achieving 99.41% AUC-ROC.
 

@@ -471,7 +471,7 @@ The three checks run via \texttt{asyncio.gather} so the slowest check (typically
 
  \subsection{Hardening Test Surface}
 
-The five hardening features are covered by 158 new pytest tests: 92 unit tests spanning the helper utilities (digest computation, key parser, formatter helpers, processor chains, aggregation logic, liveness vs readiness split, registerHealthEndpoints idempotence) and 66 integration tests covering the end-to-end FastAPI pipeline (header presence on every response, 401 and 429 status mapping, request-id header round-trip, deep health response shape, status-to-HTTP mapping, liveness latency budget, X-Request-ID across both probe paths). Tier 2 adds another 60 pytest tests: 55 unit tests for the SQLite-backed history store, the Redis-ready rate-limit knob, and the JSONL feedback sink, plus 12 integration tests exercising the new ``POST /api/feedback`` and ``GET /api/feedback`` routes end-to-end. The full Tier 1 + Tier 2 delivery brings the backend test count to 815 distinct pytest cases (with 12 additional long-pipeline integration tests that exercise the real orchestrator and are not included in the fast tier); all 815 fast tests complete in well under 90 seconds.
+The five hardening features are covered by 158 new pytest tests: 92 unit tests spanning the helper utilities (digest computation, key parser, formatter helpers, processor chains, aggregation logic, liveness vs readiness split, registerHealthEndpoints idempotence) and 66 integration tests covering the end-to-end FastAPI pipeline (header presence on every response, 401 and 429 status mapping, request-id header round-trip, deep health response shape, status-to-HTTP mapping, liveness latency budget, X-Request-ID across both probe paths). Tier 2 adds another 60 pytest tests: 55 unit tests for the SQLite-backed history store, the Redis-ready rate-limit knob, and the JSONL-feedback sink, plus 12 integration tests exercising the new ``POST /api/feedback`` and ``GET /api/feedback`` routes end-to-end. Tier 3 adds a further 49 pytest tests for the new batch endpoint: 37 unit tests covering the four batch Pydantic schemas and the orchestrator's ``analyzeBatch`` method (dispatch matrix, per-item failure isolation, concurrency invariants, partial comparisons), plus 12 integration tests for the end-to-end HTTP path (size cap validation, mixed failure semantics, history persistence side effects, rate-limit headers, ``X-Request-ID`` round-trip). The full Tier 1 + Tier 2 + Tier 3 delivery brings the backend test count to 864 distinct pytest cases (with 12 additional long-pipeline integration tests that exercise the real orchestrator and are not included in the fast tier); all 864 fast tests complete in well under 90 seconds.
 
 \section{Persistent Operations: Multi-Instance Storage, Feedback, and the Operator Loop}\label{persistent-operations}
 
@@ -563,6 +563,109 @@ with open("feedback.jsonl") as f:
 
 The feedback sink is the write side of a deliberate two-stage improvement loop. The read side -- a \texttt{backend/ml/training/retrainFromFeedback.py} that pulls high-confidence corrections and folds them into the next Optuna search -- is out of scope for this thesis but the data shape is already aligned: every record carries the original \texttt{historyId} so the pipeline can join feedback against the prior \verb|AnalysisResponse| stored in the history backend.
 
+\section{Batch Analysis: Concurrent Multi-Item Endpoints}\label{batch-analysis}
+
+The detection pipeline described in Sections \ref{summary-1} and
+\ref{the-analysis-orchestrator} is built around single-item
+analyses.  Operating at scale -- triaging an inbox dump, scanning
+an OSINT watchlist, or rendering an analyst's queue of suspicious
+URLs -- turns that single-shot pattern into the bottleneck.  Tier 3
+adds the matching \texttt{POST \hspace{0pt}/api/analyze/batch}
+endpoint so the frontend's documented ``Batch -- up to 50 URLs''
+feature gains a single-round-trip backend path.
+
+\subsection{Design Constraints}
+
+Three constraints shape the contract:
+
+\begin{itemize}
+\item
+  \textbf{Cap at 50 items.}  The frontend already enforces
+  \texttt{MAX\_URLS=50}; the backend must echo this so a caller
+  that accidentally sends a 5,000-item payload is held off before
+  consuming OSINT quota.
+\item
+  \textbf{Per-item partial failures.}  Modern cybersecurity
+  operators want to triage \emph{one page of 50 URLs} in a single
+  call even when a few of the URLs are malformed.  A whole-batch
+  rejection (HTTP 422 any time \emph{any} item is bad) punishes the
+  operator when they did 49 useful analyses and 1 typo.  The
+  endpoint commits to per-item partial failures: the top-level
+  HTTP status is 200 whenever the batch itself was accepted;
+  per-item \texttt{status=error} entries carry the arbitrary failure
+  text from the orchestrator.
+\item
+  \textbf{Concurrency over serialisation.}  The orchestrator
+  already runs DNS, WHOIS, reputation, NLP, and ML inference
+  concurrently within a single analysis.  Sending 50 of those
+  analyses serially wastes concurrency; ``asyncio.gather`` lets
+  every item run in parallel, bounded only by the OSINT module's
+  own per-call thread.
+\end{itemize}
+
+\subsection{Request and Response Shape}
+
+The request payload is a discriminated-by-``type`` list of items::
+
+\begin{verbatim}
+POST /api/analyze/batch
+Content-Type: application/json
+{
+  "items": [
+    {"type": "url",   "url": "https://suspicious-paypal.com/verify"},
+    {"type": "email", "content": "...", "subject": "Hi", "sender": "me@x"},
+    {"type": "auto",  "url":   "https://example.com"}
+  ]
+}
+\end{verbatim}
+
+The response envelope top-level shape is::
+
+\begin{verbatim}
+{
+  "success":     true,
+  "total":       3,
+  "succeeded":   2,
+  "failed":      1,
+  "analysisTime": <ms>,
+  "results": [
+    {"index": 0, "status": "ok",    "response": { "verdict": {...}, ... }},
+    {"index": 1, "status": "error", "error": "type=url but url field is empty"},
+    {"index": 2, "status": "ok",    "response": { ... }}
+  ]
+}
+\end{verbatim}
+
+The per-item count fields always satisfy \texttt{succeeded +
+failed == total}; clients can read these without iterating
+\texttt{results}.  The \texttt{succeeded} and \texttt{failed}
+counters correspond to per-item \texttt{status} values \texttt{ok}
+and \texttt{error} respectively.
+
+\subsection{History Persistence Side-Effect}
+
+Each successful analysis is also inserted into the history store
+under its original content-bearing key -- so the FIFO ring buffer
+(and the SQLite-backed alternative enabled by
+\texttt{PHISHGUARD\_PERSIST\_HISTORY=1}) sees batches as an
+incremental extension of the same data stream as the single-item
+endpoints.  Failed items do \emph{not} persist; a 422-style
+arbitrary validation error would be misleading to surface later in
+the \texttt{/api/history} list.
+
+\subsection{Rate Limiting and X-Request-ID}
+
+The endpoint carries the same \texttt{@limiter.limit(ANALYZE\_LIMIT)} decorator as the
+single-content routes -- 30 analyses per minute per
+\texttt{X-Api-Key} or \texttt{X-Forwarded-For} key.  This is
+deliberate: a 50-item batch counts as 1 request against the bucket
+(but 50 against OSINT quota), matching the operator's intuition that
+they are running one round trip per minute, not fifty.  The
+\texttt{X-Request-ID} middleware continues to thread the
+correlation identifier into every structured log emitted during the
+batch -- so an analyst scanning 50 URLs at once still gets a
+single id to grep for across the entire batch's worth of logs.
+
 \section{Deployment and
 Infrastructure}\label{deployment-and-infrastructure}
 
@@ -642,7 +745,7 @@ Next.js frontend.
 Methodology}\label{backend-testing-methodology}
 
 The backend testing architecture is constructed upon the \texttt{pytest}
-framework, comprising 976 distinct tests (815 backend \texttt{pytest} unit/integration tests, 133 frontend \texttt{Jest} tests, and 28 \texttt{Playwright} E2E browser tests) distributed
+framework, comprising 1037 distinct tests (864 backend \texttt{pytest} unit/integration tests, 133 frontend \texttt{Jest} tests, and 28 \texttt{Playwright} E2E browser tests) distributed
 across the \texttt{tests/unit/} and \texttt{tests/integration/}
 directories. Given the asynchronous nature of the FastAPI orchestrator
 and the underlying Open-Source Intelligence (OSINT) network calls, the

@@ -21,6 +21,10 @@ from .rate_limiting import ANALYZE_LIMIT, STATUS_LIMIT, limiter
 from .schemas import (
     AnalysisResponse,
     AnalyzeRequest,
+    BatchAnalyzeRequest,
+    BatchAnalyzeResponse,
+    BatchItemRequest,
+    BatchItemResult,
     EmailRequest,
     HealthResponse,
     ModelStatusResponse,
@@ -415,3 +419,109 @@ async def root() -> dict:
             "history": "/api/history"
         }
     }
+
+import time
+
+
+from types import SimpleNamespace
+
+
+# =============================================================================
+# Tier 3: Batch analysis
+# =============================================================================
+@router.post(
+    "/analyze/batch",
+    response_model=BatchAnalyzeResponse,
+    summary="Analyse up to 50 items in one round trip",
+    description=(
+        "Accepts 1-50 items; each item is a discriminated union by "
+        "``type`` (``url`` | ``email`` | ``auto``). The orchestrator "
+        "runs them concurrently via ``asyncio.gather``; per-item "
+        "failures are returned in the same payload as ``status=error`` "
+        "entries. The top-level HTTP status is **always 200** when the "
+        "batch itself was accepted and processed -- callers must "
+        "inspect ``results[i].status`` for per-entry outcomes."
+    ),
+)
+@limiter.limit(ANALYZE_LIMIT)
+async def analyzeBatch(
+    request: Request,
+    response: Response,
+    body: BatchAnalyzeRequest,
+) -> BatchAnalyzeResponse:
+    """Run a multi-item batch and return aggregated results.
+
+    Args:
+        request: FastAPI Request (required for slowapi to extract the
+            rate-limit key from ``x-forwarded-for`` / ``X-Api-Key``).
+        response: FastAPI Response (slowapi mutates this for ``x-ratelimit-*``).
+        body: Pydantic batch payload (length-checked at the schema layer).
+
+    Returns:
+        BatchAnalyzeResponse with per-item result list, success counts,
+        and total wall-clock latency.
+
+    Example::
+
+        POST /api/analyze/batch
+        {
+          "items": [
+            {"type": "url", "url": "https://example.com/login"},
+            {"type": "email", "content": "...", "subject": "Hi"}
+          ]
+        }
+    """
+    started = time.perf_counter()
+
+    # Translate the Pydantic batch items into simple objects so the
+    # orchestrator's analyzeBatch() stays decoupled from the schema.
+    items = [
+        SimpleNamespace(
+            type=item.type,
+            url=item.url,
+            content=item.content,
+            subject=item.subject,
+            sender=item.sender,
+        )
+        for item in body.items
+    ]
+
+    perItem, succeeded, failed = await orchestrator.analyzeBatch(items)
+
+    results: list[BatchItemResult] = []
+    for idx, (outcome, resp, err) in enumerate(perItem):
+        if outcome == "ok":
+            results.append(
+                BatchItemResult(index=idx, status="ok", response=resp)
+            )
+            # Mirror the single-route behaviour: persist successes in the
+            # history store under their original content-bearing key.
+            try:
+                historyStore.add(
+                    content=items[idx].url or items[idx].content or "",
+                    contentType=(
+                        items[idx].type
+                        if items[idx].type in {"url", "email"}
+                        else "auto"
+                    ),
+                    response=resp,
+                )
+            except Exception:  # noqa: BLE001
+                # History persistence is best-effort; analysis success is
+                # what the caller cares about.
+                pass
+        else:
+            results.append(
+                BatchItemResult(index=idx, status="error", error=err)
+            )
+
+    elapsed = (time.perf_counter() - started) * 1000.0
+
+    return BatchAnalyzeResponse(
+        success=True,
+        total=len(body.items),
+        succeeded=succeeded,
+        failed=failed,
+        analysisTime=elapsed,
+        results=results,
+    )

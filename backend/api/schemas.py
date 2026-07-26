@@ -399,3 +399,178 @@ class HealthResponse(BaseModel):
             "ready to serve traffic."
         ),
     )
+
+
+
+# =============================================================================
+# Tier 3: Batch analysis request / response
+# =============================================================================
+
+class BatchItemRequest(BaseModel):
+    """Single item inside a batch payload.
+
+    Discriminated by ``type``:
+
+    * ``url``   -> only ``url`` is required; ``subject``/``sender`` must be empty
+    * ``email`` -> requires ``content``; ``subject``/``sender`` optional
+    * ``auto``  -> server auto-detects via the same heuristic the
+                   single-content route uses (URL-shaped -> url,
+                   presence of @ or ``from:`` header -> email, else text)
+    """
+
+    type: str = Field(
+        ...,
+        pattern="^(auto|url|email)$",
+        description="Discriminator: url, email, or auto-detect",
+        examples=["url"],
+    )
+    url: Optional[str] = Field(
+        default=None,
+        description="URL to analyse (required when type=url)",
+        examples=["https://example.com/login"],
+    )
+    content: Optional[str] = Field(
+        default=None,
+        description="Email or free-text body (required when type=email)",
+        examples=["Urgent! Verify your account."],
+    )
+    subject: Optional[str] = Field(
+        default=None,
+        description="Optional email subject (type=email only)",
+    )
+    sender: Optional[str] = Field(
+        default=None,
+        description="Optional email sender (type=email only)",
+    )
+
+    @field_validator("type", mode="before")
+    @classmethod
+    def _normaliseType(cls, v: str) -> str:
+        """Lower-case and strip BEFORE the ``pattern`` regex runs,
+        so ``"URL"`` and ``" email "`` both pass the discriminator.
+
+        An empty/whitespace ``type`` is rejected (the schema's
+        ``pattern`` validator enforces non-empty after normalisation).
+        """
+        if not isinstance(v, str):
+            return v
+        stripped = v.strip().lower()
+        if not stripped:
+            raise ValueError("type must be one of {auto, url, email}")
+        return stripped
+
+
+class BatchAnalyzeRequest(BaseModel):
+    """Payload for ``POST /api/analyze/batch``.
+
+    Accepts up to 50 items in a single POST.  The server runs each
+    item through the same orchestrator pipeline used by the singles
+    routes, with ``asyncio.gather`` for concurrency, and returns a
+    per-item result list.  Per-item failures do NOT reject the top-
+    level call - the operator sees both succeeded and errored items in
+    one round trip.
+    """
+
+    items: list[BatchItemRequest] = Field(
+        ...,
+        min_length=1,
+        max_length=50,
+        description=(
+            "List of items to analyse.  1 <= N <= 50.  Larger payloads "
+            "are rejected with HTTP 422 by the framework's length "
+            "validator."
+        ),
+    )
+
+    @field_validator("items")
+    @classmethod
+    def _noEmptyItemsList(cls, v: list) -> list:
+        if not v:
+            raise ValueError("items must contain at least one entry")
+        return v
+
+
+class BatchItemResult(BaseModel):
+    """Per-item outcome inside a batch response.
+
+    Exactly **one** of ``response`` or ``error`` is non-null.
+    """
+
+    index: int = Field(
+        ...,
+        ge=0,
+        description="Index in the original items list (zero-based)",
+    )
+    status: str = Field(
+        ...,
+        pattern="^(ok|error)$",
+        description="ok if analysis succeeded, error otherwise",
+    )
+    response: Optional[AnalysisResponse] = Field(
+        default=None,
+        description="Full analysis response (only when status=ok)",
+    )
+    error: Optional[str] = Field(
+        default=None,
+        description=(
+            "Human-readable error message (only when status=error). "
+            "Mirrors the orchestrator-level exception text."
+        ),
+    )
+
+
+class BatchAnalyzeResponse(BaseModel):
+    """Top-level batch response.
+
+    Aggregates per-item results into one response payload.  Even when
+    every individual item errored, the HTTP status is 200 because the
+    BATCH itself processed without incident -- callers must look at
+    the per-entry ``status`` field to know each outcome.
+    """
+
+    success: bool = Field(
+        ...,
+        description="Always true at the top level (HTTP 200 was returned)",
+    )
+    total: int = Field(
+        ...,
+        ge=0,
+        description="Number of items in the original request",
+    )
+    succeeded: int = Field(
+        ...,
+        ge=0,
+        description="Number of items that produced an analysis response",
+    )
+    failed: int = Field(
+        ...,
+        ge=0,
+        description="Number of items whose analysis errored",
+    )
+    analysisTime: float = Field(
+        ...,
+        ge=0.0,
+        description="Wall-clock milliseconds for the entire batch",
+    )
+    results: list[BatchItemResult] = Field(
+        default_factory=list,
+        description="Per-item outcome in original-order",
+    )
+
+
+# Public re-exports so conftest.py and tests pick them up.
+__all__ = [
+    "AnalyzeRequest",
+    "UrlRequest",
+    "EmailRequest",
+    "ModelStatusResponse",
+    "VerdictResult",
+    "OsintSummary",
+    "FeatureSummary",
+    "AnalysisResponse",
+    "HealthResponse",
+    "BatchItemRequest",
+    "BatchAnalyzeRequest",
+    "BatchItemResult",
+    "BatchAnalyzeResponse",
+]

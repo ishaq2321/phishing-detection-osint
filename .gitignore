@@ -52,6 +52,9 @@ venv.bak/
 *.swp
 *.swo
 
+# Freebuff (AI assistant local state)
+.freebuff/
+
 # OS
 .DS_Store
 Thumbs.db

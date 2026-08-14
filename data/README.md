@@ -61,6 +61,12 @@ python -m backend.ml.training.shapAnalysis
 #    variance, and inter-feature correlation heatmap. This only needs
 #    the persisted shap_values.npy, not the raw X matrix.
 python -m backend.ml.training.shapVisualisationExtra  # NEW as of 2026-07-17
+
+# 7) (Optional) Fold operator feedback (data/feedback.jsonl, written by
+#    POST /api/feedback) into a labelled feature matrix.  Concatenate
+#    feedback_features.csv with features_raw.csv, then re-run steps 3-5
+#    to fine-tune the model on human-verified corrections.
+python -m backend.ml.training.retrainFromFeedback
 ```
 
 ### Why the raw data is not in the repo
@@ -79,7 +85,7 @@ python -m backend.ml.training.shapVisualisationExtra  # NEW as of 2026-07-17
 - The **evaluation reports** with exact numbers reported in the thesis
 - The **SHAP analysis artefacts** (raw values + visualisations)
 - All **ablation study results**
-- The full **test suite** (597 backend pytest tests + 133 frontend Jest
+- The full **test suite** (890 backend pytest tests + 139 frontend Jest
   tests + 28 Playwright E2E browser tests) exercising every published
   metric
 

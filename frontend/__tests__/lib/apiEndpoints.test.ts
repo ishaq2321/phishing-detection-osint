@@ -2,7 +2,8 @@
  * Tests for lib/api/endpoints.ts — typed API endpoint functions.
  */
 
-import { analyzeContent, analyzeUrl, analyzeEmail, checkHealth, pingApi } from "@/lib/api/endpoints";
+import { analyzeContent, analyzeUrl, analyzeEmail, analyzeBatch, checkHealth, pingApi } from "@/lib/api/endpoints";
+import type { BatchAnalyzeResponse } from "@/types";
 import * as client from "@/lib/api/client";
 import { safeResponse, healthyResponse } from "../fixtures";
 
@@ -102,6 +103,52 @@ describe("analyzeEmail", () => {
       }),
       undefined,
     );
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  analyzeBatch                                                      */
+/* ------------------------------------------------------------------ */
+
+describe("analyzeBatch", () => {
+  it("calls POST /api/analyze/batch with the batch payload", async () => {
+    const batchResponse: BatchAnalyzeResponse = {
+      success: true,
+      total: 1,
+      succeeded: 1,
+      failed: 0,
+      analysisTime: 12.5,
+      results: [{ index: 0, status: "ok", response: safeResponse }],
+    };
+    mockApiClient.mockResolvedValue(batchResponse);
+
+    const payload = { items: [{ type: "url" as const, url: "https://a.com" }] };
+    await analyzeBatch(payload);
+
+    expect(mockApiClient).toHaveBeenCalledWith(
+      "/api/analyze/batch",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+      // Batch requests get the extended 120 s timeout.
+      expect.objectContaining({ timeoutMs: 120_000 }),
+    );
+  });
+
+  it("returns the BatchAnalyzeResponse", async () => {
+    const batchResponse: BatchAnalyzeResponse = {
+      success: true,
+      total: 1,
+      succeeded: 1,
+      failed: 0,
+      analysisTime: 12.5,
+      results: [{ index: 0, status: "ok", response: safeResponse }],
+    };
+    mockApiClient.mockResolvedValue(batchResponse);
+
+    const result = await analyzeBatch({ items: [] });
+    expect(result).toEqual(batchResponse);
   });
 });
 

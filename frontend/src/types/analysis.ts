@@ -114,3 +114,42 @@ export interface AnalyzeEmailRequest {
   subject?: string;
   sender?: string;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Batch analysis                                                    */
+/* ------------------------------------------------------------------ */
+
+/** Per-item discriminator accepted by `POST /api/analyze/batch`. */
+export type BatchItemType = "auto" | "url" | "email";
+
+/** A single item inside a batch payload (mirrors `BatchItemRequest`). */
+export interface BatchItemRequest {
+  type: BatchItemType;
+  url?: string | null;
+  content?: string | null;
+  subject?: string | null;
+  sender?: string | null;
+}
+
+/** Payload for `POST /api/analyze/batch` (1–50 items). */
+export interface BatchAnalyzeRequest {
+  items: BatchItemRequest[];
+}
+
+/** Per-item outcome: `ok` carries a response, `error` carries a message. */
+export interface BatchItemResult {
+  index: number;
+  status: "ok" | "error";
+  response?: AnalysisResponse | null;
+  error?: string | null;
+}
+
+/** Response from `POST /api/analyze/batch` (always HTTP 200). */
+export interface BatchAnalyzeResponse {
+  success: boolean;
+  total: number;
+  succeeded: number;
+  failed: number;
+  analysisTime: number;
+  results: BatchItemResult[];
+}

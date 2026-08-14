@@ -26,6 +26,30 @@ from backend.api import historyStore as hs
 from backend.main import app
 
 
+# ---------------------------------------------------------------------------
+# Determinism: never touch the real network.
+#
+# The batch pipeline funnels every URL/email item through
+# ``AnalysisOrchestrator._collectOsintData`` which fires live WHOIS / DNS /
+# reputation lookups (slow, rate-limited, flaky).  All tests here stub it
+# out so the suite exercises the batch machinery (dispatch, partial
+# failures, persistence, headers) without external dependencies -- the
+# same dependency-inversion convention the rest of the integration suite
+# follows.
+# ---------------------------------------------------------------------------
+@pytest.fixture(autouse=True)
+def _mockOsint(monkeypatch):
+    from backend.api.orchestrator import AnalysisOrchestrator
+
+    async def _noOsint(self, domain: str, url: str = "") -> None:
+        """Return no OSINT data immediately -- no sockets touched."""
+        return None
+
+    monkeypatch.setattr(
+        AnalysisOrchestrator, "_collectOsintData", _noOsint
+    )
+
+
 # Auto-reset rate-limit storage between tests so per-IP buckets
 # don't leak.
 @pytest.fixture(autouse=True)

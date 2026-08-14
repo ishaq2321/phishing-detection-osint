@@ -14,6 +14,11 @@ export type {
   AnalyzeRequest,
   AnalyzeUrlRequest,
   AnalyzeEmailRequest,
+  BatchItemType,
+  BatchItemRequest,
+  BatchAnalyzeRequest,
+  BatchItemResult,
+  BatchAnalyzeResponse,
 } from "./analysis";
 
 export type { HistoryEntry } from "@/lib/storage/historyStore";

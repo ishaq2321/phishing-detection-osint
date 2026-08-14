@@ -96,3 +96,86 @@ Forces the analyzer to treat the payload as an email or raw text block, utilizin
   "sender": "security@paypal-verify-team.com"
 }
 ```
+
+### 5. Model Status
+Returns whether the XGBoost model is loaded and which features it expects.
+**Endpoint:** `GET /api/model/status`
+
+**Response (200 OK):**
+```json
+{
+  "loaded": true,
+  "featureCount": 21,
+  "featureNames": ["urlLength", "domainLength", "..."]
+}
+```
+
+### 6. Batch Analysis
+Analyses 1–50 items (URL / email / auto-detect) in a single round trip, running them concurrently server-side. Per-item failures do **not** reject the batch — the top-level HTTP status is always 200 and each item carries its own `status`.
+**Endpoint:** `POST /api/analyze/batch`
+
+**Request Body:**
+```json
+{
+  "items": [
+    { "type": "url", "url": "https://suspicious-paypal.com/verify" },
+    { "type": "email", "content": "...", "subject": "Hi", "sender": "me@x" },
+    { "type": "auto", "url": "https://example.com" }
+  ]
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "total": 3,
+  "succeeded": 2,
+  "failed": 1,
+  "analysisTime": 1250.0,
+  "results": [
+    { "index": 0, "status": "ok", "response": { "verdict": { "...": "..." } } },
+    { "index": 1, "status": "error", "error": "type=url but url field is empty" },
+    { "index": 2, "status": "ok", "response": { "verdict": { "...": "..." } } }
+  ]
+}
+```
+
+Notes:
+- Empty payloads and >50 items are rejected with **422**.
+- Successful items are persisted to the history store; failed items are not.
+- The endpoint is rate-limited like the single-analysis routes (one batch counts as one request).
+
+### 7. History
+Persisted analyses (in-memory FIFO by default, SQLite-backed when `PHISHGUARD_PERSIST_HISTORY=1`).
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/history?limit=100&offset=0` | List analyses, newest first |
+| `GET` | `/api/history/{id}` | Fetch one entry by UUID |
+| `DELETE` | `/api/history/{id}` | Delete one entry |
+| `DELETE` | `/api/history` | Clear all entries |
+
+### 8. Feedback (Operator Loop)
+Operators flag misclassifications against past analyses; records are appended to `./data/feedback.jsonl` (overridable via `PHISHGUARD_FEEDBACK_LOG`) and can be folded back into the training pipeline with `backend/ml/training/retrainFromFeedback.py`.
+
+**Submit:** `POST /api/feedback`
+
+**Request Body:**
+```json
+{
+  "historyId": "a8bc7e95-1234-5678-90ab-cdef01234567",
+  "verdict": "false_negative",
+  "comment": "optional note",
+  "reporter": "optional@operator"
+}
+```
+
+`verdict` must be one of `false_negative`, `false_positive`, `correct` (else **422**).
+
+**Response (200 OK):**
+```json
+{ "accepted": true, "feedbackId": "...", "historyId": "..." }
+```
+
+**List:** `GET /api/feedback?limit=100&offset=0` — returns the parsed record list, newest first, with a `total` count.

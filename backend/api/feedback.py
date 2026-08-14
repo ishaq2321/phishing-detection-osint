@@ -3,9 +3,9 @@ Feedback Loop Module (Tier 2.3)
 =================================
 
 Lets operators flag misclassifications against past analyses.  The
-feedback is appended to a JSON-lines log file that downstream
-training pipelines (e.g. ``ml/training/retrainFromFeedback.py`` --
-not yet implemented) can ingest at a later sprint.
+feedback is appended to a JSON-lines log file that the downstream
+training bridge ``ml/training/retrainFromFeedback.py`` ingests to fold
+operator corrections back into the Optuna/XGBoost pipeline.
 
 Why JSONL instead of pushing into the history store?
 

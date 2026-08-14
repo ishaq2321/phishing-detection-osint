@@ -9,11 +9,23 @@
  */
 
 import { apiClient, type RequestOptions } from "./client";
+
+/**
+ * Timeout for batch requests (ms).
+ *
+ * A single analysis can take several seconds (OSINT + ML + NLP); a
+ * 50-item batch runs concurrently but can still legitimately exceed
+ * the 30 s default, so batch calls get a longer budget.
+ */
+const BATCH_TIMEOUT_MS = 120_000;
+
 import type {
   AnalyzeRequest,
   AnalyzeUrlRequest,
   AnalyzeEmailRequest,
   AnalysisResponse,
+  BatchAnalyzeRequest,
+  BatchAnalyzeResponse,
   HealthResponse,
   ModelStatusResponse,
 } from "@/types";
@@ -76,6 +88,34 @@ export async function analyzeEmail(
     "/api/analyze/email",
     { method: "POST", body: JSON.stringify(payload) },
     options,
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Batch analysis                                                    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Analyse up to 50 items in a single round trip.
+ *
+ * `POST /api/analyze/batch`
+ *
+ * The server runs items concurrently and returns per-item results,
+ * so a 50-URL batch is one HTTP request instead of 50.  A batch can
+ * legitimately take much longer than a single analysis (50 items ×
+ * OSINT lookups), so the default timeout is raised to 120 s.
+ *
+ * @param payload - List of items to analyse.
+ * @param options - Timeout / AbortSignal overrides.
+ */
+export async function analyzeBatch(
+  payload: BatchAnalyzeRequest,
+  options?: RequestOptions,
+): Promise<BatchAnalyzeResponse> {
+  return apiClient<BatchAnalyzeResponse>(
+    "/api/analyze/batch",
+    { method: "POST", body: JSON.stringify(payload) },
+    { timeoutMs: BATCH_TIMEOUT_MS, ...options },
   );
 }
 

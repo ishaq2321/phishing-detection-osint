@@ -11,11 +11,21 @@ Author: Ishaq Muhammad (PXPRGK)
 Course: BSc Thesis - ELTE Faculty of Informatics
 """
 
+import time
 from datetime import datetime
+from types import SimpleNamespace
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 
-from .historyStore import HistoryEntry, HistoryListResponse, historyStore
+from .historyStore import HistoryEntry, HistoryListResponse
+# Import the *module* (not the value) so every call site resolves the
+# current global at request time: ``backend.main`` swaps the store at
+# startup via ``set_store`` (in-memory deque by default, SQLite when
+# PHISHGUARD_PERSIST_HISTORY=1).  A ``from .historyStore import
+# historyStore`` binding would freeze the default instance at import
+# time and silently keep writing to memory even when persistence is
+# enabled -- a bug that defeats the opt-in entirely.
+from . import historyStore as historyStoreModule
 from .orchestrator import AnalysisOrchestrator
 from .rate_limiting import ANALYZE_LIMIT, STATUS_LIMIT, limiter
 from .schemas import (
@@ -189,7 +199,7 @@ async def analyzeContent(
             content=payload.content,
             contentType=payload.contentType
         )
-        historyStore.add(
+        historyStoreModule.historyStore.add(
             content=payload.content,
             contentType=payload.contentType,
             response=response,
@@ -241,7 +251,7 @@ async def analyzeUrl(
             content=payload.url,
             contentType="url"
         )
-        historyStore.add(
+        historyStoreModule.historyStore.add(
             content=payload.url,
             contentType="url",
             response=response,
@@ -302,7 +312,7 @@ async def analyzeEmail(
             content=fullContent,
             contentType="email"
         )
-        historyStore.add(
+        historyStoreModule.historyStore.add(
             content=payload.content,
             contentType="email",
             response=response,
@@ -330,7 +340,7 @@ async def listHistory(
     offset: int = Query(default=0, ge=0, description="Pagination offset"),
 ) -> HistoryListResponse:
     """Return paginated history entries."""
-    return historyStore.list(limit=limit, offset=offset)
+    return historyStoreModule.historyStore.list(limit=limit, offset=offset)
 
 
 @router.get(
@@ -341,7 +351,7 @@ async def listHistory(
 )
 async def getHistoryEntry(entryId: str) -> HistoryEntry:
     """Get a single history entry by UUID."""
-    entry = historyStore.get(entryId)
+    entry = historyStoreModule.historyStore.get(entryId)
     if entry is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -357,7 +367,7 @@ async def getHistoryEntry(entryId: str) -> HistoryEntry:
 )
 async def deleteHistoryEntry(entryId: str) -> dict:
     """Delete a single history entry."""
-    deleted = historyStore.delete(entryId)
+    deleted = historyStoreModule.historyStore.delete(entryId)
     if not deleted:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -373,7 +383,7 @@ async def deleteHistoryEntry(entryId: str) -> dict:
 )
 async def clearHistoryEndpoint() -> dict:
     """Delete all history entries."""
-    count = historyStore.clear()
+    count = historyStoreModule.historyStore.clear()
     return {"deleted": True, "count": count}
 
 
@@ -419,11 +429,6 @@ async def root() -> dict:
             "history": "/api/history"
         }
     }
-
-import time
-
-
-from types import SimpleNamespace
 
 
 # =============================================================================
@@ -497,7 +502,7 @@ async def analyzeBatch(
             # Mirror the single-route behaviour: persist successes in the
             # history store under their original content-bearing key.
             try:
-                historyStore.add(
+                historyStoreModule.historyStore.add(
                     content=items[idx].url or items[idx].content or "",
                     contentType=(
                         items[idx].type

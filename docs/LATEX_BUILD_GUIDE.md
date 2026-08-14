@@ -4,7 +4,7 @@ This document explains how the final LaTeX formatting was achieved using Visual 
 
 ## 1. Initial Setup and Template Cloning
 1. We started by downloading the official **ELTE FI thesis template** (`elteikthesis_en.tex` and `elteikthesis.cls`).
-2. We used **Pandoc** to initially convert the monolithic `THESIS_COMPLETE_DOCUMENT.md` into individual LaTeX chapters.
+2. We used **Pandoc** to initially convert the monolithic `THESIS_COMPLETE_DOCUMENT.md` (the original 12-chapter working draft, since removed — retained in git history) into individual LaTeX chapters.
 
 ## 2. Tools Installed
 To compile the document locally on Ubuntu/Debian without Overleaf timeouts, the following tools were required:

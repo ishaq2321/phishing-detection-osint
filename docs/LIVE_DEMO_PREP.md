@@ -767,7 +767,7 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000
 ## 7.3 Python — Testing
 
 ```bash
-# Run ALL 592 backend tests
+# Run ALL 890 backend tests
 python -m pytest tests/ -v
 
 # Run unit tests only
@@ -797,7 +797,7 @@ python -m pytest tests/ -k "phishing" -v
 
 **Note:** The project does NOT have a configured Python linter (no pylint, ruff, or flake8 config). If asked, say:
 
-> "Python code quality was enforced through: (1) Pydantic's strict type validation at runtime, (2) comprehensive pytest coverage (~592 tests), and (3) manual code review. For future work, I would add `ruff` or `mypy` for static analysis."
+> "Python code quality was enforced through: (1) Pydantic's strict type validation at runtime, (2) comprehensive pytest coverage (~890 tests), and (3) manual code review. For future work, I would add `ruff` or `mypy` for static analysis."
 
 ```bash
 # Quick syntax check of all Python files (no dedicated linter)
@@ -861,7 +861,7 @@ npm run lint
 ## 7.9 Frontend — Testing
 
 ```bash
-# Run ALL 133 Jest unit tests
+# Run ALL 139 Jest unit tests
 npm test
 
 # Watch mode (re-runs on file changes)
@@ -980,7 +980,7 @@ If the examiners ask technical questions, pivot to:
 
 ## Minute 10-12: Contributions & Conclusion
 
-- "Five contributions: (1) OSINT-enhanced feature engineering, (2) optimized XGBoost pipeline, (3) SHAP explainability, (4) multi-modal analysis engine, (5) production-grade full-stack application with 725 automated tests."
+- "Five contributions: (1) OSINT-enhanced feature engineering, (2) optimized XGBoost pipeline, (3) SHAP explainability, (4) multi-modal analysis engine, (5) production-grade full-stack application with 1057 automated tests."
 - "Future work: OCR for image-based phishing, online learning for concept drift, LLM integration for advanced semantic analysis."
 
 ---
@@ -1061,7 +1061,7 @@ If the examiners ask technical questions, pivot to:
 ## Testing Questions
 
 **Q: How many tests do you have?**
-> 725 total: 592 backend (pytest) + 133 frontend (Jest). Plus 28 Playwright E2E browser tests.
+> 1057 total: 890 backend (pytest) + 139 frontend (Jest). Plus 28 Playwright E2E browser tests.
 
 **Q: How do you test OSINT-dependent code?**
 > Dependency injection via Python Protocols. Each OSINT module defines a Protocol (e.g., `WhoisClientProtocol`, `DnsResolverProtocol`, `ReputationClientProtocol`). Tests inject mock clients that return controlled data without making real network calls. Integration tests use `respx` to mock HTTP responses and `unittest.mock` for WHOIS/DNS.
@@ -1113,10 +1113,10 @@ If the examiners ask technical questions, pivot to:
 | Test set | 5,009 (15%) |
 | Features | 21 (17 URL + 4 OSINT) |
 | NLP tactics | 10 families, ~120+ phrases |
-| Backend tests | 592 (pytest) |
-| Frontend tests | 133 (Jest) |
+| Backend tests | 890 (pytest) |
+| Frontend tests | 139 (Jest) |
 | E2E tests | 28 (Playwright) |
-| Total tests | 725+ |
+| Total tests | 1057 |
 | Optuna trials | 50 |
 | Cross-validation folds | 5 |
 | Best Optuna trial | #43 |
@@ -1165,14 +1165,14 @@ If an examiner asks something and your mind goes blank:
 **The gap:** No GitHub Actions, no automated testing on push, no deployment gates.
 
 **Your response:**
-> "The scope of this thesis was the detection system itself — the ML pipeline, OSINT integration, and full-stack application. CI/CD is infrastructure, not research. Both Vercel and Render auto-deploy from main as basic CD. In a production environment, I would add GitHub Actions to run the 725-test suite on every push, with deployment gated on passing tests. This is standard DevOps practice but was out of scope for the research contribution."
+> "The scope of this thesis was the detection system itself — the ML pipeline, OSINT integration, and full-stack application. CI/CD is infrastructure, not research. Both Vercel and Render auto-deploy from main as basic CD. In a production environment, I would add GitHub Actions to run the 1057-test suite on every push, with deployment gated on passing tests. This is standard DevOps practice but was out of scope for the research contribution."
 
 ## 12.2 No Python Static Analysis (No mypy, ruff, or pylint)
 
 **The gap:** Only `compileall` for syntax checking. No type checker, no linter.
 
 **Your response:**
-> "Type safety in the backend is enforced at runtime by Pydantic v2 — every API input and output goes through strict schema validation. The 592 pytest tests cover all critical paths. For production, I would add `mypy` for static type checking and `ruff` for linting. The decision to omit them was a time-management trade-off — the thesis deadline prioritized functional completeness over tooling polish."
+> "Type safety in the backend is enforced at runtime by Pydantic v2 — every API input and output goes through strict schema validation. The 890 pytest tests cover all critical paths. For production, I would add `mypy` for static type checking and `ruff` for linting. The decision to omit them was a time-management trade-off — the thesis deadline prioritized functional completeness over tooling polish."
 
 ## 12.3 Ephemeral In-Memory History Store (No Database)
 
@@ -1251,10 +1251,10 @@ The ablation report was run on the **full 33,392-sample dataset with 5-fold cros
 
 ## 12.12 Limited E2E Test Coverage (28 tests)
 
-**The gap:** 28 Playwright E2E tests vs. 592 backend unit tests. The E2E coverage is thin.
+**The gap:** 28 Playwright E2E tests vs. 890 backend unit tests. The E2E coverage is thin.
 
 **Your response:**
-> "The testing strategy prioritizes depth where it matters most — the ML pipeline and OSINT integration have 592 rigorous unit and integration tests. The 28 E2E tests cover all critical user journeys: URL analysis, email analysis, history, settings, theme, navigation, responsive design, and error handling. For a thesis prototype, this coverage is comprehensive. In production, I would expand E2E coverage for edge cases."
+> "The testing strategy prioritizes depth where it matters most — the ML pipeline and OSINT integration have 890 rigorous unit and integration tests. The 28 E2E tests cover all critical user journeys: URL analysis, email analysis, history, settings, theme, navigation, responsive design, and error handling. For a thesis prototype, this coverage is comprehensive. In production, I would expand E2E coverage for edge cases."
 
 ---
 
@@ -1277,7 +1277,7 @@ The ablation report was run on the **full 33,392-sample dataset with 5-fold cros
 - 96.45% accuracy, 97.86% precision, 96.39% F1, 99.41% AUC
 - 21 features (17 URL + 4 OSINT)
 - 150,391 → 33,392 → 23,374 train / 5,009 val / 5,009 test
-- 725 total tests (592 backend + 133 frontend)
+- 1057 total tests (890 backend + 139 frontend)
 - 10 NLP tactic families, 120+ phrases
 - 50 Optuna trials, 5-fold CV, best trial #43
 - OSINT: 15-second parallel timeout, 3 concurrent lookups

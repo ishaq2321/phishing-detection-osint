@@ -1,8 +1,14 @@
 "use client";
 
 /**
- * Batch Analysis page — analyse up to 50 URLs at once with concurrent
- * processing, per-URL progress, and export to CSV / JSON.
+ * Batch Analysis page — analyse up to 50 URLs at once with parallel
+ * processing, per-URL results, and export to CSV / JSON.
+ *
+ * The primary path is a single `POST /api/analyze/batch` round trip
+ * (the backend runs all items concurrently and returns per-item
+ * results).  If the batch endpoint is unavailable — e.g. a frontend
+ * deployed ahead of the backend — the page transparently falls back
+ * to the legacy chunked loop of individual `/api/analyze/url` calls.
  */
 
 import { useCallback, useRef, useState } from "react";
@@ -16,8 +22,9 @@ import {
   BatchResults,
   type BatchEntry,
 } from "@/components/analyze/batchResults";
-import { analyzeUrl } from "@/lib/api/endpoints";
-import { showError, showSuccess } from "@/lib/toast";
+import { analyzeBatch, analyzeUrl } from "@/lib/api/endpoints";
+import { showError, showInfo, showSuccess } from "@/lib/toast";
+import type { AnalysisResponse } from "@/types";
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                         */
@@ -45,6 +52,60 @@ export default function BatchAnalysisPage() {
   const validCount = Math.min(urls.length, MAX_URLS);
   const canSubmit = validCount > 0 && !isRunning;
 
+  /* ---- Legacy fallback: chunked individual analyses --------------- */
+  const runChunked = useCallback(
+    async (batch: string[], controller: AbortController): Promise<boolean> => {
+      // Returns `cancelled` — true when the user aborted mid-run.
+      let cancelled = false;
+
+      for (let i = 0; i < batch.length; i += CONCURRENCY) {
+        if (controller.signal.aborted) {
+          cancelled = true;
+          break;
+        }
+
+        const chunk = batch.slice(i, i + CONCURRENCY);
+        const promises = chunk.map(async (url, j) => {
+          const index = i + j;
+
+          setEntries((prev) => {
+            const next = [...prev];
+            next[index] = { ...next[index], status: "running" };
+            return next;
+          });
+
+          try {
+            const response = await analyzeUrl(
+              { url },
+              { signal: controller.signal },
+            );
+            setEntries((prev) => {
+              const next = [...prev];
+              next[index] = { ...next[index], status: "done", response };
+              return next;
+            });
+          } catch (err) {
+            if (controller.signal.aborted) return;
+            setEntries((prev) => {
+              const next = [...prev];
+              next[index] = {
+                ...next[index],
+                status: "error",
+                error: err instanceof Error ? err.message : "Unknown error",
+              };
+              return next;
+            });
+          }
+        });
+
+        await Promise.allSettled(promises);
+      }
+
+      return cancelled;
+    },
+    [],
+  );
+
   /* ---- Run batch analysis ---------------------------------------- */
   const handleRun = useCallback(async () => {
     const batch = urls.slice(0, MAX_URLS);
@@ -58,61 +119,56 @@ export default function BatchAnalysisPage() {
     setEntries(initial);
     setIsRunning(true);
 
-    // Process in chunks of CONCURRENCY
     let cancelled = false;
+    let completedViaBatch = false;
 
-    for (let i = 0; i < batch.length; i += CONCURRENCY) {
+    try {
+      /* Primary path: one round trip to POST /api/analyze/batch. */
+      const items = batch.map((url) => ({ type: "url" as const, url }));
+      const res = await analyzeBatch({ items }, { signal: controller.signal });
+
+      completedViaBatch = true;
+
+      const next: BatchEntry[] = batch.map((url, index) => {
+        const result = res.results.find((r) => r.index === index);
+        if (result?.status === "ok" && result.response) {
+          return { url, status: "done", response: result.response };
+        }
+        return {
+          url,
+          status: "error",
+          error:
+            result?.error ?? "Analysis failed — no result returned",
+        };
+      });
+      setEntries(next);
+    } catch (err) {
       if (controller.signal.aborted) {
         cancelled = true;
-        break;
+      } else {
+        /* Fallback: endpoint missing (deploy skew) or unreachable.
+           Run the individual analyses instead so the page still works. */
+        showInfo(
+          "Batch endpoint unavailable — falling back to individual analysis.",
+        );
+        cancelled = await runChunked(batch, controller);
       }
-
-      const chunk = batch.slice(i, i + CONCURRENCY);
-      const promises = chunk.map(async (url, j) => {
-        const index = i + j;
-
-        setEntries((prev) => {
-          const next = [...prev];
-          next[index] = { ...next[index], status: "running" };
-          return next;
-        });
-
-        try {
-          const response = await analyzeUrl(
-            { url },
-            { signal: controller.signal },
-          );
-          setEntries((prev) => {
-            const next = [...prev];
-            next[index] = { ...next[index], status: "done", response };
-            return next;
-          });
-        } catch (err) {
-          if (controller.signal.aborted) return;
-          setEntries((prev) => {
-            const next = [...prev];
-            next[index] = {
-              ...next[index],
-              status: "error",
-              error: err instanceof Error ? err.message : "Unknown error",
-            };
-            return next;
-          });
-        }
-      });
-
-      await Promise.allSettled(promises);
+    } finally {
+      setIsRunning(false);
+      abortRef.current = null;
     }
-
-    setIsRunning(false);
-    abortRef.current = null;
 
     if (cancelled) {
       showError("Batch analysis cancelled.");
-    } else {
-      showSuccess(`Batch analysis complete — ${batch.length} URLs processed.`);
+    } else if (completedViaBatch) {
+      showSuccess(
+        `Batch analysis complete — ${batch.length} URL${batch.length !== 1 ? "s" : ""} processed.`,
+      );
     }
-  }, [urls]);
+    /* In fallback mode runChunked surfaces no completion toast to
+       avoid double-notification; the per-row results speak for
+       themselves. */
+  }, [urls, runChunked]);
 
   /* ---- Cancel ---------------------------------------------------- */
   const handleCancel = useCallback(() => {
@@ -176,9 +232,17 @@ export default function BatchAnalysisPage() {
 
             {isRunning && (
               <div className="flex-1 space-y-1">
-                <Progress value={progressPct} className="h-2" />
+                {/* Indeterminate while the single batch request is in
+                    flight; determinate once rows start completing (the
+                    chunked fallback path). */}
+                <Progress
+                  value={completedCount === 0 ? null : progressPct}
+                  className="h-2"
+                />
                 <p className="text-xs text-muted-foreground">
-                  {completedCount} / {entries.length} completed
+                  {completedCount > 0
+                    ? `${completedCount} / ${entries.length} completed`
+                    : `Analysing ${entries.length} URL${entries.length !== 1 ? "s" : ""}…`}
                 </p>
               </div>
             )}

@@ -32,7 +32,7 @@ the final score, supplemented by NLP text analysis at 15%.
 - **Full-featured UI** — Dark/light theme, keyboard shortcuts, responsive design
 - **Configurable results detail** — Simple (verdict only), Detailed (+reasons+OSINT), Expert (+features)
 - **Production hardening** — OWASP HTTP security headers, per-key rate limits via `slowapi`, optional `X-Api-Key` auth on heavy routes (sha256-hashed constant-time compare), structlog JSON logs with per-request `X-Request-ID`, and a deep `/api/health` with live DNS+ML probes
-- **1037 automated tests** — Backend (864 pytest), frontend (133 Jest), E2E (28 Playwright)
+- **1057 automated tests** — Backend (890 pytest), frontend (139 Jest), E2E (28 Playwright)
 
 ## 🛠️ Tech Stack
 
@@ -50,8 +50,6 @@ the final score, supplemented by NLP text analysis at 15%.
 ## 📁 Project Structure
 
 ```
-├── .github/              # GitHub config & Copilot instructions
-├── .mcp/                 # MCP servers (project manager + code quality)
 ├── backend/              # FastAPI server
 │   ├── api/              # REST endpoints, orchestrator, history store
 │   ├── analyzer/         # NLP analyser (spaCy-based, 10 tactic categories)
@@ -75,10 +73,10 @@ the final score, supplemented by NLP text analysis at 15%.
 │   │   ├── hooks/        # Custom hooks (health, keyboard, countUp)
 │   │   ├── lib/          # API client, stores, utilities
 │   │   └── types/        # TypeScript type definitions
-│   ├── __tests__/        # Jest unit tests (133 tests)
+│   ├── __tests__/        # Jest unit tests (139 tests)
 │   ├── e2e/              # Playwright E2E browser tests (28 tests)
 │   └── public/           # Static assets (logo, favicon, PWA icons)
-├── tests/                # Backend tests (864 pytest tests)
+├── tests/                # Backend tests (890 pytest tests)
 │   ├── unit/             # Unit tests for all modules
 │   └── integration/      # Full pipeline integration tests
 └── README.md
@@ -163,10 +161,13 @@ Backend API docs: **http://localhost:8000/docs**
 | `POST`   | `/api/analyze`        | Analyse any content (auto-detect type)   |
 | `POST`   | `/api/analyze/url`    | URL-specific phishing analysis           |
 | `POST`   | `/api/analyze/email`  | Email analysis (body + subject + sender) |
+| `POST`   | `/api/analyze/batch`  | Batch analysis — up to 50 items, concurrent, per-item partial failures |
 | `GET`    | `/api/history`        | List recent analyses (paginated)         |
 | `GET`    | `/api/history/{id}`   | Get a single history entry by UUID       |
 | `DELETE` | `/api/history/{id}`   | Delete a history entry                   |
 | `DELETE` | `/api/history`        | Clear all history                        |
+| `POST`   | `/api/feedback`       | Operator feedback on past analyses (append-only JSONL) |
+| `GET`    | `/api/feedback`       | List recent feedback records             |
 
 ### Example Request
 
@@ -178,7 +179,7 @@ curl -X POST http://localhost:8000/api/analyze/url \
 
 ## 🧪 Running Tests
 
-### Backend Tests (864 tests)
+### Backend Tests (890 tests)
 
 Validate api/services via pytest (`pip install -r backend/requirements.txt` first).
 
@@ -197,7 +198,7 @@ python -m pytest tests/integration/ -v
 python -m pytest tests/ --cov=backend --cov-report=html
 ```
 
-### Frontend Tests (133 Jest tests + 28 Playwright E2E)
+### Frontend Tests (139 Jest tests + 28 Playwright E2E)
 
 ```bash
 cd frontend
@@ -210,10 +211,10 @@ npx playwright test     # Run Playwright E2E (28)
 
 | Layer        | Framework   |Tests (counted)  | Command                          |
 |--------------|-------------|------------------|----------------------------------|
-| Backend      | pytest      | 864 (collected) | `python -m pytest tests/`        |
+| Backend      | pytest      | 890 (collected) | `python -m pytest tests/`        |
 | Frontend     | Jest        | 133 (passed)     | `cd frontend && npx jest --ci`   |
 | E2E          | Playwright  | 28  (`.spec.ts`) | `cd frontend && npx playwright test` |
-| **Total**    |             | **1037**          |                                |
+| **Total**    |             | **1057**          |                                |
 
 ## 🏗️ Architecture
 

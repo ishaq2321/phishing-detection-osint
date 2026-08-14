@@ -28,11 +28,12 @@ the final score, supplemented by NLP text analysis at 15%.
 - **Explainable results** — SHAP explanations, detailed reasons & scores
 - **Multiple input modes** — URL, email (with subject/sender), free-text
 - **Batch analysis** — `POST /api/analyze/batch` accepts up to 50 mixed URL/email items in one round trip with concurrent execution and per-item partial failures
+- **Raw .eml ingestion** — `POST /api/ingest/email` accepts a forwarded RFC 822/MIME email file, parses subject/sender/body/attachments, and runs it through the email pipeline (with a 1 MB size cap and 413/422 guard rails)
 - **Interactive visualisations** — Score charts, threat gauges, confidence bars
 - **Full-featured UI** — Dark/light theme, keyboard shortcuts, responsive design
 - **Configurable results detail** — Simple (verdict only), Detailed (+reasons+OSINT), Expert (+features)
 - **Production hardening** — OWASP HTTP security headers, per-key rate limits via `slowapi`, optional `X-Api-Key` auth on heavy routes (sha256-hashed constant-time compare), structlog JSON logs with per-request `X-Request-ID`, and a deep `/api/health` with live DNS+ML probes
-- **1057 automated tests** — Backend (890 pytest), frontend (139 Jest), E2E (28 Playwright)
+- **1093 automated tests** — Backend (924 pytest), frontend (139 Jest), E2E (30 Playwright)
 
 ## 🛠️ Tech Stack
 
@@ -74,9 +75,9 @@ the final score, supplemented by NLP text analysis at 15%.
 │   │   ├── lib/          # API client, stores, utilities
 │   │   └── types/        # TypeScript type definitions
 │   ├── __tests__/        # Jest unit tests (139 tests)
-│   ├── e2e/              # Playwright E2E browser tests (28 tests)
+│   ├── e2e/              # Playwright E2E browser tests (30 tests)
 │   └── public/           # Static assets (logo, favicon, PWA icons)
-├── tests/                # Backend tests (890 pytest tests)
+├── tests/                # Backend tests (924 pytest tests)
 │   ├── unit/             # Unit tests for all modules
 │   └── integration/      # Full pipeline integration tests
 └── README.md
@@ -162,6 +163,7 @@ Backend API docs: **http://localhost:8000/docs**
 | `POST`   | `/api/analyze/url`    | URL-specific phishing analysis           |
 | `POST`   | `/api/analyze/email`  | Email analysis (body + subject + sender) |
 | `POST`   | `/api/analyze/batch`  | Batch analysis — up to 50 items, concurrent, per-item partial failures |
+| `POST`   | `/api/ingest/email`   | Ingest a raw `.eml` file — parses fields, runs email analysis (413 over cap, 422 no readable body) |
 | `GET`    | `/api/history`        | List recent analyses (paginated)         |
 | `GET`    | `/api/history/{id}`   | Get a single history entry by UUID       |
 | `DELETE` | `/api/history/{id}`   | Delete a history entry                   |
@@ -179,7 +181,7 @@ curl -X POST http://localhost:8000/api/analyze/url \
 
 ## 🧪 Running Tests
 
-### Backend Tests (890 tests)
+### Backend Tests (924 tests)
 
 Validate api/services via pytest (`pip install -r backend/requirements.txt` first).
 
@@ -198,23 +200,23 @@ python -m pytest tests/integration/ -v
 python -m pytest tests/ --cov=backend --cov-report=html
 ```
 
-### Frontend Tests (139 Jest tests + 28 Playwright E2E)
+### Frontend Tests (139 Jest tests + 30 Playwright E2E)
 
 ```bash
 cd frontend
-npx jest --ci           # Run all Jest tests (133)
+npx jest --ci           # Run all Jest tests (139)
 npx jest --ci --watch   # Watch mode
-npx playwright test     # Run Playwright E2E (28)
+npx playwright test     # Run Playwright E2E (30)
 ```
 
 ### Test Counts (last verified `pytest --collect-only`)
 
 | Layer        | Framework   |Tests (counted)  | Command                          |
 |--------------|-------------|------------------|----------------------------------|
-| Backend      | pytest      | 890 (collected) | `python -m pytest tests/`        |
-| Frontend     | Jest        | 133 (passed)     | `cd frontend && npx jest --ci`   |
-| E2E          | Playwright  | 28  (`.spec.ts`) | `cd frontend && npx playwright test` |
-| **Total**    |             | **1057**          |                                |
+| Backend      | pytest      | 924 (collected) | `python -m pytest tests/`        |
+| Frontend     | Jest        | 139 (passed)    | `cd frontend && npx jest --ci`   |
+| E2E          | Playwright  | 30  (`.spec.ts`) | `cd frontend && npx playwright test` |
+| **Total**    |             | **1093**          |                                |
 
 ## 🏗️ Architecture
 
@@ -263,6 +265,7 @@ The backend deploys automatically from the `main` branch using the
 3. Render auto-detects `render.yaml` and creates the `phishguard-api` service
 4. Set `CORS_ORIGINS` to your Vercel frontend URL (e.g. `https://phishguard.vercel.app`)
 5. Optionally set `VIRUSTOTAL_API_KEY` and `ABUSEIPDB_API_KEY` for enhanced OSINT
+6. Optionally set `EML_MAX_BYTES` to raise/lower the raw `.eml` upload cap (default 1000000 = 1 MB)
 
 ### Frontend — Vercel
 

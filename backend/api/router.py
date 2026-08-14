@@ -17,6 +17,7 @@ from types import SimpleNamespace
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response, status
 
+from backend.config import getSettings
 from .historyStore import HistoryEntry, HistoryListResponse
 # Import the *module* (not the value) so every call site resolves the
 # current global at request time: ``backend.main`` swaps the store at
@@ -26,6 +27,7 @@ from .historyStore import HistoryEntry, HistoryListResponse
 # time and silently keep writing to memory even when persistence is
 # enabled -- a bug that defeats the opt-in entirely.
 from . import historyStore as historyStoreModule
+from .emlIngest import buildEmailContent, parseEmails
 from .orchestrator import AnalysisOrchestrator
 from .rate_limiting import ANALYZE_LIMIT, STATUS_LIMIT, limiter
 from .schemas import (
@@ -35,7 +37,9 @@ from .schemas import (
     BatchAnalyzeResponse,
     BatchItemRequest,
     BatchItemResult,
+    EmailIngestResponse,
     EmailRequest,
+    EmIngestSummary,
     HealthResponse,
     ModelStatusResponse,
     UrlRequest,
@@ -529,4 +533,113 @@ async def analyzeBatch(
         failed=failed,
         analysisTime=elapsed,
         results=results,
+    )
+
+
+@router.post(
+    "/ingest/email",
+    response_model=EmailIngestResponse,
+    summary="Ingest and analyse a raw .eml file",
+    description=(
+        "Accepts a raw RFC 822 / MIME ``.eml`` file (Content-Type ``message/rfc822`` "
+        "or ``text/plain``) and runs it through the same email-analysis "
+        "pipeline as ``/api/analyze/email``.  The response carries the "
+        "full analysis result plus a ``parsed`` summary of the fields "
+        "extracted from the message (subject, sender, recipients, "
+        "attachments).  Payloads larger than the configured cap are "
+        "rejected with HTTP 413; a message with no readable text body "
+        "is rejected with HTTP 422."
+    ),
+    status_code=status.HTTP_200_OK,
+)
+@limiter.limit(ANALYZE_LIMIT)
+async def ingestEmail(
+    request: Request,
+    response: Response,
+) -> EmailIngestResponse:
+    """Parse and analyse a raw ``.eml`` payload.
+
+    Args:
+        request: FastAPI Request -- the raw body bytes are read from it
+            (no JSON schema applies; the client uploads the file bytes
+            directly).
+        response: FastAPI Response (slowapi mutates this for ``x-ratelimit-*``).
+
+    Returns:
+        EmailIngestResponse: full analysis plus the ``parsed`` summary.
+
+    Raises:
+        HTTPException 413: raw payload exceeds the configured size cap.
+        HTTPException 422: the message has no readable text body.
+        HTTPException 500: the underlying analysis pipeline failed.
+
+    Example::
+
+        POST /api/ingest/email
+        Content-Type: message/rfc822
+
+        <raw .eml bytes>
+    """
+    raw = await request.body()
+
+    # Resolve at request time so operators can change the cap without
+    # restarting and tests can override it via EML_MAX_BYTES.
+    maxBytes = getSettings().emlMaxBytes
+    if len(raw) > maxBytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=(
+                f"EML payload of {len(raw)} bytes exceeds the "
+                f"configured cap of {maxBytes} bytes"
+            ),
+        )
+
+    parsed = parseEmails(raw)
+    # A body that parses to no readable text (pure binary garbage,
+    # empty payload, header-only message) is not analysable -- the
+    # NLP pipeline needs at least one alphanumeric character.
+    if not any(c.isalnum() for c in parsed.body):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                "No readable text body found in the .eml payload "
+                "(empty body or unsupported encoding)"
+            ),
+        )
+
+    try:
+        fullContent = buildEmailContent(parsed)
+        result = await orchestrator.analyze(
+            content=fullContent,
+            contentType="email",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"EML analysis failed: {str(e)}",
+        )
+
+    # Mirror the single-route behaviour: persist the analysis in the
+    # history store so the feedback loop can reference it later.
+    try:
+        historyStoreModule.historyStore.add(
+            content=parsed.body,
+            contentType="email",
+            response=result,
+        )
+    except Exception:  # noqa: BLE001
+        pass  # history persistence is best-effort
+
+    return EmailIngestResponse(
+        **result.model_dump(),
+        parsed=EmIngestSummary(
+            subject=parsed.subject,
+            senderName=parsed.senderName,
+            senderAddress=parsed.senderAddress,
+            recipients=parsed.recipients,
+            bodyPreview=parsed.body[:200],
+            hasAttachments=parsed.hasAttachments,
+            attachmentNames=parsed.attachmentNames,
+            sizeBytes=parsed.sizeBytes,
+        ),
     )

@@ -55,8 +55,11 @@ WWW_AUTH_HEADER = "WWW-Authenticate"
 # Routes that require X-Api-Key when ``settings.apiKeys`` is set.
 # Anything outside this set (``/api/health``, ``/api/model/status``,
 # ``/api/history*``, ``/docs``) is always public.
+# ``/api/ingest`` is grouped with the analyse routes: it runs the same
+# heavy OSINT+ML pipeline and must not be cheaper to abuse.
 _PROTECTED_PREFIXES: tuple[str, ...] = (
     "/api/analyze",
+    "/api/ingest",
 )
 
 

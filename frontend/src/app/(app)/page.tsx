@@ -156,7 +156,7 @@ export default function DashboardPage() {
             <div className="flex gap-2">
               <LinkButton href="/analyze" size="sm">
                 <Zap className="mr-1.5 h-4 w-4" />
-                Analyze
+                Analyse
               </LinkButton>
               <LinkButton href="/how-it-works" variant="outline" size="sm">
                 How It Works
@@ -394,11 +394,11 @@ export default function DashboardPage() {
                   </div>
                   <h3 className="text-base font-semibold">Ready to detect phishing</h3>
                   <p className="text-sm text-muted-foreground mt-1 max-w-sm">
-                    Paste a suspicious URL or email to analyze it against our threat intelligence database.
+                    Paste a suspicious URL or email to analyse it against our threat intelligence database.
                   </p>
                   <LinkButton href="/analyze" className="mt-4">
                     <Zap className="mr-1.5 h-4 w-4" />
-                    Start Analysis
+                    Analyse Now
                   </LinkButton>
                   <p className="text-xs text-muted-foreground mt-4">
                     Try with: <code className="bg-muted px-1.5 py-0.5 rounded text-xs">suspicious-login.tk/verify</code>

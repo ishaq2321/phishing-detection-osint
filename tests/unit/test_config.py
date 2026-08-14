@@ -188,6 +188,74 @@ class TestSettingsEnvironmentVariables:
         assert settings.virusTotalApiKey == "vt-key"
 
 
+class TestSettingsEnvVarNames:
+    """Regression: env vars MUST map through their documented names.
+
+    pydantic-settings < 2.2 matches env names case-insensitively but
+    does NOT ignore underscores, so ``CORS_ORIGINS`` was silently
+    ignored (only ``CORSORIGINS`` worked).  These tests pin the
+    operator-facing contract: every documented UPPER_SNAKE env var
+    must actually configure its field.
+    """
+
+    def test_underscoreEnvNameMapsToField(self, monkeypatch):
+        """CORS_ORIGINS (the documented name) must set corsOrigins."""
+        monkeypatch.setenv("CORS_ORIGINS", "https://phishguard.vercel.app")
+        settings = Settings(_env_file=None)
+        assert settings.corsOrigins == "https://phishguard.vercel.app"
+
+    def test_underscoreEnvNameReputationKeys(self, monkeypatch):
+        """VIRUSTOTAL_API_KEY / ABUSEIPDB_API_KEY must load."""
+        monkeypatch.setenv("VIRUSTOTAL_API_KEY", "vt-secret")
+        monkeypatch.setenv("ABUSEIPDB_API_KEY", "abuse-secret")
+        settings = Settings(_env_file=None)
+        assert settings.virusTotalApiKey == "vt-secret"
+        assert settings.abuseIpDbApiKey == "abuse-secret"
+        assert settings.hasVirusTotalKey is True
+        assert settings.hasAbuseIpDbKey is True
+
+    def test_underscoreEnvNameTimeouts(self, monkeypatch):
+        """WHOIS_TIMEOUT / DNS_TIMEOUT / MAX_RETRIES must load."""
+        monkeypatch.setenv("WHOIS_TIMEOUT", "20")
+        monkeypatch.setenv("DNS_TIMEOUT", "9")
+        monkeypatch.setenv("MAX_RETRIES", "5")
+        settings = Settings(_env_file=None)
+        assert settings.whoisTimeout == 20
+        assert settings.dnsTimeout == 9
+        assert settings.maxRetries == 5
+
+    def test_underscoreEnvNameThresholds(self, monkeypatch):
+        """HIGH/MEDIUM_RISK_THRESHOLD must load."""
+        monkeypatch.setenv("HIGH_RISK_THRESHOLD", "0.75")
+        monkeypatch.setenv("MEDIUM_RISK_THRESHOLD", "0.35")
+        settings = Settings(_env_file=None)
+        assert settings.highRiskThreshold == 0.75
+        assert settings.mediumRiskThreshold == 0.35
+
+    def test_underscoreEnvNameAnalyzerEngine(self, monkeypatch):
+        """ANALYZER_ENGINE must load."""
+        monkeypatch.setenv("ANALYZER_ENGINE", "nlp")
+        settings = Settings(_env_file=None)
+        assert settings.analyzerEngine == AnalyzerEngine.NLP
+
+    def test_underscoreEnvNameEmlMaxBytes(self, monkeypatch):
+        """EML_MAX_BYTES must load (Tier 4 E cap)."""
+        monkeypatch.setenv("EML_MAX_BYTES", "4096")
+        settings = Settings(_env_file=None)
+        assert settings.emlMaxBytes == 4096
+
+    def test_noUnderscoreVariantStillWorks(self, monkeypatch):
+        """Legacy CORSORIGINS form keeps working (backward compat)."""
+        monkeypatch.setenv("CORSORIGINS", "https://legacy.example.com")
+        settings = Settings(_env_file=None)
+        assert settings.corsOrigins == "https://legacy.example.com"
+
+    def test_fieldNameConstructionStillWorks(self):
+        """populate_by_name keeps Settings(whoisTimeout=0) working."""
+        settings = Settings(whoisTimeout=6, _env_file=None)
+        assert settings.whoisTimeout == 6
+
+
 class TestSettingsComputedProperties:
     """Test computed property methods."""
     

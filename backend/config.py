@@ -26,8 +26,20 @@ from enum import Enum
 from functools import lru_cache
 from typing import Optional
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import AliasChoices, Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _envAlias(fieldName: str, envName: str) -> AliasChoices:
+    """Accept BOTH the camelCase field name and the UPPER_SNAKE env var.
+
+    pydantic-settings < 2.2 matches env names case-insensitively but
+    does NOT ignore underscores: a field ``corsOrigins`` only matched
+    ``CORSORIGINS``, silently ignoring the documented ``CORS_ORIGINS``.
+    This explicit alias restores the operator-facing contract without
+    a dependency upgrade.
+    """
+    return AliasChoices(fieldName, envName)
 
 
 class Environment(str, Enum):
@@ -89,6 +101,10 @@ class Settings(BaseSettings):
         case_sensitive=False,
         extra="ignore",
         validate_default=True,
+        # The per-field ``validation_alias`` replaces the field name as
+        # the accepted init key; keep ``Settings(whoisTimeout=0)``
+        # (used across tests) working.
+        populate_by_name=True,
     )
     
     # =========================================================================
@@ -102,6 +118,7 @@ class Settings(BaseSettings):
     
     analyzerEngine: AnalyzerEngine = Field(
         default=AnalyzerEngine.NLP,
+        validation_alias=_envAlias("analyzerEngine", "ANALYZER_ENGINE"),
         description="Analysis engine type (currently only NLP)"
     )
     
@@ -123,6 +140,7 @@ class Settings(BaseSettings):
         default=10,
         ge=1,
         le=60,
+        validation_alias=_envAlias("whoisTimeout", "WHOIS_TIMEOUT"),
         description="WHOIS lookup timeout in seconds"
     )
     
@@ -130,6 +148,7 @@ class Settings(BaseSettings):
         default=5,
         ge=1,
         le=30,
+        validation_alias=_envAlias("dnsTimeout", "DNS_TIMEOUT"),
         description="DNS resolution timeout in seconds"
     )
     
@@ -137,6 +156,7 @@ class Settings(BaseSettings):
         default=10,
         ge=1,
         le=60,
+        validation_alias=_envAlias("reputationTimeout", "REPUTATION_TIMEOUT"),
         description="Reputation API request timeout in seconds"
     )
 
@@ -144,6 +164,7 @@ class Settings(BaseSettings):
         default=3,
         ge=0,
         le=10,
+        validation_alias=_envAlias("maxRetries", "MAX_RETRIES"),
         description="Maximum retry attempts for failed requests"
     )
     
@@ -151,6 +172,7 @@ class Settings(BaseSettings):
         default=1.0,
         ge=0.1,
         le=10.0,
+        validation_alias=_envAlias("retryDelaySeconds", "RETRY_DELAY_SECONDS"),
         description="Delay between retry attempts in seconds"
     )
     
@@ -160,11 +182,13 @@ class Settings(BaseSettings):
     
     virusTotalApiKey: Optional[str] = Field(
         default=None,
+        validation_alias=_envAlias("virusTotalApiKey", "VIRUSTOTAL_API_KEY"),
         description="VirusTotal API key for reputation checks"
     )
     
     abuseIpDbApiKey: Optional[str] = Field(
         default=None,
+        validation_alias=_envAlias("abuseIpDbApiKey", "ABUSEIPDB_API_KEY"),
         description="AbuseIPDB API key for IP reputation"
     )
 
@@ -174,16 +198,19 @@ class Settings(BaseSettings):
     
     corsOrigins: str = Field(
         default="*",
+        validation_alias=_envAlias("corsOrigins", "CORS_ORIGINS"),
         description="Allowed CORS origins (comma-separated or * for all)"
     )
     
     corsMethods: str = Field(
         default="GET,POST,OPTIONS",
+        validation_alias=_envAlias("corsMethods", "CORS_METHODS"),
         description="Allowed CORS HTTP methods (comma-separated)"
     )
     
     corsHeaders: str = Field(
         default="Content-Type,Authorization",
+        validation_alias=_envAlias("corsHeaders", "CORS_HEADERS"),
         description="Allowed CORS headers (comma-separated)"
     )
 
@@ -201,6 +228,22 @@ class Settings(BaseSettings):
     )
 
     # =========================================================================
+    # EML Ingestion (Tier 4 E)
+    # =========================================================================
+
+    emlMaxBytes: int = Field(
+        default=1_000_000,
+        ge=1_024,
+        le=50_000_000,
+        validation_alias=_envAlias("emlMaxBytes", "EML_MAX_BYTES"),
+        description=(
+            "Maximum accepted raw .eml payload size in bytes "
+            "(EML_MAX_BYTES).  Larger uploads are rejected with HTTP "
+            "413 before any parsing happens."
+        ),
+    )
+
+    # =========================================================================
     # Analysis Thresholds
     # =========================================================================
     
@@ -208,6 +251,7 @@ class Settings(BaseSettings):
         default=0.7,
         ge=0.0,
         le=1.0,
+        validation_alias=_envAlias("highRiskThreshold", "HIGH_RISK_THRESHOLD"),
         description="Score threshold for high risk classification"
     )
     
@@ -215,6 +259,7 @@ class Settings(BaseSettings):
         default=0.4,
         ge=0.0,
         le=1.0,
+        validation_alias=_envAlias("mediumRiskThreshold", "MEDIUM_RISK_THRESHOLD"),
         description="Score threshold for medium risk classification"
     )
     

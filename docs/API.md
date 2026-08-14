@@ -178,4 +178,44 @@ Operators flag misclassifications against past analyses; records are appended to
 { "accepted": true, "feedbackId": "...", "historyId": "..." }
 ```
 
+### 9. EML Ingestion
+Parses a raw RFC 822 / MIME `.eml` file and runs it through the same email-analysis pipeline as `/api/analyze/email`. The response carries the full analysis result **plus** a `parsed` summary of the extracted fields, so an investigator forwarding a suspicious message sees exactly what was read out of the file.
+**Endpoint:** `POST /api/ingest/email`
+
+**Request:** raw bytes with `Content-Type: message/rfc822` (or `text/plain`):
+```
+POST /api/ingest/email
+Content-Type: message/rfc822
+
+From: security@paypa1-support.com
+Subject: Your account is suspended
+
+Urgent! Click here to verify your identity...
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "verdict": { "isPhishing": true, "threatLevel": "dangerous", "...": "..." },
+  "parsed": {
+    "subject": "Your account is suspended",
+    "senderName": "",
+    "senderAddress": "security@paypa1-support.com",
+    "recipients": ["victim@example.com"],
+    "bodyPreview": "Urgent! Click here to verify your identity...",
+    "hasAttachments": false,
+    "attachmentNames": [],
+    "sizeBytes": 742
+  }
+}
+```
+
+Notes:
+- Payloads larger than the configured cap (default **1 MB**, env `EML_MAX_BYTES`) are rejected with **413**.
+- Messages with no readable text body (empty, header-only, or binary) are rejected with **422**.
+- The parser is deliberately lenient: HTML-only messages have tags stripped, RFC 2047 encoded-words are decoded, and malformed payloads degrade to partial fields instead of crashing.
+- Attachments are detected but never analysed — only the extracted text is scored.
+- Successful ingests are persisted to the history store; the endpoint is rate-limited like the other analysis routes and protected by API-key auth when configured.
+
 **List:** `GET /api/feedback?limit=100&offset=0` — returns the parsed record list, newest first, with a `total` count.

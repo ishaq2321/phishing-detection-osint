@@ -125,6 +125,33 @@ export async function mockApi(
   await page.route("**/api/analyze/email", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(analysisResponse) }),
   );
+
+  /* Batch endpoint — echo one per-item result per submitted item. */
+  await page.route("**/api/analyze/batch", (route) => {
+    if (route.request().method() !== "POST") {
+      return route.continue();
+    }
+    const data = route.request().postDataJSON() as {
+      items?: Array<{ type: string }>;
+    };
+    const results = (data.items ?? []).map((_item, index) => ({
+      index,
+      status: "ok" as const,
+      response: analysisResponse,
+    }));
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        total: results.length,
+        succeeded: results.length,
+        failed: 0,
+        analysisTime: 42.5,
+        results,
+      }),
+    });
+  });
 }
 
 /**

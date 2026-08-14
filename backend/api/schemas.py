@@ -558,6 +558,66 @@ class BatchAnalyzeResponse(BaseModel):
     )
 
 
+# =============================================================================
+# Tier 4 E: RFC 822 / MIME .eml ingestion
+# =============================================================================
+
+class EmIngestSummary(BaseModel):
+    """Metadata parsed from a raw ``.eml`` payload (Tier 4 E).
+
+    Returned alongside the normal ``AnalysisResponse`` fields so the
+    operator sees exactly what the parser extracted -- useful when
+    forwarding a suspicious message for triage.
+    """
+
+    subject: str = Field(
+        default="",
+        description="Decoded Subject header (empty when absent)",
+    )
+    senderName: str = Field(
+        default="",
+        description="Display name from the From header (empty when absent)",
+    )
+    senderAddress: str = Field(
+        default="",
+        description="Email address from the From header (empty when absent)",
+    )
+    recipients: list[str] = Field(
+        default_factory=list,
+        description="Addresses from To / Cc headers",
+    )
+    bodyPreview: str = Field(
+        default="",
+        description="First 200 chars of the extracted plain-text body",
+    )
+    hasAttachments: bool = Field(
+        default=False,
+        description="True when the message carries non-text parts",
+    )
+    attachmentNames: list[str] = Field(
+        default_factory=list,
+        description="Filenames of attached parts",
+    )
+    sizeBytes: int = Field(
+        default=0,
+        ge=0,
+        description="Raw .eml payload size in bytes",
+    )
+
+
+class EmailIngestResponse(AnalysisResponse):
+    """Response for ``POST /api/ingest/email``.
+
+    Everything in :class:`AnalysisResponse` (verdict, osint, features)
+    plus the ``parsed`` summary of the extracted fields.
+    """
+
+    parsed: EmIngestSummary = Field(
+        ...,
+        description="Metadata parsed from the raw .eml payload",
+    )
+
+
 # Public re-exports so conftest.py and tests pick them up.
 __all__ = [
     "AnalyzeRequest",
@@ -573,4 +633,6 @@ __all__ = [
     "BatchAnalyzeRequest",
     "BatchItemResult",
     "BatchAnalyzeResponse",
+    "EmIngestSummary",
+    "EmailIngestResponse",
 ]

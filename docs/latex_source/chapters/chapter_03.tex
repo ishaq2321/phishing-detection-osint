@@ -666,6 +666,94 @@ correlation identifier into every structured log emitted during the
 batch -- so an analyst scanning 50 URLs at once still gets a
 single id to grep for across the entire batch's worth of logs.
 
+\section{EML Ingestion: RFC 822 / MIME Email Intake}\label{eml-ingestion}
+
+Batch analysis and the JSON email endpoint cover analysts who already
+have structured data.  A third, very real operator workflow remained
+unserved: investigators forward \emph{the actual phishing message} --
+as a raw ``.eml`` file exported from Outlook, Thunderbird, or a
+sandbox -- and expect the system to read it.  Tier 4 adds
+\texttt{POST \hspace{0pt}/api/ingest/email}, which accepts raw RFC 822
+/ MIME bytes and runs them through the exact email-analysis pipeline
+used by \texttt{/api/analyze/email}.
+
+\subsection{Parser Design}
+
+Parsing is delegated to the Python standard library's
+\texttt{email.parser.BytesParser}, the reference RFC 822 / MIME
+implementation -- deliberately, since it adds no dependency and is
+\emph{lenient by construction}: malformed messages degrade to partial
+fields instead of crashing, matching the graceful-degradation
+philosophy of the rest of the API.  The extraction layer
+(\texttt{backend/api/emlIngest.py}) resolves four things:
+
+\begin{itemize}
+\item
+  \textbf{Headers.}  The \texttt{Subject} is decoded with
+  \texttt{email.header} (RFC 2047 encoded-words such as
+  \texttt{=?utf-8?Q?...?=} become readable text) and the
+  \texttt{From} header is split into display name and address with
+  \texttt{email.utils.parseaddr}.  \texttt{To} and \texttt{Cc}
+  addresses are collected into a recipient list.
+\item
+  \textbf{Body.}  The MIME tree is walked depth-first: the first
+  \texttt{text/plain} part wins; otherwise the first \texttt{text/html}
+  part is used with tags stripped and entities decoded; otherwise all
+  text parts are joined.  Quoted-printable and base64 transfer
+  encodings are decoded via each part's declared charset.
+\item
+  \textbf{Attachments.}  Parts with a \texttt{Content-Disposition:
+  attachment} header or a filename are detected and listed, but their
+  payload is \emph{never} fed to the analyser -- only the extracted
+  text is scored, so an embedded macro file cannot pollute the
+  verdict.
+\item
+  \textbf{Content assembly.}  \texttt{buildEmailContent} composes
+  ``\texttt{From:}\ldots\textbackslash nSubject:\ \ldots'' lines
+  around the body exactly as \texttt{/api/analyze/email} does, so the
+  spaCy pipeline sees identical input shape and scoring semantics.
+\end{itemize}
+
+\subsection{Guard Rails and Response}
+
+The endpoint enforces three boundaries:
+
+\begin{itemize}
+\item
+  \textbf{Size cap.}  Payloads above \texttt{settings.emlMaxBytes}
+  (default 1\,MB, overridable via \texttt{EML\_MAX\_BYTES}) are
+  rejected with HTTP 413 \emph{before} any parsing -- a 50\,MB
+  attachment bomb never reaches the MIME tree.
+\item
+  \textbf{No readable body.}  A message whose extracted text contains
+  no alphanumeric character at all (empty payload, header-only
+  message, pure binary garbage) is rejected with 422; the NLP
+  pipeline has nothing to score.
+\item
+  \textbf{Leniency beyond that.}  Anything carrying at least one
+  readable character is analysed rather than rejected -- the
+  response's \texttt{parsed} summary (subject, sender, recipients,
+  attachment names, body preview, size) lets the operator see exactly
+  what was read out of the file.
+\end{itemize}
+
+The response is the standard \texttt{AnalysisResponse} (verdict,
+OSINT, features) extended with a \texttt{parsed} block, so the frontend
+can reuse its existing result rendering.  Successful ingests are
+persisted to the history store, the route is rate-limited at
+\texttt{ANALYZE\_LIMIT}, and it is covered by the optional
+\texttt{X-Api-Key} middleware (\texttt{/api/ingest} is in the
+protected-prefix set).  A subtle integration bug found during
+verification of this feature is worth recording: pydantic-settings
+\texttt{< 2.2} matches environment names case-insensitively but does
+\emph{not} ignore underscores, so the documented \texttt{CORS\_ORIGINS},
+\texttt{VIRUSTOTAL\_API\_KEY}, and \texttt{ABUSEIPDB\_API\_KEY}
+variables were silently ignored in production (the app fell back to
+wildcard CORS and no reputation keys).  Every multi-word settings
+field now carries an explicit \texttt{AliasChoices} alias accepting
+both the camelCase field name and the UPPER\_SNAKE env var, with
+regression tests pinning the mapping.
+
 \section{Deployment and
 Infrastructure}\label{deployment-and-infrastructure}
 
@@ -745,7 +833,7 @@ Next.js frontend.
 Methodology}\label{backend-testing-methodology}
 
 The backend testing architecture is constructed upon the \texttt{pytest}
-framework, comprising 1057 distinct tests (890 backend \texttt{pytest} unit/integration tests, 139 frontend \texttt{Jest} tests, and 28 \texttt{Playwright} E2E browser tests) distributed
+framework, comprising 1093 distinct tests (924 backend \texttt{pytest} unit/integration tests, 139 frontend \texttt{Jest} tests, and 30 \texttt{Playwright} E2E browser tests) distributed
 across the \texttt{tests/unit/} and \texttt{tests/integration/}
 directories. Given the asynchronous nature of the FastAPI orchestrator
 and the underlying Open-Source Intelligence (OSINT) network calls, the

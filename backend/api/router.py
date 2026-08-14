@@ -28,6 +28,7 @@ from .historyStore import HistoryEntry, HistoryListResponse
 # enabled -- a bug that defeats the opt-in entirely.
 from . import historyStore as historyStoreModule
 from .emlIngest import buildEmailContent, parseEmails
+from .historyExport import entriesToCsv, entriesToJson
 from .orchestrator import AnalysisOrchestrator
 from .rate_limiting import ANALYZE_LIMIT, STATUS_LIMIT, limiter
 from .schemas import (
@@ -345,6 +346,54 @@ async def listHistory(
 ) -> HistoryListResponse:
     """Return paginated history entries."""
     return historyStoreModule.historyStore.list(limit=limit, offset=offset)
+
+
+@router.get(
+    "/history/export.csv",
+    summary="Export History (CSV)",
+    description=(
+        "Export the full history store as CSV for offline triage.  "
+        "Returns a ``text/csv`` attachment; rows are newest-first, "
+        "matching GET /api/history.  Bounded by the store's FIFO cap."
+    ),
+    response_class=Response,
+)
+async def exportHistoryCsv() -> Response:
+    """Export all history entries as a CSV attachment."""
+    allEntries = historyStoreModule.historyStore.list().entries
+    return Response(
+        content=entriesToCsv(allEntries),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": (
+                'attachment; filename="phishguard-history.csv"'
+            )
+        },
+    )
+
+
+@router.get(
+    "/history/export.json",
+    summary="Export History (JSON)",
+    description=(
+        "Export the full history store as a JSON array (lossless dump "
+        "of every entry, timestamps ISO-8601).  Bounded by the store's "
+        "FIFO cap."
+    ),
+    response_class=Response,
+)
+async def exportHistoryJson() -> Response:
+    """Export all history entries as a JSON attachment."""
+    allEntries = historyStoreModule.historyStore.list().entries
+    return Response(
+        content=entriesToJson(allEntries),
+        media_type="application/json",
+        headers={
+            "Content-Disposition": (
+                'attachment; filename="phishguard-history.json"'
+            )
+        },
+    )
 
 
 @router.get(

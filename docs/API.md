@@ -178,7 +178,28 @@ Operators flag misclassifications against past analyses; records are appended to
 { "accepted": true, "feedbackId": "...", "historyId": "..." }
 ```
 
-### 9. EML Ingestion
+### 9. History Export
+Bulk-download the entire history store for offline triage or archive. Both endpoints return an attachment (`Content-Disposition`) and are bounded by the store's FIFO cap.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/history/export.csv` | Full history as CSV (`text/csv`) — one row per analysis, newest-first |
+| `GET` | `/api/history/export.json` | Full history as a JSON array (`application/json`) — lossless dump, ISO-8601 timestamps |
+
+**CSV columns (in order):**
+```
+id, createdAt, contentType, content, isPhishing, threatLevel,
+confidenceScore, reasons, recommendation, osintDomain,
+osintReputationScore, analysisTimeMs
+```
+
+Notes:
+- `reasons` is a `; `-joined string; `content` is the full original payload (CSV-quoted).
+- Rows are newest-first, matching `GET /api/history`.
+- Empty store → header-only CSV / empty JSON array `[]`.
+- The routes are registered before `/history/{entryId}` so `export.csv` is never mistaken for an entry ID.
+
+### 10. EML Ingestion
 Parses a raw RFC 822 / MIME `.eml` file and runs it through the same email-analysis pipeline as `/api/analyze/email`. The response carries the full analysis result **plus** a `parsed` summary of the extracted fields, so an investigator forwarding a suspicious message sees exactly what was read out of the file.
 **Endpoint:** `POST /api/ingest/email`
 

@@ -199,7 +199,24 @@ Notes:
 - Empty store → header-only CSV / empty JSON array `[]`.
 - The routes are registered before `/history/{entryId}` so `export.csv` is never mistaken for an entry ID.
 
-### 10. EML Ingestion
+### 10. Prometheus Metrics
+Operational observability endpoint in the Prometheus text exposition format (version 0.0.4). Scraped by monitoring systems (e.g. every 15 s); deliberately **not** rate-limited hard and not behind the API-key middleware, same posture as `/api/health`.
+**Endpoint:** `GET /metrics`
+
+**Metrics exposed:**
+```
+phishguard_http_requests_total{method,path,status}      # request counter
+phishguard_http_request_duration_seconds{method,path}   # latency histogram (5 ms..10 s buckets)
+phishguard_analysis_total{content_type,threat_level}    # completed analyses
+```
+
+Notes:
+- Zero-dependency implementation — no `prometheus-client` required; the exposition format is hand-rendered and pinned by golden tests.
+- `/metrics` and `/api/health` are self-excluded from the request counters so scrapers don't pollute their own signal.
+- The analysis counter is fed from the orchestrator, so single, batch, and `.eml` ingest analyses all count.
+- Not listed in the OpenAPI schema (`include_in_schema=False`).
+
+### 11. EML Ingestion
 Parses a raw RFC 822 / MIME `.eml` file and runs it through the same email-analysis pipeline as `/api/analyze/email`. The response carries the full analysis result **plus** a `parsed` summary of the extracted fields, so an investigator forwarding a suspicious message sees exactly what was read out of the file.
 **Endpoint:** `POST /api/ingest/email`
 

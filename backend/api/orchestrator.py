@@ -134,14 +134,28 @@ class AnalysisOrchestrator:
             
             # Build response
             analysisTime = (time.time() - startTime) * 1000  # milliseconds
-            
-            return AnalysisResponse(
+
+            response = AnalysisResponse(
                 success=True,
                 verdict=verdict,
                 osint=self._buildOsintSummary(osintData, domain) if osintData else None,
                 features=self._buildFeatureSummary(featureSet, textAnalysis),
                 analysisTime=analysisTime,
             )
+
+            # Tier 4 D: observability hook -- every analysis path (single,
+            # batch, ingest) funnels through here.  Metrics must never be
+            # able to break analysis, so this is fire-and-forget.
+            try:
+                from backend.metrics import ANALYSIS_TOTAL
+                ANALYSIS_TOTAL.inc(
+                    content_type=contentType,
+                    threat_level=response.verdict.threatLevel,
+                )
+            except Exception:  # noqa: BLE001
+                pass
+
+            return response
             
         except Exception as e:
             # Handle errors gracefully

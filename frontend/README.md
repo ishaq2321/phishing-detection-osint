@@ -124,7 +124,7 @@ public/                     # Static assets (logo, favicon, PWA)
 
 ## Testing
 
-### Unit Tests (139 tests)
+### Unit Tests (145 tests)
 
 ```bash
 npm test                    # Run all
@@ -132,7 +132,7 @@ npm test -- --watch         # Watch mode
 npm test -- --coverage      # With coverage report
 ```
 
-### E2E Tests (30 tests)
+### E2E Tests (31 tests)
 
 ```bash
 # First time: install browsers

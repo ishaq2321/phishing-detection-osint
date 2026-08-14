@@ -2,7 +2,15 @@
  * Tests for lib/api/endpoints.ts — typed API endpoint functions.
  */
 
-import { analyzeContent, analyzeUrl, analyzeEmail, analyzeBatch, checkHealth, pingApi } from "@/lib/api/endpoints";
+import {
+  analyzeContent,
+  analyzeUrl,
+  analyzeEmail,
+  analyzeBatch,
+  ingestEmail,
+  checkHealth,
+  pingApi,
+} from "@/lib/api/endpoints";
 import type { BatchAnalyzeResponse } from "@/types";
 import * as client from "@/lib/api/client";
 import { safeResponse, healthyResponse } from "../fixtures";
@@ -173,6 +181,53 @@ describe("checkHealth", () => {
     mockApiClient.mockResolvedValue(healthyResponse);
     const result = await checkHealth();
     expect(result).toEqual(healthyResponse);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  ingestEmail                                                       */
+/* ------------------------------------------------------------------ */
+
+describe("ingestEmail", () => {
+  it("sends the raw file bytes with message/rfc822 content type", async () => {
+    mockApiClient.mockResolvedValue(safeResponse);
+    const file = new File(["From: a@b.c\n\nBody"], "phish.eml", {
+      type: "message/rfc822",
+    });
+
+    await ingestEmail(file);
+
+    expect(mockApiClient).toHaveBeenCalledWith(
+      "/api/ingest/email",
+      expect.objectContaining({
+        method: "POST",
+        body: file, // raw File, not JSON.stringify'd
+        headers: { "Content-Type": "message/rfc822" },
+      }),
+      expect.objectContaining({ timeoutMs: 120_000 }),
+    );
+  });
+
+  it("returns the EmailIngestResponse", async () => {
+    const ingestResponse = {
+      ...safeResponse,
+      parsed: {
+        subject: "Security Alert",
+        senderName: "",
+        senderAddress: "security@paypa1-support.com",
+        recipients: ["victim@example.com"],
+        bodyPreview: "Urgent!",
+        hasAttachments: false,
+        attachmentNames: [],
+        sizeBytes: 512,
+      },
+    };
+    mockApiClient.mockResolvedValue(ingestResponse);
+
+    const file = new File(["body"], "phish.eml");
+    const result = await ingestEmail(file);
+    expect(result).toEqual(ingestResponse);
+    expect(result.parsed.senderAddress).toBe("security@paypa1-support.com");
   });
 });
 

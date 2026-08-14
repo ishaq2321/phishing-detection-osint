@@ -37,6 +37,7 @@ from backend.logging_config import (
     addRequestIdMiddleware,
     configureStructlog,
 )
+from backend.metrics import addMetricsMiddleware, registerMetricsEndpoint
 
 logger = logging.getLogger(__name__)
 
@@ -176,6 +177,15 @@ app.add_middleware(
 
 addRequestIdMiddleware(app)
 
+# =============================================================================
+# Prometheus Metrics (Tier 4 D) -- counts requests + latencies, feeds
+# the analysis counter.  Registered after the request-id middleware so
+# it runs INSIDE the correlation layer (metrics themselves are never
+# instrumented).
+# =============================================================================
+
+addMetricsMiddleware(app)
+
 
 # =============================================================================
 # Exception Handlers
@@ -218,6 +228,9 @@ registerHealthEndpoints(app)
 
 # Tier 2.3: Operator feedback loop.
 registerFeedbackEndpoints(app)
+
+# Tier 4 D: Prometheus /metrics exposition.
+registerMetricsEndpoint(app)
 
 
 # =============================================================================

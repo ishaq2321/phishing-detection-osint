@@ -770,7 +770,11 @@ The endpoint enforces three boundaries:
 
 The response is the standard \texttt{AnalysisResponse} (verdict,
 OSINT, features) extended with a \texttt{parsed} block, so the frontend
-can reuse its existing result rendering.  Successful ingests are
+can reuse its existing result rendering -- and it does: the
+\texttt{/analyze/ingest} page uploads the file, shows the parsed
+fields (subject, sender, recipients, attachments, body preview) and
+renders the verdict with the same banner and detail cards as every
+other analysis mode.  Successful ingests are
 persisted to the history store, the route is rate-limited at
 \texttt{ANALYZE\_LIMIT}, and it is covered by the optional
 \texttt{X-Api-Key} middleware (\texttt{/api/ingest} is in the
@@ -784,6 +788,67 @@ wildcard CORS and no reputation keys).  Every multi-word settings
 field now carries an explicit \texttt{AliasChoices} alias accepting
 both the camelCase field name and the UPPER\_SNAKE env var, with
 regression tests pinning the mapping.
+
+\section{Observability: Zero-Dependency Prometheus Metrics}\label{prometheus-metrics}
+
+A detection system running unattended needs more than a health check:
+the operator wants to know how much traffic it is absorbing, how slow
+the heavy analysis path really is, and how the verdict mix is moving
+day to day.  Tier 4 adds a Prometheus-compatible
+\texttt{GET \hspace{0pt}/metrics} endpoint exposing three
+signal families in the text exposition format (version 0.0.4):
+
+\begin{itemize}
+\item
+  \texttt{phishguard\_http\_requests\_total\{method,path,status\}} --
+  a counter of every request handled, fed by an ASGI middleware;
+\item
+  \texttt{phishguard\_http\_request\_duration\_seconds\{method,path\}}
+  -- a latency histogram using the standard Prometheus default
+  buckets (5\,ms through 10\,s), so percentile dashboards need no
+  custom bucket tuning;
+\item
+  \texttt{phishguard\_analysis\_total\{content\_type,threat\_level\}}
+  -- a counter of completed analyses, incremented in the single
+  funnel every analysis path goes through
+  (\texttt{AnalysisOrchestrator.analyze}), so single, batch, and
+  ``.eml'' ingest analyses all count with their resolved content type
+  and verdict.
+\end{itemize}
+
+\subsection{Design Decisions}
+
+Two choices distinguish this feature from a copy-paste
+\texttt{prometheus\_client} integration:
+
+\begin{itemize}
+\item
+  \textbf{Zero dependency.}  The exposition format is a stable,
+  simple line protocol (``\texttt{\# HELP}'', ``\texttt{\# TYPE}'',
+  labelled series), so the module renders it directly instead of
+  pulling in \texttt{prometheus-client}.  The deployment dependency
+  tree stays unchanged, and the format is pinned by golden tests --
+  including the two subtle rules that commonly break hand-rolled
+  exporters: histogram suffixes (\texttt{\_bucket}/\texttt{\_sum}/
+  \texttt{\_count}) come \emph{before} the label set, and the
+  \texttt{le} label lives inside the same braces as the other labels.
+\item
+  \textbf{Self-exclusion.}  \texttt{/metrics} and \texttt{/api/health}
+  are skipped by the request middleware so a scraper polling every
+  15\,s and an uptime monitor never inflate their own series -- the
+  same public, unthrottled posture as the health endpoint (the
+  default 60/min rate limit still applies).
+\item
+  \textbf{Metrics can never break analysis.}  The orchestrator hook
+  is fire-and-forget inside a try/except; a malformed label value or
+  a bug in the exporter degrades the metrics, never the verdict.
+\end{itemize}
+
+The endpoint is operational rather than part of the documented API
+(\texttt{include\_in\_schema=False}) and is not listed in OpenAPI.
+Grafana or any Prometheus scraper can poll it directly, giving the
+thesis's evaluation chapter a concrete, instrumented observability
+story to point at.
 
 \section{Deployment and
 Infrastructure}\label{deployment-and-infrastructure}
@@ -864,7 +929,7 @@ Next.js frontend.
 Methodology}\label{backend-testing-methodology}
 
 The backend testing architecture is constructed upon the \texttt{pytest}
-framework, comprising 1113 distinct tests (944 backend \texttt{pytest} unit/integration tests, 139 frontend \texttt{Jest} tests, and 30 \texttt{Playwright} E2E browser tests) distributed
+framework, comprising 1141 distinct tests (965 backend \texttt{pytest} unit/integration tests, 145 frontend \texttt{Jest} tests, and 31 \texttt{Playwright} E2E browser tests) distributed
 across the \texttt{tests/unit/} and \texttt{tests/integration/}
 directories. Given the asynchronous nature of the FastAPI orchestrator
 and the underlying Open-Source Intelligence (OSINT) network calls, the

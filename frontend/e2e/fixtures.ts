@@ -152,6 +152,30 @@ export async function mockApi(
       }),
     });
   });
+
+  /* EML ingest — echo the analysis response plus a parsed summary. */
+  await page.route("**/api/ingest/email", (route) => {
+    if (route.request().method() !== "POST") {
+      return route.continue();
+    }
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...analysisResponse,
+        parsed: {
+          subject: "Security Alert",
+          senderName: "",
+          senderAddress: "security@paypa1-support.com",
+          recipients: ["victim@example.com"],
+          bodyPreview: "Urgent! Verify your account now.",
+          hasAttachments: true,
+          attachmentNames: ["invoice.pdf"],
+          sizeBytes: 742,
+        },
+      }),
+    });
+  });
 }
 
 /**

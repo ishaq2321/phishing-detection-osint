@@ -438,6 +438,26 @@ export default function AnalyzePage() {
                 </CardContent>
               </Card>
             </FadeIn>
+
+            {/* EML ingestion link */}
+            <FadeIn delay={0.3}>
+              <Card className="border-dashed">
+                <CardContent className="flex items-center justify-between py-4">
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                    <div>
+                      <p className="text-sm font-medium">Forwarded a phishing email?</p>
+                      <p className="text-xs text-muted-foreground">
+                        Upload the raw .eml file — the parser extracts fields and runs the analysis.
+                      </p>
+                    </div>
+                  </div>
+                  <LinkButton href="/analyze/ingest" variant="outline" size="sm">
+                    Ingest .eml
+                  </LinkButton>
+                </CardContent>
+              </Card>
+            </FadeIn>
           </>
         )}
       </div>

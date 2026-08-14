@@ -116,6 +116,25 @@ export interface AnalyzeEmailRequest {
 }
 
 /* ------------------------------------------------------------------ */
+/*  EML ingestion (Tier 4 E)                                          */
+
+/** Metadata parsed from a raw .eml payload (mirrors `EmIngestSummary`). */
+export interface EmIngestSummary {
+  subject: string;
+  senderName: string;
+  senderAddress: string;
+  recipients: string[];
+  bodyPreview: string;
+  hasAttachments: boolean;
+  attachmentNames: string[];
+  sizeBytes: number;
+}
+
+/** Response from `POST /api/ingest/email` — analysis plus parsed fields. */
+export interface EmailIngestResponse extends AnalysisResponse {
+  parsed: EmIngestSummary;
+}
+
 /*  Batch analysis                                                    */
 /* ------------------------------------------------------------------ */
 

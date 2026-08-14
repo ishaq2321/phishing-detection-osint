@@ -26,6 +26,7 @@ import type {
   AnalysisResponse,
   BatchAnalyzeRequest,
   BatchAnalyzeResponse,
+  EmailIngestResponse,
   HealthResponse,
   ModelStatusResponse,
 } from "@/types";
@@ -115,6 +116,41 @@ export async function analyzeBatch(
   return apiClient<BatchAnalyzeResponse>(
     "/api/analyze/batch",
     { method: "POST", body: JSON.stringify(payload) },
+    { timeoutMs: BATCH_TIMEOUT_MS, ...options },
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  EML ingestion (Tier 4 E)                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Upload a raw `.eml` file for parsing and analysis.
+ *
+ * `POST /api/ingest/email`
+ *
+ * The file bytes are sent as-is with `Content-Type: message/rfc822`;
+ * the backend parses subject/sender/body/attachments and returns the
+ * standard analysis plus a `parsed` summary.  A full email analysis
+ * can take several seconds, so the timeout is raised like the batch
+ * endpoint's.
+ *
+ * @param file - The `.eml` file to analyse.
+ * @param options - Timeout / AbortSignal overrides.
+ */
+export async function ingestEmail(
+  file: File,
+  options?: RequestOptions,
+): Promise<EmailIngestResponse> {
+  return apiClient<EmailIngestResponse>(
+    "/api/ingest/email",
+    {
+      method: "POST",
+      body: file,
+      /* Override the JSON content-type from the default headers: the
+         raw RFC 822 bytes go out untouched. */
+      headers: { "Content-Type": "message/rfc822" },
+    },
     { timeoutMs: BATCH_TIMEOUT_MS, ...options },
   );
 }

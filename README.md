@@ -33,7 +33,7 @@ the final score, supplemented by NLP text analysis at 15%.
 - **Full-featured UI** — Dark/light theme, keyboard shortcuts, responsive design
 - **Configurable results detail** — Simple (verdict only), Detailed (+reasons+OSINT), Expert (+features)
 - **Production hardening** — OWASP HTTP security headers, per-key rate limits via `slowapi`, optional `X-Api-Key` auth on heavy routes (sha256-hashed constant-time compare), structlog JSON logs with per-request `X-Request-ID`, and a deep `/api/health` with live DNS+ML probes
-- **1113 automated tests** — Backend (944 pytest), frontend (139 Jest), E2E (30 Playwright)
+- **1141 automated tests** — Backend (965 pytest), frontend (145 Jest), E2E (31 Playwright)
 
 ## 🛠️ Tech Stack
 
@@ -74,10 +74,10 @@ the final score, supplemented by NLP text analysis at 15%.
 │   │   ├── hooks/        # Custom hooks (health, keyboard, countUp)
 │   │   ├── lib/          # API client, stores, utilities
 │   │   └── types/        # TypeScript type definitions
-│   ├── __tests__/        # Jest unit tests (139 tests)
-│   ├── e2e/              # Playwright E2E browser tests (30 tests)
+│   ├── __tests__/        # Jest unit tests (145 tests)
+│   ├── e2e/              # Playwright E2E browser tests (31 tests)
 │   └── public/           # Static assets (logo, favicon, PWA icons)
-├── tests/                # Backend tests (944 pytest tests)
+├── tests/                # Backend tests (965 pytest tests)
 │   ├── unit/             # Unit tests for all modules
 │   └── integration/      # Full pipeline integration tests
 └── README.md
@@ -172,6 +172,7 @@ Backend API docs: **http://localhost:8000/docs**
 | `DELETE` | `/api/history`        | Clear all history                        |
 | `POST`   | `/api/feedback`       | Operator feedback on past analyses (append-only JSONL) |
 | `GET`    | `/api/feedback`       | List recent feedback records             |
+| `GET`    | `/metrics`            | Prometheus metrics (text exposition, zero-dependency)  |
 
 ### Example Request
 
@@ -183,7 +184,7 @@ curl -X POST http://localhost:8000/api/analyze/url \
 
 ## 🧪 Running Tests
 
-### Backend Tests (944 tests)
+### Backend Tests (965 tests)
 
 Validate api/services via pytest (`pip install -r backend/requirements.txt` first).
 
@@ -202,23 +203,23 @@ python -m pytest tests/integration/ -v
 python -m pytest tests/ --cov=backend --cov-report=html
 ```
 
-### Frontend Tests (139 Jest tests + 30 Playwright E2E)
+### Frontend Tests (145 Jest tests + 31 Playwright E2E)
 
 ```bash
 cd frontend
-npx jest --ci           # Run all Jest tests (139)
+npx jest --ci           # Run all Jest tests (145)
 npx jest --ci --watch   # Watch mode
-npx playwright test     # Run Playwright E2E (30)
+npx playwright test     # Run Playwright E2E (31)
 ```
 
 ### Test Counts (last verified `pytest --collect-only`)
 
 | Layer        | Framework   |Tests (counted)  | Command                          |
 |--------------|-------------|------------------|----------------------------------|
-| Backend      | pytest      | 944 (collected) | `python -m pytest tests/`        |
-| Frontend     | Jest        | 139 (passed)    | `cd frontend && npx jest --ci`   |
-| E2E          | Playwright  | 30  (`.spec.ts`) | `cd frontend && npx playwright test` |
-| **Total**    |             | **1113**          |                                |
+| Backend      | pytest      | 965 (collected) | `python -m pytest tests/`        |
+| Frontend     | Jest        | 145 (passed)    | `cd frontend && npx jest --ci`   |
+| E2E          | Playwright  | 31  (`.spec.ts`) | `cd frontend && npx playwright test` |
+| **Total**    |             | **1141**          |                                |
 
 ## 🏗️ Architecture
 

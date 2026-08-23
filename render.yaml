@@ -23,13 +23,14 @@ services:
     buildCommand: |
       pip install --upgrade pip
       pip install -r backend/requirements-prod.txt
-    # Working directory is repo root on Render by default.
-    # Run uvicorn from the project root using the full module path
-    # (backend.main:app) so that `from backend.api import router`
-    # resolves correctly.  Do NOT cd backend — that breaks the
-    # backend.* import prefix.
+    # main.py uses absolute imports (from backend.api import ...),
+    # so PYTHONPATH must include the project root.  We cd into
+    # backend/ so that the .env file and uvicorn main:app resolve
+    # correctly, then point PYTHONPATH at the parent directory so
+    # that `from backend.api import router` can find the backend
+    # package.
     startCommand: |
-      exec uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+      cd backend && PYTHONPATH=.. exec uvicorn main:app --host 0.0.0.0 --port $PORT
 
     # ------------------------------------------------------------------
     # Deployment behaviour — never auto-deploy on a git push.

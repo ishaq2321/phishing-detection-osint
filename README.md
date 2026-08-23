@@ -1,232 +1,57 @@
 # PhishGuard — Phishing Detection Using OSINT-Enhanced Features
 
+[![CI](https://github.com/ishaq2321/phishing-detection-osint/actions/workflows/ci.yml/badge.svg)](https://github.com/ishaq2321/phishing-detection-osint/actions/workflows/ci.yml)
+
 BSc Thesis Project — Faculty of Informatics, Eötvös Loránd University (ELTE)
+**Defended June 24, 2026 — Grade: 5 (Excellent)**
 
 ## Live Demo
 
-- **Frontend:** https://project-4soy4.vercel.app
-- **Backend API:** https://phishguard-api-upl2.onrender.com
-- **API Docs:** https://phishguard-api-upl2.onrender.com/docs
+| Service   | URL                                          |
+|-----------|----------------------------------------------|
+| Frontend  | https://project-4soy4.vercel.app             |
+| Backend   | https://phishguard-api-upl2.onrender.com     |
+| API Docs  | https://phishguard-api-upl2.onrender.com/docs |
 
-## 📋 Overview
+## Overview
 
 PhishGuard is a full-stack phishing detection system that combines a
 **trained XGBoost ML model**, **Natural Language Processing (NLP)**,
 **URL structural analysis**, and **Open-Source Intelligence (OSINT)** to
 detect phishing threats in URLs, emails, and free-text content.
 
-The system uses an **ML-primary scoring architecture**: for URL analysis the
-XGBoost classifier (trained on 23,374 samples, 21 features) provides 85% of
-the final score, supplemented by NLP text analysis at 15%.
+The system uses an **ML-primary scoring architecture**: for URL analysis,
+the XGBoost classifier (23,374 training samples, 21 features) contributes
+85% of the final score; NLP text analysis contributes the remaining 15%.
 
-### Key Features
+### Key Results
 
-- **XGBoost ML classifier** — 96.45% accuracy, 96.39% F1, 99.41% AUC-ROC
-- **21-feature pipeline** — 17 URL structural + 4 OSINT features
-- **OSINT enrichment** — WHOIS, DNS, VirusTotal, AbuseIPDB
-- **NLP with 10 tactic detectors** — urgency, authority impersonation, brand impersonation, credential request, threat warning, emotional manipulation, monetary request, attachment malware, link manipulation, social proof
-- **Explainable results** — SHAP explanations, detailed reasons & scores
-- **Multiple input modes** — URL, email (with subject/sender), free-text
-- **Batch analysis** — `POST /api/analyze/batch` accepts up to 50 mixed URL/email items in one round trip with concurrent execution and per-item partial failures
-- **Raw .eml ingestion** — `POST /api/ingest/email` accepts a forwarded RFC 822/MIME email file, parses subject/sender/body/attachments, and runs it through the email pipeline (with a 1 MB size cap and 413/422 guard rails)
-- **Interactive visualisations** — Score charts, threat gauges, confidence bars
-- **Full-featured UI** — Dark/light theme, keyboard shortcuts, responsive design
-- **Configurable results detail** — Simple (verdict only), Detailed (+reasons+OSINT), Expert (+features)
-- **Production hardening** — OWASP HTTP security headers, per-key rate limits via `slowapi`, optional `X-Api-Key` auth on heavy routes (sha256-hashed constant-time compare), structlog JSON logs with per-request `X-Request-ID`, and a deep `/api/health` with live DNS+ML probes
-- **1141 automated tests** — Backend (965 pytest), frontend (145 Jest), E2E (31 Playwright)
+| Metric            | Value                          |
+|-------------------|--------------------------------|
+| Accuracy          | 96.45%                         |
+| F1 Score          | 96.39%                         |
+| AUC-ROC           | 99.41%                         |
+| PR-AUC            | 99.48%                         |
+| Feature pipeline  | 17 URL structural + 4 OSINT    |
+| NLP detectors     | 10 social-engineering tactics  |
+| Automated tests   | **1,141** (965 pytest · 145 Jest · 31 Playwright) |
 
-## 🛠️ Tech Stack
+### Feature Highlights
 
-| Layer       | Technology                                          |
-|-------------|-----------------------------------------------------|
-| Frontend    | Next.js 16, React 19, TypeScript, Tailwind CSS v4   |
-| UI          | shadcn/ui v4, Recharts, TanStack Table, Motion       |
-| Backend     | Python 3.10, FastAPI 0.109, Pydantic 2               |
-| NLP         | spaCy 3.7 (en_core_web_sm)                           |
-| ML          | XGBoost 3.2, SHAP 0.49, Optuna 4.7, scikit-learn 1.4 |
-| OSINT       | python-whois, dnspython, aiohttp                     |
-| Testing     | pytest 8, Jest 30, Playwright 1.45                |
-| Deployment  | Vercel (frontend), Render.com (backend)              |
+- **Multiple input modes** — URL, email (subject/sender/body), free-text
+- **Batch analysis** — `POST /api/analyze/batch` accepts up to 50 mixed URL/email items per request with concurrent execution and per-item partial failures
+- **Raw `.eml` ingestion** — `POST /api/ingest/email` parses forwarded RFC 822/MIME files (1 MB cap, 413/422 guard rails)
+- **OSINT enrichment** — WHOIS domain age, DNS validation, VirusTotal, AbuseIPDB (all optional; graceful degradation without keys)
+- **Explainable verdicts** — SHAP feature attributions plus human-readable reasons
+- **Full-featured UI** — dark/light theme, keyboard shortcuts, responsive design, configurable detail levels (Simple / Detailed / Expert)
+- **Production hardening** — OWASP security headers, rate limiting, optional `X-Api-Key` auth, structured JSON logs with `X-Request-ID`, deep `/api/health` probes, Prometheus `/metrics`
 
-## 📁 Project Structure
-
-```
-├── backend/              # FastAPI server
-│   ├── api/              # REST endpoints, orchestrator, history store
-│   ├── analyzer/         # NLP analyser (spaCy-based, 10 tactic categories)
-│   ├── ml/               # Feature extraction, URL analysis, scoring
-│   ├── osint/            # WHOIS, DNS, reputation checking
-│   ├── config.py         # Pydantic settings with .env support
-│   └── main.py           # FastAPI app entry point
-├── data/                 # Datasets (phishing + legitimate URLs)
-├── docs/                 # Documentation & research
-│   ├── latex_source/     # LaTeX thesis source
-│   ├── diagrams/         # Architecture diagrams (Mermaid)
-│   │   ├── PhishGuard_Thesis.pdf  # Final compiled thesis (also in latex_source/)
-│   ├── API.md            # API Documentation
-│   ├── DEPLOYMENT_SETUP.md  # How to configure Vercel + Render
-│   ├── INSTALLATION.md   # Local Setup Guide
-│   └── PRIVACY.md        # Privacy Policy
-├── frontend/             # Next.js 16 web application
-│   ├── src/
-│   │   ├── app/          # App Router pages (10 routes)
-│   │   ├── components/   # UI components (brand, charts, layout, etc.)
-│   │   ├── hooks/        # Custom hooks (health, keyboard, countUp)
-│   │   ├── lib/          # API client, stores, utilities
-│   │   └── types/        # TypeScript type definitions
-│   ├── __tests__/        # Jest unit tests (145 tests)
-│   ├── e2e/              # Playwright E2E browser tests (31 tests)
-│   └── public/           # Static assets (logo, favicon, PWA icons)
-├── tests/                # Backend tests (965 pytest tests)
-│   ├── unit/             # Unit tests for all modules
-│   └── integration/      # Full pipeline integration tests
-└── README.md
-```
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-| Requirement | Version   | Check with          |
-|-------------|-----------|---------------------|
-| Python      | ≥ 3.10    | `python3 --version` |
-| Node.js     | ≥ 20      | `node --version`    |
-| npm         | ≥ 10      | `npm --version`     |
-| Git         | ≥ 2.30    | `git --version`     |
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/ishaq2321/phishing-detection-osint.git
-cd phishing-detection-osint
-```
-
-### 2. Backend Setup
-
-```bash
-# Create and activate virtual environment
-python3 -m venv .venv
-source .venv/bin/activate     # Linux/macOS
-# .venv\Scripts\activate      # Windows
-
-# Install Python dependencies
-pip install -r backend/requirements.txt
-
-# Download spaCy language model
-python -m spacy download en_core_web_sm
-
-# (Optional) Create .env from example
-cp backend/.env.example backend/.env
-# Edit backend/.env with your API keys for VirusTotal/AbuseIPDB
-```
-
-### 3. Frontend Setup
-
-```bash
-cd frontend
-
-# Install Node.js dependencies
-npm install
-
-# (Optional) Create .env.local from example
-cp .env.example .env.local
-# Edit .env.local if backend runs on a non-default port
-```
-
-### 4. Run Both Servers
-
-**Terminal 1 — Backend (port 8000):**
-
-```bash
-cd backend
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-**Terminal 2 — Frontend (port 3000):**
-
-```bash
-cd frontend
-npm run dev
-```
-
-Open **http://localhost:3000** in your browser.
-
-Backend API docs: **http://localhost:8000/docs**
-
-## 📡 API Endpoints
-
-| Method   | Path                  | Description                              |
-|----------|-----------------------|------------------------------------------|
-| `GET`    | `/api/health`         | Health status & service availability     |
-| `GET`    | `/api/model/status`   | ML model status & feature info           |
-| `POST`   | `/api/analyze`        | Analyse any content (auto-detect type)   |
-| `POST`   | `/api/analyze/url`    | URL-specific phishing analysis           |
-| `POST`   | `/api/analyze/email`  | Email analysis (body + subject + sender) |
-| `POST`   | `/api/analyze/batch`  | Batch analysis — up to 50 items, concurrent, per-item partial failures |
-| `POST`   | `/api/ingest/email`   | Ingest a raw `.eml` file — parses fields, runs email analysis (413 over cap, 422 no readable body) |
-| `GET`    | `/api/history`        | List recent analyses (paginated)         |
-| `GET`    | `/api/history/export.csv` | Export full history as CSV attachment (newest-first) |
-| `GET`    | `/api/history/export.json` | Export full history as lossless JSON array |
-| `GET`    | `/api/history/{id}`   | Get a single history entry by UUID       |
-| `DELETE` | `/api/history/{id}`   | Delete a history entry                   |
-| `DELETE` | `/api/history`        | Clear all history                        |
-| `POST`   | `/api/feedback`       | Operator feedback on past analyses (append-only JSONL) |
-| `GET`    | `/api/feedback`       | List recent feedback records             |
-| `GET`    | `/metrics`            | Prometheus metrics (text exposition, zero-dependency)  |
-
-### Example Request
-
-```bash
-curl -X POST http://localhost:8000/api/analyze/url \
-  -H "Content-Type: application/json" \
-  -d '{"url": "https://examp1e-login.tk/verify"}'
-```
-
-## 🧪 Running Tests
-
-### Backend Tests (965 tests)
-
-Validate api/services via pytest (`pip install -r backend/requirements.txt` first).
-
-```bash
-# Run all tests
-source .venv/bin/activate
-python -m pytest tests/ -v
-
-# Run unit tests only
-python -m pytest tests/unit/ -v
-
-# Run integration tests only
-python -m pytest tests/integration/ -v
-
-# Run with coverage report
-python -m pytest tests/ --cov=backend --cov-report=html
-```
-
-### Frontend Tests (145 Jest tests + 31 Playwright E2E)
-
-```bash
-cd frontend
-npx jest --ci           # Run all Jest tests (145)
-npx jest --ci --watch   # Watch mode
-npx playwright test     # Run Playwright E2E (31)
-```
-
-### Test Counts (last verified `pytest --collect-only`)
-
-| Layer        | Framework   |Tests (counted)  | Command                          |
-|--------------|-------------|------------------|----------------------------------|
-| Backend      | pytest      | 965 (collected) | `python -m pytest tests/`        |
-| Frontend     | Jest        | 145 (passed)    | `cd frontend && npx jest --ci`   |
-| E2E          | Playwright  | 31  (`.spec.ts`) | `cd frontend && npx playwright test` |
-| **Total**    |             | **1141**          |                                |
-
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                  Frontend (Next.js 16)                        │
-│           10 routes · React 19 · Tailwind CSS v4             │
+│           8 routes · React 19 · Tailwind CSS v4              │
 └──────────────────────┬───────────────────────────────────────┘
                        │ REST API (JSON)
 ┌──────────────────────▼───────────────────────────────────────┐
@@ -234,7 +59,7 @@ npx playwright test     # Run Playwright E2E (31)
 │                                                              │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐   │
 │  │  Text/NLP    │  │  URL Feature │  │  OSINT           │   │
-│  │  Analysis    │  │  Extraction │  │  Enrichment      │   │
+│  │  Analysis    │  │  Extraction  │  │  Enrichment      │   │
 │  │  (spaCy)     │  │  (21 feats)  │  │  (WHOIS/DNS/    │   │
 │  │  10 tactics  │  │  17 struct + │  │   VirusTotal/    │   │
 │  │  15%         │  │  4 OSINT     │  │   AbuseIPDB)    │   │
@@ -247,63 +72,195 @@ npx playwright test     # Run Playwright E2E (31)
 └──────────────────────────────────────────────────────────────┘
 ```
 
-### Threat Levels
+### Tech Stack
 
-| Level      | Score Range  | Action                                    |
-|------------|--------------|-------------------------------------------|
-| ✅ Safe     | 0.00 – 0.29 | No action needed                          |
-| ⚠️ Suspicious | 0.30 – 0.49 | Exercise caution, verify sender        |
-| 🔴 Dangerous | 0.50 – 0.69 | Likely phishing, do not interact       |
-| 🚨 Critical | 0.70 – 1.00 | Confirmed threat, report immediately    |
+| Layer      | Technology                                             |
+|------------|--------------------------------------------------------|
+| Frontend   | Next.js 16.1, React 19, TypeScript, Tailwind CSS v4    |
+| UI         | shadcn/ui, Recharts, TanStack Table, Motion            |
+| Backend    | Python 3.10, FastAPI 0.109, Pydantic 2                 |
+| NLP        | spaCy 3.7 (`en_core_web_sm`)                           |
+| ML         | XGBoost 3.2, SHAP 0.49, Optuna 4.9, scikit-learn 1.4   |
+| OSINT      | python-whois, dnspython, aiohttp/httpx                 |
+| Testing    | pytest 9, Jest 30, Playwright 1.62                     |
+| CI/CD      | GitHub Actions (pytest + Jest + Playwright on push/PR) |
+| Deployment | Docker Compose (local), Vercel + Render (cloud)        |
 
-## 🚀 Deployment
+## Quick Start
+
+### Option A — Docker (recommended)
+
+```bash
+git clone https://github.com/ishaq2321/phishing-detection-osint.git
+cd phishing-detection-osint
+docker compose up --build
+```
+
+Then open:
+
+- Frontend: http://localhost:3000
+- API docs: http://localhost:8000/docs
+
+Optional OSINT keys can be passed via environment:
+
+```bash
+VIRUSTOTAL_API_KEY=xxx ABUSEIPDB_API_KEY=yyy docker compose up --build
+```
+
+### Option B — Manual Setup
+
+**Prerequisites:** Python ≥ 3.10, Node.js ≥ 20, npm ≥ 10.
+
+1. **Backend**
+
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate        # Linux/macOS (.venv\Scripts\activate on Windows)
+   pip install -r backend/requirements.txt
+   python -m spacy download en_core_web_sm
+
+   cp backend/.env.example backend/.env   # optional: add VirusTotal/AbuseIPDB keys
+
+   # Run from the repository root (the app uses absolute backend.* imports):
+   uvicorn backend.main:app --reload --port 8000
+   ```
+
+2. **Frontend** (second terminal)
+
+   ```bash
+   cd frontend
+   npm install
+   cp .env.example .env.local       # optional: point at a non-local backend
+   npm run dev
+   ```
+
+3. Open **http://localhost:3000**.
+
+## API Endpoints
+
+| Method   | Path                       | Description                                                        |
+|----------|----------------------------|--------------------------------------------------------------------|
+| `GET`    | `/api/health/live`         | Liveness probe (cheap)                                             |
+| `GET`    | `/api/health/ready`        | Readiness probe (deep DNS + ML checks)                             |
+| `GET`    | `/api/model/status`        | ML model status & feature info                                     |
+| `POST`   | `/api/analyze`             | Analyse any content (auto-detect type)                             |
+| `POST`   | `/api/analyze/url`         | URL-specific phishing analysis                                     |
+| `POST`   | `/api/analyze/email`       | Email analysis (body + subject + sender)                           |
+| `POST`   | `/api/analyze/batch`       | Batch analysis — up to 50 items, concurrent, partial failures OK   |
+| `POST`   | `/api/ingest/email`        | Ingest a raw `.eml` file (413 over cap, 422 no readable body)      |
+| `GET`    | `/api/history`             | List recent analyses (paginated)                                   |
+| `GET`    | `/api/history/export.csv`  | Export full history as CSV attachment                              |
+| `GET`    | `/api/history/export.json` | Export full history as JSON array                                  |
+| `GET`    | `/api/history/{id}`        | Get one history entry by UUID                                      |
+| `DELETE` | `/api/history/{id}`        | Delete a history entry                                             |
+| `DELETE` | `/api/history`             | Clear all history                                                  |
+| `POST`   | `/api/feedback`            | Operator feedback on past analyses (append-only JSONL)             |
+| `GET`    | `/api/feedback`            | List recent feedback records                                       |
+| `GET`    | `/metrics`                 | Prometheus metrics (text exposition format)                        |
+
+### Example Request
+
+```bash
+curl -X POST http://localhost:8000/api/analyze/url \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://examp1e-login.tk/verify"}'
+```
+
+## Testing
+
+Every commit runs the full suite via GitHub Actions (see the CI badge above).
+
+| Layer    | Framework  | Count | Command                                    |
+|----------|------------|-------|--------------------------------------------|
+| Backend  | pytest     | 965   | `python -m pytest tests/ -q`               |
+| Frontend | Jest       | 145   | `cd frontend && npx jest --ci`             |
+| E2E      | Playwright | 31    | `cd frontend && npx playwright test`       |
+| **Total**|            | **1141** |                                          |
+
+Useful variations:
+
+```bash
+python -m pytest tests/unit/ -v                    # unit only
+python -m pytest tests/integration/ -v             # integration only
+python -m pytest tests/ --cov=backend              # coverage report
+npx jest --ci --watch                              # Jest watch mode
+```
+
+## Threat Levels
+
+| Level        | Score Range  | Action                                  |
+|--------------|--------------|-----------------------------------------|
+| ✅ Safe      | 0.00 – 0.29  | No action needed                        |
+| ⚠️ Suspicious| 0.30 – 0.49  | Exercise caution, verify sender         |
+| 🔴 Dangerous | 0.50 – 0.69  | Likely phishing, do not interact        |
+| 🚨 Critical  | 0.70 – 1.00  | Confirmed threat, report immediately    |
+
+## Project Structure
+
+```
+├── backend/                 # FastAPI server
+│   ├── api/                 # REST endpoints, orchestrator, history store
+│   ├── analyzer/            # NLP analyser (spaCy, 10 tactic categories)
+│   ├── ml/                  # Feature extraction, scoring, trained models
+│   ├── osint/               # WHOIS, DNS, reputation checking
+│   ├── config.py            # Pydantic settings with .env support
+│   └── main.py              # FastAPI app entry point
+├── frontend/                # Next.js web application
+│   ├── src/app/             # App Router pages (8 routes)
+│   ├── src/components/      # UI components (charts, layout, results…)
+│   ├── src/hooks/           # Custom hooks (analysis, health, shortcuts…)
+│   ├── src/lib/             # API client, storage, utilities
+│   ├── __tests__/           # Jest unit tests (145 tests)
+│   ├── e2e/                 # Playwright browser tests (31 tests)
+│   └── public/              # Static assets (logo, PWA icons)
+├── tests/                   # Backend tests (965 pytest tests)
+│   ├── unit/
+│   └── integration/
+├── data/                    # Datasets (phishing + legitimate URLs)
+├── docs/                    # Documentation & research
+│   ├── latex_source/        # LaTeX thesis source (6 chapters)
+│   ├── diagrams/            # Architecture diagrams (Mermaid)
+│   ├── presentation/        # Defense slide deck
+│   ├── PhishGuard_Thesis.pdf  # Compiled thesis PDF
+│   ├── API.md               # Detailed endpoint documentation
+│   ├── INSTALLATION.md      # Local setup guide
+│   └── DEPLOYMENT_SETUP.md  # Vercel + Render configuration
+├── .github/workflows/ci.yml # CI pipeline (pytest + Jest + Playwright)
+├── Dockerfile               # Backend container image
+├── docker-compose.yml       # Full local stack (api + web)
+└── render.yaml              # Render.com deployment blueprint
+```
+
+## Deployment (Cloud)
 
 ### Backend — Render.com
 
-The backend deploys automatically from the `main` branch using the
-[`render.yaml`](render.yaml) blueprint.
-
-1. Go to [Render Dashboard](https://dashboard.render.com/) → **New** → **Blueprint**
-2. Connect the GitHub repo `ishaq2321/phishing-detection-osint`
-3. Render auto-detects `render.yaml` and creates the `phishguard-api` service
-4. Set `CORS_ORIGINS` to your Vercel frontend URL (e.g. `https://phishguard.vercel.app`)
-5. Optionally set `VIRUSTOTAL_API_KEY` and `ABUSEIPDB_API_KEY` for enhanced OSINT
-6. Optionally set `EML_MAX_BYTES` to raise/lower the raw `.eml` upload cap (default 1000000 = 1 MB)
+Deploys automatically from `main` via the [`render.yaml`](render.yaml) blueprint.
+Environment variables to configure: `CORS_ORIGINS` (your Vercel URL),
+optionally `VIRUSTOTAL_API_KEY`, `ABUSEIPDB_API_KEY`, and `EML_MAX_BYTES`.
+See [docs/DEPLOYMENT_SETUP.md](docs/DEPLOYMENT_SETUP.md).
 
 ### Frontend — Vercel
 
-1. Go to [Vercel](https://vercel.com/) → **New Project** → Import `ishaq2321/phishing-detection-osint`
-2. Set **Root Directory** to `frontend`
-3. Add environment variable: `NEXT_PUBLIC_API_URL` = your Render backend URL
-   (e.g. `https://phishguard-api.onrender.com`)
-4. Deploy — Vercel auto-detects Next.js and builds accordingly
+Import the repo with **Root Directory** = `frontend` and set
+`NEXT_PUBLIC_API_URL` to your backend URL.
 
-## 🎯 Milestones
+## Documentation
 
-| Milestone        | Deadline          | Status        |
-|------------------|-------------------|---------------|
-| Milestone 1      | December 20, 2025 | ✅ Complete    |
-| Milestone 2      | February 20, 2026 | ✅ Complete    |
-| Milestone 3      | March 25, 2026    | ✅ Complete    |
-| Milestone 4      | April 15, 2026    | ✅ Complete    |
-| Final Submission | May 1, 2026       | ✅ Complete |
+- [Thesis PDF](docs/PhishGuard_Thesis.pdf) — final submitted BSc thesis (6 chapters)
+- [Thesis LaTeX source](docs/latex_source/)
+- [API Documentation](docs/API.md)
+- [Installation Guide](docs/INSTALLATION.md)
+- [Deployment Guide](docs/DEPLOYMENT_SETUP.md)
+- [User Journey](docs/USER_JOURNEY.md)
+- [Privacy Policy](docs/PRIVACY.md)
+- [Frontend README](frontend/README.md)
 
-## 📚 Documentation
+## Author
 
-- [Thesis (LaTeX source)](docs/latex_source/) — Source for the final submitted BSc thesis PDF (6 chapters, ~120 pages)
-- [API Documentation](docs/API.md) — Detailed backend REST endpoints
-- [Installation Guide](docs/INSTALLATION.md) — Instructions for local environment setup
-- [User Journey](docs/USER_JOURNEY.md) — Expected workflows for different user types
-- [Privacy Policy](docs/PRIVACY.md) — Data handling and compliance considerations
-- [Frontend README](frontend/README.md) — Frontend-specific development guide
+**Ishaq Muhammad** — Department of Data Science and Engineering,
+ELTE Faculty of Informatics. Supervisor: Md. Easin Arafat.
 
-## 👤 Author
+## License
 
-**Ishaq Muhammad** (PXPRGK)
-Supervisor: Md. Easin Arafat
-Department of Data Science and Engineering, ELTE — Faculty of Informatics
-
-## 📄 License
-
-This project is part of an academic BSc thesis and is not licensed for
-commercial use.
+Academic BSc thesis project — not licensed for commercial use.

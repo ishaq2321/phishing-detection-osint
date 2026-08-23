@@ -880,6 +880,79 @@ the port dynamically assigned by the Render platform environment
 allowing the load balancer to automatically route traffic away from
 degraded instances, ensuring high availability.
 
+\section{Continuous Integration and Containerisation}\label{ci-cd-and-docker}
+
+After the thesis defence, the project was extended with a reproducible
+engineering workflow: an automated continuous integration (CI) pipeline
+and full containerisation of both application tiers. Both additions were
+driven by the same principle that shaped the hardening tiers --- every
+claim in this document should be verifiable by a single command.
+
+\subsection{GitHub Actions CI Pipeline}
+
+The pipeline is defined in \texttt{.github/workflows/ci.yml} and runs on
+every push to \texttt{main} and on every pull request. It comprises three
+independent jobs that mirror the local verification commands exactly:
+
+\begin{enumerate}
+  \item \textbf{Backend} --- installs \texttt{requirements.txt}, provisions
+  the pinned spaCy model wheel, and executes the full pytest suite (965
+  tests) on Python~3.10.
+  \item \textbf{Frontend} --- performs a clean \texttt{npm ci} and runs the
+  Jest suite (145 tests).
+  \item \textbf{E2E} --- installs Chromium via Playwright and executes the
+  31 browser tests against a development server whose API responses are
+  fully mocked through \texttt{page.route} fixtures, so no live backend is
+  required.
+\end{enumerate}
+
+Concurrent runs on the same reference are cancelled automatically
+(concurrency groups), and both package managers use build caching keyed
+on their lock files to keep total pipeline time under four minutes.
+
+The first real CI run immediately justified its existence by surfacing two
+latent defects that the long-lived local environment had masked. First,
+\texttt{python -m spacy download en\_core\_web\_sm} resolves the model
+version through a compatibility lookup that produced a malformed release
+URL on the runner; the fix was to install a specific model wheel URL
+(\texttt{en\_core\_web\_sm-3.7.1}) directly, which also makes builds
+deterministic. Second, the previously pinned combination
+\texttt{pytest==8.0.0} with \texttt{pytest-asyncio==0.23.3} crashes during
+test collection on a fresh installation (\texttt{'Package' object has no
+attribute 'obj'}), while the upgraded local versions worked. The pins were
+corrected to \texttt{pytest==9.1.1} and \texttt{pytest-asyncio==1.4.0},
+verified first in an isolated throwaway virtual environment before being
+committed.
+
+\subsection{Docker Images and Compose Stack}
+
+Containerisation provides a one-command local deployment that does not
+depend on any cloud platform or free-tier quota. The backend image builds
+on \texttt{python:3.10-slim}: dependencies are installed in a cached
+layer, the spaCy model wheel is provisioned at build time, and the trained
+model artefacts are copied from \texttt{ml/models/}. Because the
+application uses absolute \texttt{backend.*} imports throughout, Uvicorn
+is launched from the repository root as \texttt{uvicorn
+backend.main:app}.
+
+The frontend image uses a three-stage build (\emph{deps}, \emph{builder},
+\emph{runner}) on Node~20 Alpine images: dependencies are resolved once,
+the production bundle is built with \texttt{NEXT\_PUBLIC\_API\_URL} as a
+build argument, and only the resulting \texttt{.next} output, runtime
+dependencies, and static assets enter the final image.
+
+A \texttt{docker-compose.yml} file wires the two services together. The
+API service exposes port 8000 with a container health check polling
+\texttt{/api/health/live}; the web service starts on port 3000 but is
+gated by \texttt{depends\_on:\ condition:\ service\_healthy}, so the UI
+never accepts traffic before the API has passed its liveness probe.
+Optional OSINT credentials are passed through from the host environment
+and remain absent when unset, exercising the graceful-degradation paths
+described earlier. The stack was verified end-to-end: after
+\texttt{docker compose up -\/-build}, the API reported \texttt{healthy},
+a known-phishing URL submitted through the containerised API was correctly
+classified as Critical with OSINT enrichment attached, and the served
+frontend returned HTTP~200.
 
 \section{Integration and Weighting
 Mechanisms}\label{integration-and-weighting-mechanisms}

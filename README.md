@@ -34,7 +34,7 @@ the XGBoost classifier (23,374 training samples, 21 features) contributes
 | PR-AUC            | 99.48%                         |
 | Feature pipeline  | 17 URL structural + 4 OSINT    |
 | NLP detectors     | 10 social-engineering tactics  |
-| Automated tests   | **1,141** (965 pytest · 145 Jest · 31 Playwright) |
+| Automated tests   | **1,162** (986 pytest · 145 Jest · 31 Playwright) |
 
 ### Feature Highlights
 
@@ -42,6 +42,7 @@ the XGBoost classifier (23,374 training samples, 21 features) contributes
 - **Batch analysis** — `POST /api/analyze/batch` accepts up to 50 mixed URL/email items per request with concurrent execution and per-item partial failures
 - **Raw `.eml` ingestion** — `POST /api/ingest/email` parses forwarded RFC 822/MIME files (1 MB cap, 413/422 guard rails)
 - **OSINT enrichment** — WHOIS domain age, DNS validation, VirusTotal, AbuseIPDB (all optional; graceful degradation without keys)
+- **Model drift monitoring** — per-feature PSI scores vs a rolling reference window, exposed via `GET /api/model/drift` and Prometheus gauges (zero external dependencies)
 - **Explainable verdicts** — SHAP feature attributions plus human-readable reasons
 - **Full-featured UI** — dark/light theme, keyboard shortcuts, responsive design, configurable detail levels (Simple / Detailed / Expert)
 - **Production hardening** — OWASP security headers, rate limiting, optional `X-Api-Key` auth, structured JSON logs with `X-Request-ID`, deep `/api/health` probes, Prometheus `/metrics`
@@ -143,6 +144,7 @@ VIRUSTOTAL_API_KEY=xxx ABUSEIPDB_API_KEY=yyy docker compose up --build
 | `GET`    | `/api/health/live`         | Liveness probe (cheap)                                             |
 | `GET`    | `/api/health/ready`        | Readiness probe (deep DNS + ML checks)                             |
 | `GET`    | `/api/model/status`        | ML model status & feature info                                     |
+| `GET`    | `/api/model/drift`         | Feature drift report (PSI per feature, stable/moderate/significant) |
 | `POST`   | `/api/analyze`             | Analyse any content (auto-detect type)                             |
 | `POST`   | `/api/analyze/url`         | URL-specific phishing analysis                                     |
 | `POST`   | `/api/analyze/email`       | Email analysis (body + subject + sender)                           |
@@ -172,10 +174,10 @@ Every commit runs the full suite via GitHub Actions (see the CI badge above).
 
 | Layer    | Framework  | Count | Command                                    |
 |----------|------------|-------|--------------------------------------------|
-| Backend  | pytest     | 965   | `python -m pytest tests/ -q`               |
+| Backend  | pytest     | 986   | `python -m pytest tests/ -q`               |
 | Frontend | Jest       | 145   | `cd frontend && npx jest --ci`             |
 | E2E      | Playwright | 31    | `cd frontend && npx playwright test`       |
-| **Total**|            | **1141** |                                          |
+| **Total**|            | **1162** |                                          |
 
 Useful variations:
 
@@ -213,7 +215,7 @@ npx jest --ci --watch                              # Jest watch mode
 │   ├── __tests__/           # Jest unit tests (145 tests)
 │   ├── e2e/                 # Playwright browser tests (31 tests)
 │   └── public/              # Static assets (logo, PWA icons)
-├── tests/                   # Backend tests (965 pytest tests)
+├── tests/                   # Backend tests (986 pytest tests)
 │   ├── unit/
 │   └── integration/
 ├── data/                    # Datasets (phishing + legitimate URLs)

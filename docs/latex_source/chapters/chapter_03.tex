@@ -954,6 +954,57 @@ a known-phishing URL submitted through the containerised API was correctly
 classified as Critical with OSINT enrichment attached, and the served
 frontend returned HTTP~200.
 
+\section{Model Drift Monitoring}\label{drift-monitoring}
+
+A static model in a dynamic threat landscape degrades silently: phishing
+infrastructure evolves (new TLD campaigns, novel URL patterns), so the
+feature distribution observed in production gradually departs from the
+distribution the classifier was calibrated on. PhishGuard addresses this
+with a zero-dependency, zero-cost drift monitor built on the Population
+Stability Index (PSI)~---~the standard distribution-shift statistic from
+credit-risk modelling.
+
+\subsection{Architecture}
+
+The monitor consists of three cooperating pieces:
+
+\begin{enumerate}
+  \item \textbf{Feature log.} Every URL analysis funnels through the
+  orchestrator (the same choke point used by the metrics middleware), which
+  appends the raw 21-dimensional model-input vector to a JSONL log. The
+  write is fire-and-forget: monitoring failures can never fail an analysis.
+  \item \textbf{Reference snapshot (cold start).} The training dataset is
+  not distributed with the repository, so no committed baseline exists.
+  Instead, once \texttt{minSamples} vectors have been recorded, the oldest
+  window is snapshotted into \texttt{driftBaseline.json} and serves as the
+  expected distribution for all subsequent evaluations. Until then the
+  report status is \texttt{cold\_start}.
+  \item \textbf{Evaluation.} \texttt{GET /api/model/drift} compares the most
+  recent \texttt{evaluationWindow} vectors against the snapshot. Bin edges
+  are derived from expected-sample quantiles with epsilon smoothing for
+  empty bins, yielding one PSI score per feature banded as stable ($<0.1$),
+  moderate ($0.1$--$0.25$), or significant ($\geq 0.25$); the top-level
+  \texttt{overall} field mirrors the worst feature.
+\end{enumerate}
+
+\subsection{Observability Integration}
+
+Each evaluation is mirrored into two Prometheus gauges exposed by the
+existing \texttt{/metrics} endpoint: \texttt{phishguard\_drift\_psi} (one
+series per feature) and \texttt{phishguard\_drift\_max\_psi}. An operator
+scraping the metrics endpoint can therefore watch model health trend over
+time without touching the application. A significant-drift signal is the
+natural trigger for the retrain-from-feedback loop described in Section
+\ref{persistent-operations}, closing the MLOps cycle: analyse $\rightarrow$
+log $\rightarrow$ detect drift $\rightarrow$ retrain.
+
+The implementation required no schema changes and no external services;
+it reads exclusively data PhishGuard itself produces. The behaviour is
+covered by 21 dedicated tests (16 unit tests over the PSI statistic,
+baseline bootstrapping, torn-write tolerance, and vector mapping; 5
+integration tests exercising the orchestrator hook, cold-start semantics,
+and metrics exposure through the real FastAPI application).
+
 \section{Integration and Weighting
 Mechanisms}\label{integration-and-weighting-mechanisms}
 

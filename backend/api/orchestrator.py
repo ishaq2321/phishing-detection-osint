@@ -155,6 +155,16 @@ class AnalysisOrchestrator:
             except Exception:  # noqa: BLE001
                 pass
 
+            # Drift monitoring: log the raw model-input vector for URL
+            # analyses so the drift monitor can measure distribution shift.
+            # Fire-and-forget -- monitoring failures never fail analysis.
+            if contentType == "url":
+                try:
+                    from backend.ml.drift import getMonitor, vectorFromFeatureSet
+                    getMonitor().record(vectorFromFeatureSet(featureSet))
+                except Exception:  # noqa: BLE001
+                    pass
+
             return response
             
         except Exception as e:

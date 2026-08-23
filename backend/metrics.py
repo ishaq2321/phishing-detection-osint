@@ -151,6 +151,29 @@ class Counter(_LabeledMetric):
         ]
 
 
+class Gauge(_LabeledMetric):
+    """Point-in-time value, overwritten on every ``set(**labels)`` call."""
+
+    def __init__(
+        self,
+        name: str,
+        helpText: str,
+        labelnames: Iterable[str] = (),
+    ) -> None:
+        super().__init__(name, helpText, "gauge", labelnames)
+
+    def set(self, value: float, **labels: str) -> None:
+        key = tuple(labels.get(n, "") for n in self.labelnames)
+        with _lock:
+            self._values[key] = float(value)
+
+    def _seriesLines(self, key: tuple[str, ...]) -> list[str]:
+        return [
+            f"{self.name}{_labelsPart(self.labelnames, key)} "
+            f"{_fmtValue(float(self._values[key]))}"
+        ]
+
+
 class Histogram(_LabeledMetric):
     """Histogram of observed values with cumulative buckets."""
 
@@ -242,6 +265,17 @@ ANALYSIS_TOTAL = Counter(
     labelnames=["content_type", "threat_level"],
 )
 
+DRIFT_PSI = Gauge(
+    "phishguard_drift_psi",
+    "Population Stability Index per model feature (latest evaluation).",
+    labelnames=["feature"],
+)
+
+DRIFT_MAX_PSI = Gauge(
+    "phishguard_drift_max_psi",
+    "Highest per-feature PSI from the latest drift evaluation.",
+)
+
 
 # ---------------------------------------------------------------------------
 # Exposition
@@ -276,6 +310,8 @@ def _register(metric: _LabeledMetric) -> _LabeledMetric:
 _register(REQUESTS_TOTAL)
 _register(REQUEST_DURATION)
 _register(ANALYSIS_TOTAL)
+_register(DRIFT_PSI)
+_register(DRIFT_MAX_PSI)
 
 
 # ---------------------------------------------------------------------------

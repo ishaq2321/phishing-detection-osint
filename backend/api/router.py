@@ -148,6 +148,45 @@ async def modelStatus(request: Request, response: Response) -> ModelStatusRespon
 
 
 # =============================================================================
+# Model Drift Endpoint
+# =============================================================================
+
+@router.get(
+    "/model/drift",
+    summary="Model Drift Report",
+    description=(
+        "Population Stability Index (PSI) per model feature, computed over "
+        "the rolling feature log against the snapshotted reference window. "
+        "Reports cold_start until enough samples have been recorded."
+    ),
+)
+@limiter.limit(STATUS_LIMIT)
+async def modelDrift(request: Request, response: Response) -> dict:
+    """
+    Return the current feature-drift report for the ML model.
+
+    Each feature carries a PSI score and a stable/moderate/significant
+    band; the top-level ``overall`` mirrors the worst feature.  While the
+    monitor is still collecting its reference window the response has
+    ``status: "cold_start"``.
+    """
+    from backend.ml.drift import getMonitor
+
+    monitor = getMonitor()
+    report = monitor.evaluate()
+
+    # Mirror the evaluation into Prometheus gauges for scraping.
+    from backend import metrics as _metrics
+
+    for entry in report.get("features", []):
+        _metrics.DRIFT_PSI.set(entry["psi"], feature=entry["name"])
+    if report.get("features"):
+        _metrics.DRIFT_MAX_PSI.set(report["features"][0]["psi"])
+
+    return report
+
+
+# =============================================================================
 # Analysis Endpoints
 # =============================================================================
 

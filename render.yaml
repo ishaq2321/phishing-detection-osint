@@ -23,17 +23,13 @@ services:
     buildCommand: |
       pip install --upgrade pip
       pip install -r backend/requirements-prod.txt
-    # The en_core_web_sm model is installed via the direct .whl URL
-    # in requirements-prod.txt (spacy 3.7.2 + en_core_web_sm 3.7.1).
-    # Do NOT run `python -m spacy download` here — it may pull an
-    # incompatible version and 404 on Render.
-    #
-    # Working directory is repo root on Render by default. The
-    # backend package lives at backend/, so cd into it before
-    # launching uvicorn. main:app is the FastAPI instance inside
-    # backend/main.py.
+    # Working directory is repo root on Render by default.
+    # Run uvicorn from the project root using the full module path
+    # (backend.main:app) so that `from backend.api import router`
+    # resolves correctly.  Do NOT cd backend — that breaks the
+    # backend.* import prefix.
     startCommand: |
-      cd backend && exec uvicorn main:app --host 0.0.0.0 --port $PORT
+      exec uvicorn backend.main:app --host 0.0.0.0 --port $PORT
 
     # ------------------------------------------------------------------
     # Deployment behaviour — never auto-deploy on a git push.

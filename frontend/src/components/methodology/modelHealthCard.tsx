@@ -19,7 +19,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getModelDrift } from "@/lib/api/endpoints";
+import { getModelDrift, getModelStatus } from "@/lib/api/endpoints";
+import type { ModelStatusResponse } from "@/types";
 import type { DriftReport } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +32,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export function ModelHealthCard() {
   const [report, setReport] = useState<DriftReport | null>(null);
+  const [model, setModel] = useState<ModelStatusResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -38,7 +40,13 @@ export function ModelHealthCard() {
     setLoading(true);
     setError(null);
     try {
-      setReport(await getModelDrift());
+      // Both calls together prove the model is attached AND monitored.
+      const [drift, status] = await Promise.all([
+        getModelDrift(),
+        getModelStatus(),
+      ]);
+      setReport(drift);
+      setModel(status);
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "Could not reach the drift endpoint.",
@@ -65,6 +73,21 @@ export function ModelHealthCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
+        {model && (
+          <p className="flex flex-wrap items-center gap-2 text-sm">
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-xs font-medium",
+                model.loaded
+                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                  : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300",
+              )}
+            >
+              {model.loaded ? `XGBoost loaded · ${model.featureCount} features` : "Model not loaded"}
+            </span>
+          </p>
+        )}
+
         {loading && !report && (
           <p className="text-sm text-muted-foreground">Loading drift report…</p>
         )}

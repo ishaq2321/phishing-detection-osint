@@ -13,15 +13,15 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { checkHealth, friendlyErrorMessage } from "@/lib/api";
-import type { HealthResponse } from "@/types";
+import { checkHealthLive, friendlyErrorMessage } from "@/lib/api";
+import type { LiveHealthResponse } from "@/types";
 
 /* ------------------------------------------------------------------ */
 /*  Hook state                                                        */
 /* ------------------------------------------------------------------ */
 
 interface HealthState {
-  data: HealthResponse | null;
+  data: LiveHealthResponse | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -33,7 +33,7 @@ const DEFAULT_INTERVAL_MS = 30_000;
 /*  Hook                                                              */
 /* ------------------------------------------------------------------ */
 
-export function useHealth(intervalMs: number = DEFAULT_INTERVAL_MS) {
+export function useHealth(intervalMs: number = DEFAULT_INTERVAL_MS): { data: LiveHealthResponse | null; isLoading: boolean; error: string | null; refetch: () => Promise<void> } {
   const [state, setState] = useState<HealthState>({
     data: null,
     isLoading: true,
@@ -46,7 +46,7 @@ export function useHealth(intervalMs: number = DEFAULT_INTERVAL_MS) {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const data = await checkHealth();
+      const data = await checkHealthLive();
       setState({ data, isLoading: false, error: null });
     } catch (err: unknown) {
       const message = friendlyErrorMessage(err);
@@ -60,7 +60,7 @@ export function useHealth(intervalMs: number = DEFAULT_INTERVAL_MS) {
     /** Fetch health once. */
     async function fetchHealth() {
       try {
-        const result = await checkHealth();
+        const result = await checkHealthLive();
         if (!cancelled) setState({ data: result, isLoading: false, error: null });
       } catch (err: unknown) {
         if (!cancelled) {

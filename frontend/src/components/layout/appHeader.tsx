@@ -26,22 +26,18 @@ export function AppHeader() {
   const { data: health } = useHealth(30_000);
 
   const statusColor =
-    health?.status === "healthy"
+    health?.status === "alive"
       ? "text-green-500"
-      : health?.status === "degraded"
-        ? "text-amber-500"
-        : health
-          ? "text-red-500"
-          : "text-muted-foreground";
+      : health
+        ? "text-red-500"
+        : "text-muted-foreground";
 
   const statusLabel =
-    health?.status === "healthy"
+    health?.status === "alive"
       ? "Backend connected"
-      : health?.status === "degraded"
-        ? "Backend degraded"
-        : health
-          ? "Backend unhealthy"
-          : "Checking backend…";
+      : health
+        ? "Backend unreachable"
+        : "Checking backend…";
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b bg-background/80 px-4 backdrop-blur-sm">

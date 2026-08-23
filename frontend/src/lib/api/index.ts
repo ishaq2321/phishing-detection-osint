@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { analyzeUrl, checkHealth, NetworkError, friendlyErrorMessage } from "@/lib/api";
+ * import { analyzeUrl, checkHealthLive, NetworkError, friendlyErrorMessage } from "@/lib/api";
  * ```
  */
 
@@ -15,7 +15,7 @@ export {
   analyzeContent,
   analyzeUrl,
   analyzeEmail,
-  checkHealth,
+  checkHealthLive,
   pingApi,
   getModelStatus,
 } from "./endpoints";

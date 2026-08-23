@@ -8,7 +8,7 @@
  * link back to the Analyse page.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Search } from "lucide-react";
@@ -85,8 +85,17 @@ export default function ResultsPage() {
   const searchParams = useSearchParams();
   const { result } = useResult();
 
-  const detailLevel: ResultsDetailLevel =
-    typeof window !== "undefined" ? getSetting("resultsDetailLevel") : "detailed";
+  // Read the setting after mount: reading localStorage during render
+  // makes the server-rendered HTML diverge from the client (hydration
+  // mismatch) whenever the user picked a non-default level.
+  const [detailLevel, setDetailLevel] =
+    useState<ResultsDetailLevel>("detailed");
+  useEffect(() => {
+    const frame = requestAnimationFrame(() =>
+      setDetailLevel(getSetting("resultsDetailLevel")),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const showReasons = detailLevel !== "simple";
   const showContent = detailLevel !== "simple";

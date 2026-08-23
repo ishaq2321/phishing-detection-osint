@@ -8,6 +8,7 @@ import type {
   OsintSummary,
   FeatureSummary,
   HealthResponse,
+  LiveHealthResponse,
 } from "@/types";
 
 /* ------------------------------------------------------------------ */
@@ -129,9 +130,7 @@ export const dangerousResponse: AnalysisResponse = {
 /*  Health fixtures                                                   */
 /* ------------------------------------------------------------------ */
 
-export const healthyResponse: HealthResponse = {
-  status: "healthy",
-  version: "1.0.0",
-  timestamp: "2026-03-08T12:00:00Z",
-  services: { nlp: true, osint: true, scorer: true },
+export const healthyResponse: LiveHealthResponse = {
+  status: "alive",
+  uptimeSeconds: 42,
 };

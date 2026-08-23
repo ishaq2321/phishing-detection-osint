@@ -80,9 +80,25 @@ function notifyListeners(): void {
  * Returns an unsubscribe function. Intended for
  * `useSyncExternalStore(subscribeHistory, getHistorySnapshot)`.
  */
+let storageListenerAttached = false;
+
+function attachStorageSyncListener(): void {
+  if (storageListenerAttached || !isClient()) return;
+  storageListenerAttached = true;
+  // Other tabs mutating localStorage must refresh this tab's snapshot.
+  window.addEventListener("storage", (event) => {
+    if (event.key !== null && event.key !== STORAGE_KEY) return;
+    snapshotCache = null;
+    notifyListeners();
+  });
+}
+
 export function subscribeHistory(listener: () => void): () => void {
+  attachStorageSyncListener();
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 /**

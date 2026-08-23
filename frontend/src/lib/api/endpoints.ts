@@ -9,6 +9,8 @@
  */
 
 import { apiClient, type RequestOptions } from "./client";
+import { API_BASE_URL } from "@/lib/constants";
+import { getSetting } from "@/lib/storage/settingsStore";
 
 /**
  * Timeout for batch requests (ms).
@@ -31,6 +33,7 @@ import type {
   FeedbackRequest,
   FeedbackResponse,
   HealthResponse,
+  LiveHealthResponse,
   ModelStatusResponse,
 } from "@/types";
 
@@ -163,20 +166,45 @@ export async function ingestEmail(
 /* ------------------------------------------------------------------ */
 
 /**
- * Check the backend health status.
+ * Cheap backend liveness check for UI indicators.
  *
- * `GET /api/health`
+ * `GET /api/health/live`
  *
- * Uses a short timeout (5 s) since this is typically polled.
+ * Deliberately uses the *liveness* probe rather than the deep readiness
+ * endpoint: the navbar polls every 30 s, and the deep probe performs real
+ * DNS lookups and ML inference server-side on every call.
  */
-export async function checkHealth(
+export async function checkHealthLive(
   options?: RequestOptions,
-): Promise<HealthResponse> {
-  return apiClient<HealthResponse>(
-    "/api/health",
+): Promise<LiveHealthResponse> {
+  return apiClient<LiveHealthResponse>(
+    "/api/health/live",
     { method: "GET" },
     { timeoutMs: 5_000, ...options },
   );
+}
+
+/**
+ * Resolve the base URL of the configured backend (user setting wins over
+ * build-time env), for direct-download endpoints such as history exports.
+ */
+export function getBackendBaseUrl(): string {
+  const userUrl = getSetting("apiUrl");
+  if (userUrl && userUrl.trim() !== "") return userUrl.replace(/\/+$/, "");
+  return API_BASE_URL;
+}
+
+/**
+ * Direct download URLs for the backend's persistent history exports.
+ * The frontend keeps its own localStorage history; these expose the
+ * server-side record set (populated when PHISHGUARD_PERSIST_HISTORY=1).
+ */
+export function getServerHistoryExportUrls(): { csv: string; json: string } {
+  const base = getBackendBaseUrl();
+  return {
+    csv: `${base}/api/history/export.csv`,
+    json: `${base}/api/history/export.json`,
+  };
 }
 
 /**

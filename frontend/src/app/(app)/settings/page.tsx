@@ -53,6 +53,7 @@ import {
 } from "@/lib/storage/settingsStore";
 import { clearHistory, getHistoryCount, pruneHistory } from "@/lib/storage/historyStore";
 import { showSuccess, showWarning, showError } from "@/lib/toast";
+import { isValidHttpUrl } from "@/lib/validation";
 import { APP_NAME, APP_VERSION, APP_TAGLINE } from "@/lib/constants";
 import { PageTransition } from "@/components/ui/pageTransition";
 import { FadeIn } from "@/components/ui/animations";
@@ -74,6 +75,9 @@ export default function SettingsPage() {
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("idle");
   const [historyCount, setHistoryCount] = useState(0);
+  const [urlDraft, setUrlDraft] = useState(DEFAULT_SETTINGS.apiUrl);
+  const urlDraftInvalid =
+    urlDraft.trim() !== "" && !isValidHttpUrl(urlDraft.trim());
   const { theme, setTheme } = useTheme();
 
   /* ---- Hydrate from localStorage --------------------------------- */
@@ -81,6 +85,7 @@ export default function SettingsPage() {
     const id = requestAnimationFrame(() => {
       setMounted(true);
       setSettings(getSettings());
+      setUrlDraft(getSettings().apiUrl);
       setHistoryCount(getHistoryCount());
     });
     return () => cancelAnimationFrame(id);
@@ -110,7 +115,7 @@ export default function SettingsPage() {
   const testConnection = useCallback(async () => {
     setConnectionStatus("testing");
     try {
-      const response = await fetch(`${settings.apiUrl}/api/health`, {
+      const response = await fetch(`${urlDraft.trim()}/api/health/live`, {
         method: "GET",
         signal: AbortSignal.timeout(5_000),
       });
@@ -131,7 +136,7 @@ export default function SettingsPage() {
         "Cannot reach the backend. Is the server running?",
       );
     }
-  }, [settings.apiUrl]);
+  }, [urlDraft]);
 
   /* ---- Clear history --------------------------------------------- */
   const handleClearHistory = useCallback(() => {
@@ -234,6 +239,12 @@ export default function SettingsPage() {
                     Test
                   </Button>
                 </div>
+                {urlDraftInvalid && (
+                  <p className="text-xs text-destructive" role="alert">
+                    Enter a full URL including the protocol, e.g.
+                    https://phishguard-api.onrender.com
+                  </p>
+                )}
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-muted-foreground">
                     Default: {DEFAULT_SETTINGS.apiUrl}

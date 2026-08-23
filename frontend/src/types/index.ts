@@ -13,6 +13,7 @@ export type {
   ExplanationItem,
   ExplanationReport,
   HealthResponse,
+  LiveHealthResponse,
   ModelStatusResponse,
   AnalyzeRequest,
   AnalyzeUrlRequest,

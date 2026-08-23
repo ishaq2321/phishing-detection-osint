@@ -60,8 +60,11 @@ export function VerdictFeedback({ historyId }: VerdictFeedbackProps) {
     setSelected(verdict);
     setState("submitting");
     try {
-      await submitFeedback({ historyId: historyId as string, verdict });
-      setState("done");
+      const res = await submitFeedback({
+        historyId: historyId as string,
+        verdict,
+      });
+      setState(res.accepted ? "done" : "error");
     } catch {
       setState("error");
     }

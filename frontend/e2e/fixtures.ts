@@ -76,6 +76,11 @@ export const dangerousAnalysisResponse = {
   error: null,
 };
 
+export const liveHealthResponse = {
+  status: "alive",
+  uptimeSeconds: 42,
+};
+
 export const healthyResponse = {
   status: "healthy",
   version: "1.0.0",
@@ -105,6 +110,10 @@ export async function mockApi(
     variant === "dangerous" ? dangerousAnalysisResponse : safeAnalysisResponse;
 
   /* Health / ping */
+  await page.route("**/api/health/live", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(liveHealthResponse) }),
+  );
+  // Deep readiness probe — kept mocked for direct navigations/tests.
   await page.route("**/api/health", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(healthyResponse) }),
   );

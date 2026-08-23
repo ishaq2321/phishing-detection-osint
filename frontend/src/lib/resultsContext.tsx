@@ -42,7 +42,6 @@ export interface StoredResult {
 interface ResultsContextValue {
   result: StoredResult | null;
   setResult: (result: StoredResult) => void;
-  clearResult: () => void;
 }
 
 const ResultsContext = createContext<ResultsContextValue | null>(null);
@@ -58,14 +57,7 @@ export function ResultsProvider({ children }: { children: ReactNode }) {
     setResultState(r);
   }, []);
 
-  const clearResult = useCallback(() => {
-    setResultState(null);
-  }, []);
-
-  const value = useMemo(
-    () => ({ result, setResult, clearResult }),
-    [result, setResult, clearResult],
-  );
+  const value = useMemo(() => ({ result, setResult }), [result, setResult]);
 
   return (
     <ResultsContext.Provider value={value}>

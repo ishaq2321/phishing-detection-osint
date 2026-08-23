@@ -30,7 +30,7 @@ describe("VerdictFeedback", () => {
   });
 
   it("submits the chosen label with the history id", async () => {
-    mockSubmit.mockResolvedValueOnce({ success: true, id: "fb-1" });
+    mockSubmit.mockResolvedValueOnce({ accepted: true, feedbackId: "fb-1", historyId: "abc-123" });
     render(<VerdictFeedback historyId="abc-123" />);
 
     fireEvent.click(screen.getByRole("button", { name: /correct/i }));
@@ -47,7 +47,7 @@ describe("VerdictFeedback", () => {
   });
 
   it("sends false_positive when the user flags a bad verdict", async () => {
-    mockSubmit.mockResolvedValueOnce({ success: true, id: "fb-2" });
+    mockSubmit.mockResolvedValueOnce({ accepted: true, feedbackId: "fb-2", historyId: "abc-123" });
     render(<VerdictFeedback historyId="abc-123" />);
 
     fireEvent.click(

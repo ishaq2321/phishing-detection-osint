@@ -8,7 +8,7 @@ import {
   analyzeEmail,
   analyzeBatch,
   ingestEmail,
-  checkHealth,
+  checkHealthLive,
   pingApi,
 } from "@/lib/api/endpoints";
 import type { BatchAnalyzeResponse } from "@/types";
@@ -164,14 +164,14 @@ describe("analyzeBatch", () => {
 /*  checkHealth                                                       */
 /* ------------------------------------------------------------------ */
 
-describe("checkHealth", () => {
-  it("calls GET /api/health with a 5s timeout", async () => {
+describe("checkHealthLive", () => {
+  it("calls GET /api/health/live with a 5s timeout", async () => {
     mockApiClient.mockResolvedValue(healthyResponse);
 
-    await checkHealth();
+    await checkHealthLive();
 
     expect(mockApiClient).toHaveBeenCalledWith(
-      "/api/health",
+      "/api/health/live",
       expect.objectContaining({ method: "GET" }),
       expect.objectContaining({ timeoutMs: 5_000 }),
     );
@@ -179,7 +179,7 @@ describe("checkHealth", () => {
 
   it("returns the HealthResponse", async () => {
     mockApiClient.mockResolvedValue(healthyResponse);
-    const result = await checkHealth();
+    const result = await checkHealthLive();
     expect(result).toEqual(healthyResponse);
   });
 });

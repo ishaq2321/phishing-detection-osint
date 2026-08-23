@@ -92,6 +92,12 @@ export interface AnalysisResponse {
 /** Health-status discriminator. */
 export type HealthStatus = "healthy" | "degraded" | "unhealthy";
 
+/** Response from `GET /api/health/live` (cheap liveness probe). */
+export interface LiveHealthResponse {
+  status: "alive";
+  uptimeSeconds: number;
+}
+
 /** Response from `GET /api/health`. */
 export interface HealthResponse {
   status: HealthStatus;
@@ -116,12 +122,11 @@ export interface FeedbackRequest {
   reporter?: string;
 }
 
-/** Response from `POST /api/feedback`. */
+/** Response from `POST /api/feedback` (mirrors backend/api/feedback.py). */
 export interface FeedbackResponse {
-  success: boolean;
-  id: string;
-  receivedAt?: string;
-  error?: string | null;
+  accepted: boolean;
+  feedbackId: string;
+  historyId: string;
 }
 
 /* ------------------------------------------------------------------ */

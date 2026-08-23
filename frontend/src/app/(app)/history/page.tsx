@@ -54,30 +54,33 @@ import { PageTransition } from "@/components/ui/pageTransition";
 import { FadeIn } from "@/components/ui/animations";
 import {
   type HistoryEntry,
-  getHistory,
   deleteEntry,
   clearHistory,
   exportToCsv,
   exportToJson,
 } from "@/lib/storage/historyStore";
+import { useHistoryEntries } from "@/hooks/useHistoryEntries";
 import { LinkButton } from "@/components/ui/linkButton";
 import { showSuccess, showInfo } from "@/lib/toast";
+import { getServerHistoryExportUrls } from "@/lib/api/endpoints";
 
 export default function HistoryPage() {
   const router = useRouter();
   const { setResult } = useResult();
 
-  /* ── Local state (hydrated on mount) ───────────────────────────── */
-  const [entries, setEntries] = useState<HistoryEntry[]>([]);
+  /* ── Reactive history (external store; SSR-safe) ───────────────── */
+  const liveEntries = useHistoryEntries();
   const [mounted, setMounted] = useState(false);
+  const [entries, setEntries] = useState<HistoryEntry[]>([]);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       setMounted(true);
-      setEntries(getHistory());
+      setEntries(liveEntries);
     });
     return () => cancelAnimationFrame(frame);
-  }, []);
+    // Re-sync when the store changes (e.g. batch saves from elsewhere).
+  }, [liveEntries]);
 
   /* ── Actions ───────────────────────────────────────────────────── */
 
@@ -110,16 +113,19 @@ export default function HistoryPage() {
   /** Delete a single entry and refresh state. */
   const handleDelete = useCallback((entry: HistoryEntry) => {
     deleteEntry(entry.id);
-    setEntries(getHistory());
     showSuccess("Entry deleted");
   }, []);
 
   /** Clear all history entries. */
   const handleClearAll = useCallback(() => {
     clearHistory();
-    setEntries([]);
     showSuccess("History cleared", "All analysis records have been deleted.");
   }, []);
+
+  /* ── Server-side history (persistent mode on the backend) ─────── */
+  // The backend keeps its own record set when persistence is enabled.
+  // Expose its bulk-export endpoints alongside the local ones.
+  const serverExports = getServerHistoryExportUrls();
 
   /* ── Prevent hydration mismatch ────────────────────────────────── */
   if (!mounted) {
@@ -208,7 +214,23 @@ export default function HistoryPage() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => { exportToJson(); showInfo("Exported as JSON"); }}>
                 <FileJson className="mr-2 h-4 w-4" />
-                Export as JSON
+                Export as JSON (local)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                render={
+                  <a href={serverExports.csv} target="_blank" rel="noreferrer" />
+                }
+              >
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Server history as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                render={
+                  <a href={serverExports.json} target="_blank" rel="noreferrer" />
+                }
+              >
+                <FileJson className="mr-2 h-4 w-4" />
+                Server history as JSON
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

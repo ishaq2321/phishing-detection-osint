@@ -2,8 +2,8 @@
 # PhishGuard backend — Render Blueprint                       #
 #################################################################
 # Auto-deploy: OFF. Use the manual "Deploy" button on the   #
-# Render dashboard, or hit this service's Deploy Hook URL.   #
-#
+# Render dashboard, or hit this service's Deploy Hook URL.  #
+#                                                            #
 # Path filter: even if auto-deploy were on, only commits    #
 # that change files inside backend/ (or its requirements    #
 # files) would trigger a build. Edits to docs/, frontend/,  #
@@ -42,8 +42,8 @@ services:
 
     # ------------------------------------------------------------------
     # Path filter — defence in depth. If Render ever ignores the
-    # autoDeployTrigger setting (e.g. after a service migration),
-    # the buildFilter ensures only meaningful backend changes can
+    # autoDeployTrigger setting (e.g. after a service migration), the
+    # buildFilter ensures only meaningful backend changes can
     # trigger a deploy. glob syntax relative to repo root.
     # ------------------------------------------------------------------
     buildFilter:
@@ -133,6 +133,11 @@ services:
         value: "3.0"
       - key: PHISHGUARD_HEALTH_ML_TIMEOUT
         value: "1.0"
+
+      # -- EML ingestion cap (Tier 4 E) -----------------------------------
+      # Maximum raw .eml payload in bytes.  Larger uploads → 413.
+      - key: EML_MAX_BYTES
+        value: "1000000"
 
       # -- Secrets (managed ONLY via the Render dashboard) ----------------
       - key: VIRUSTOTAL_API_KEY

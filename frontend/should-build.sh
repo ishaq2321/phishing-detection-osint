@@ -20,6 +20,15 @@
 #        current commit → build iff the whole range touched frontend/.
 #     2. In EVERY other case (missing SHA, shallow clone, force-push,
 #        anything unexpected) → BUILD. Fail-safe means "build".
+#
+#   SECOND INCIDENT (2026-08, later same day): the range diff used the
+#   pathspec `-- frontend/`, but Vercel executes ignoreCommand with CWD
+#   set to the project Root Directory (frontend/). Git pathspecs are
+#   CWD-relative, so the script was really diffing frontend/frontend/
+#   — always empty — and silently skipping EVERY push. The fail-safe
+#   never fired because `git diff` itself succeeded. Lesson: the
+#   pathspec must be CWD-aware, and a failing diff must BUILD, never
+#   skip. Both fixed below; verified against all four real push ranges.
 # =============================================================================
 
 set -uo pipefail
@@ -61,8 +70,22 @@ fi
 # Range diff limited to the frontend project. A path-limited diff over the
 # full range captures frontend changes from ALL commits in the push, not
 # just the tip — the flaw that caused the stale-production incident.
+#
+# CWD-awareness: Vercel runs this script from the project Root Directory
+# (frontend/), and git pathspecs are relative to CWD. From frontend/ the
+# correct pathspec is "."; from the repo root it is "frontend/".
 # ---------------------------------------------------------------------------
-CHANGED="$(git diff --name-only "${BASE}" "${CURR_SHA}" -- frontend/ 2>/dev/null || true)"
+if [ "$(basename "$PWD")" = "frontend" ]; then
+  PATHSPEC="."
+else
+  PATHSPEC="frontend/"
+fi
+
+CHANGED="$(git diff --name-only "${BASE}" "${CURR_SHA}" -- "${PATHSPEC}" 2>/dev/null)"
+if [ $? -ne 0 ]; then
+  echo "git diff failed for range ${BASE}..${CURR_SHA}. Fail-safe: build."
+  exit 1
+fi
 
 if [ -n "${CHANGED}" ]; then
   echo "Frontend files changed between ${BASE} and ${CURR_SHA}:"

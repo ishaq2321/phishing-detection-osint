@@ -993,7 +993,9 @@ Each evaluation is mirrored into two Prometheus gauges exposed by the
 existing \texttt{/metrics} endpoint: \texttt{phishguard\_drift\_psi} (one
 series per feature) and \texttt{phishguard\_drift\_max\_psi}. An operator
 scraping the metrics endpoint can therefore watch model health trend over
-time without touching the application. A significant-drift signal is the
+time without touching the application. The same report is surfaced to end
+users through a \emph{Model Health} card on the How-It-Works page, which
+renders the overall status band and the five most-shifted features. A significant-drift signal is the
 natural trigger for the retrain-from-feedback loop described in Section
 \ref{persistent-operations}, closing the MLOps cycle: analyse $\rightarrow$
 log $\rightarrow$ detect drift $\rightarrow$ retrain.
@@ -1036,7 +1038,10 @@ a one-sentence plain-language summary plus ordered
 \texttt{(signal,\ severity,\ detail)} items --- attached as an optional
 \texttt{explanation} field on URL analysis responses. Because the field is
 optional and absent for email/text analyses, the change is fully backward
-compatible for existing API consumers.
+compatible for existing API consumers. On the frontend the report drives a
+\emph{Why this verdict?} panel on the results page: the summary sentence is
+displayed prominently, and each item carries a colour-coded severity badge
+together with its machine-readable signal identifier for auditability.
 
 \subsection{Properties}
 

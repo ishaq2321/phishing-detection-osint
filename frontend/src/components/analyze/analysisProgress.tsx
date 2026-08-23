@@ -13,7 +13,6 @@ import {
   UploadCloud,
   Server,
   Sparkles,
-  Brain,
   CheckCircle2,
   Loader2,
 } from "lucide-react";
@@ -114,19 +113,23 @@ export function AnalysisProgress({
   }, [effectivePhase]);
 
   const progress = PHASE_PROGRESS[effectivePhase];
+
+  const isRunning =
+    Boolean(startedAt) && effectivePhase !== "idle" && effectivePhase !== "complete";
   const [elapsedMs, setElapsedMs] = useState(0);
 
   useEffect(() => {
-    if (!startedAt || effectivePhase === "idle" || effectivePhase === "complete") {
-      setElapsedMs(0);
-      return;
-    }
-
-    const tick = () => setElapsedMs(Math.max(0, Date.now() - startedAt));
-    tick();
-    const id = setInterval(tick, 250);
-    return () => clearInterval(id);
-  }, [startedAt, effectivePhase]);
+    if (!isRunning || !startedAt) return;
+    const update = () => setElapsedMs(Math.max(0, Date.now() - startedAt));
+    // First sample is async so we never call setState synchronously
+    // inside the effect body (react-hooks/set-state-in-effect).
+    const first = setTimeout(update, 0);
+    const id = setInterval(update, 250);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
+  }, [isRunning, startedAt]);
 
   useEffect(() => {
     if (!isComplete) return;
@@ -134,7 +137,10 @@ export function AnalysisProgress({
     return () => clearTimeout(id);
   }, [isComplete, onFinished]);
 
-  const elapsedLabel = `${(elapsedMs / 1000).toFixed(1)}s`;
+  // Freeze the final elapsed value on completion; show 0.0s when idle.
+  const displayedMs = isRunning || isComplete ? elapsedMs : 0;
+
+  const elapsedLabel = `${(displayedMs / 1000).toFixed(1)}s`;
 
   return (
     <div className="space-y-6" role="status" aria-live="polite">

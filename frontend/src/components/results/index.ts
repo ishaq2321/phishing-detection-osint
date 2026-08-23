@@ -8,3 +8,4 @@ export { ShareActions } from "./shareActions";
 export { OsintCards } from "./osintCards";
 export { FeatureCards } from "./featureCards";
 export { ExplanationPanel } from "./explanationPanel";
+export { VerdictFeedback } from "./verdictFeedback";

@@ -7,3 +7,4 @@ export { useCountUp } from "./useCountUp";
 export { useReducedMotion } from "./useReducedMotion";
 export { useKeyboardShortcuts, SHORTCUTS } from "./useKeyboardShortcuts";
 export type { Shortcut } from "./useKeyboardShortcuts";
+export { useHistoryEntries } from "./useHistoryEntries";

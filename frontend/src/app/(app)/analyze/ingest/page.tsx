@@ -29,6 +29,8 @@ import { ReasonsList } from "@/components/results/reasonsList";
 import { OsintCards } from "@/components/results/osintCards";
 import { FeatureCards } from "@/components/results/featureCards";
 import { ingestEmail } from "@/lib/api/endpoints";
+import { addEntry } from "@/lib/storage/historyStore";
+import { showInfo } from "@/lib/toast";
 import type { EmailIngestResponse } from "@/types";
 import { formatBytes } from "@/lib/utils";
 
@@ -62,6 +64,9 @@ export default function EmlIngestPage() {
     try {
       const response = await ingestEmail(file);
       setResult(response);
+      // Persist alongside single/batch analyses for consistent history.
+      addEntry(response.parsed.subject || file.name, "email", response);
+      showInfo("Result saved to history.");
     } catch (err) {
       setError(
         err instanceof Error

@@ -26,7 +26,10 @@ import type {
   AnalysisResponse,
   BatchAnalyzeRequest,
   BatchAnalyzeResponse,
+  DriftReport,
   EmailIngestResponse,
+  FeedbackRequest,
+  FeedbackResponse,
   HealthResponse,
   ModelStatusResponse,
 } from "@/types";
@@ -205,5 +208,36 @@ export async function getModelStatus(
     "/api/model/status",
     { method: "GET" },
     { timeoutMs: 5_000, ...options },
+  );
+}
+
+/**
+ * Submit an operator verdict label for a past analysis.
+ *
+ * `POST /api/feedback`
+ */
+export async function submitFeedback(
+  body: FeedbackRequest,
+  options?: RequestOptions,
+): Promise<FeedbackResponse> {
+  return apiClient<FeedbackResponse>(
+    "/api/feedback",
+    { method: "POST", body: JSON.stringify(body) },
+    { timeoutMs: 10_000, ...options },
+  );
+}
+
+/**
+ * Retrieve the model drift report.
+ *
+ * `GET /api/model/drift`
+ */
+export async function getModelDrift(
+  options?: RequestOptions,
+): Promise<DriftReport> {
+  return apiClient<DriftReport>(
+    "/api/model/drift",
+    { method: "GET" },
+    { timeoutMs: 15_000, ...options },
   );
 }

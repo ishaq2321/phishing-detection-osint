@@ -44,6 +44,7 @@ import { showError } from "@/lib/toast";
 import { PageTransition } from "@/components/ui/pageTransition";
 import { FadeIn } from "@/components/ui/animations";
 import { cn } from "@/lib/utils";
+import { isValidHttpUrl } from "@/lib/validation";
 import type { ContentType, AnalysisResponse } from "@/types";
 import { analyzeContent, analyzeUrl, analyzeEmail } from "@/lib/api/endpoints";
 
@@ -103,6 +104,7 @@ export default function AnalyzePage() {
   const [responseRef, setResponseRef] = useState<AnalysisResponse | null>(null);
   const [analysisPhase, setAnalysisPhase] = useState<AnalysisPhase>("idle");
   const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [inputError, setInputError] = useState<string | null>(null);
 
   /* ── Pre-fill from query params (re-analyse action) ────────────── */
   useEffect(() => {
@@ -123,7 +125,14 @@ export default function AnalyzePage() {
   const handleSubmit = useCallback(async () => {
     const trimmed = content.trim();
     if (!trimmed) return;
+    if (mode === "url" && !isValidHttpUrl(trimmed)) {
+      setInputError(
+        "Enter a full URL including protocol, e.g. https://example.com/login",
+      );
+      return;
+    }
 
+    setInputError(null);
     setIsSubmitting(true);
     setApiComplete(false);
     setResponseRef(null);
@@ -178,6 +187,12 @@ export default function AnalyzePage() {
     }
   }, [content, mode, emailSubject, emailSender]);
 
+  /* ── Live validation feedback ──────────────────────────────────── */
+  const showUrlError =
+    mode === "url" &&
+    content.trim().length > 0 &&
+    !isValidHttpUrl(content.trim());
+
   /* ── Cancel ────────────────────────────────────────────────────── */
   const handleCancel = useCallback(() => {
     abortRef.current?.abort();
@@ -207,7 +222,8 @@ export default function AnalyzePage() {
 
   /* ── Derived state ─────────────────────────────────────────────── */
   const currentMode = INPUT_MODES.find((m) => m.value === mode)!;
-  const canSubmit = content.trim().length > 0 && !isSubmitting;
+  const canSubmit =
+    content.trim().length > 0 && !isSubmitting && !showUrlError && !inputError;
 
   /* ── Render ────────────────────────────────────────────────────── */
   return (
@@ -274,6 +290,7 @@ export default function AnalyzePage() {
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     disabled={isSubmitting}
+                    aria-invalid={showUrlError || Boolean(inputError)}
                     aria-describedby="content-hint"
                   />
                 ) : (
@@ -287,6 +304,15 @@ export default function AnalyzePage() {
                     className="min-h-[120px]"
                     aria-describedby="content-hint"
                   />
+                )}
+                {(inputError || showUrlError) && (
+                  <p
+                    className="text-xs text-destructive"
+                    role="alert"
+                  >
+                    {inputError ??
+                      "This does not look like a full URL — include the protocol (https://…)."}
+                  </p>
                 )}
                 <p id="content-hint" className="text-xs text-muted-foreground">
                   {mode === "url"

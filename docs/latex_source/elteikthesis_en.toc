@@ -132,11 +132,11 @@
 \contentsline {subsection}{\numberline {3.13.1}The 15-Second Concurrency Window}{82}{subsection.3.13.1}%
 \contentsline {subsection}{\numberline {3.13.2}Content-Specific Scoring Pipelines}{82}{subsection.3.13.2}%
 \contentsline {subsection}{\numberline {3.13.3}The Phishing Threshold and Threat Boundaries}{82}{subsection.3.13.3}%
-\contentsline {section}{\numberline {3.14}Quality Assurance and Testing}{82}{section.3.14}%
-\contentsline {subsection}{\numberline {3.14.1}Testing Plan and Results}{82}{subsection.3.14.1}%
+\contentsline {section}{\numberline {3.14}Quality Assurance and Testing}{83}{section.3.14}%
+\contentsline {subsection}{\numberline {3.14.1}Testing Plan and Results}{83}{subsection.3.14.1}%
 \contentsline {subsubsection}{Backend Testing Methodology}{83}{section*.46}%
 \contentsline {paragraph}{Environment Isolation and Fixture Management}{83}{section*.47}%
-\contentsline {paragraph}{Dependency Inversion and OSINT Mocking}{83}{section*.48}%
+\contentsline {paragraph}{Dependency Inversion and OSINT Mocking}{84}{section*.48}%
 \contentsline {subsubsection}{Integration and Smoke Testing}{84}{section*.49}%
 \contentsline {paragraph}{Service Level Agreement (SLA) Validation}{84}{section*.50}%
 \contentsline {subsubsection}{Frontend Quality Assurance}{85}{section*.51}%

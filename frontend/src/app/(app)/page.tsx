@@ -11,7 +11,6 @@ import {
   Github,
   ExternalLink,
   TrendingUp,
-  TrendingDown,
   Minus,
 } from "lucide-react";
 import { Logo } from "@/components/brand";
@@ -21,7 +20,7 @@ import { LinkButton } from "@/components/ui/linkButton";
 import { PageTransition } from "@/components/ui/pageTransition";
 import { FadeIn } from "@/components/ui/animations";
 import { APP_NAME, THREAT_LEVEL_MAP } from "@/lib/constants";
-import { getHistory } from "@/lib/storage/historyStore";
+import { useHistoryEntries } from "@/hooks/useHistoryEntries";
 import type { HistoryEntry } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -95,20 +94,17 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
 }
 
 export default function DashboardPage() {
-  // SSR-safe: start with empty array, load data in useEffect
-  const [recentEntries, setRecentEntries] = useState<HistoryEntry[]>([]);
-  const [mounted, setMounted] = useState(false);
-  const [, setTick] = useState(0); // Used to force re-render for time updates
+  // Reactive history via external store — SSR-safe, no effects needed.
+  const allEntries = useHistoryEntries();
+  const recentEntries = useMemo(
+    () => allEntries.slice(0, 10),
+    [allEntries],
+  );
 
+  // Re-render every 30 s so relative timestamps stay fresh.
+  const [, setTick] = useState(0);
   useEffect(() => {
-    setMounted(true);
-    setRecentEntries(getHistory().slice(0, 10));
-    
-    // Update relative times every 30 seconds
-    const interval = setInterval(() => {
-      setTick(t => t + 1);
-    }, 30000);
-    
+    const interval = setInterval(() => setTick((t) => t + 1), 30_000);
     return () => clearInterval(interval);
   }, []);
 

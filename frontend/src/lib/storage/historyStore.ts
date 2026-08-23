@@ -59,19 +59,58 @@ function generateId(): string {
 }
 
 /* ------------------------------------------------------------------ */
+/*  External store plumbing (for useSyncExternalStore)                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Cached snapshot of the parsed history list. React's
+ * `useSyncExternalStore` requires `getSnapshot` to return a stable
+ * reference between mutations, so we parse localStorage once per
+ * mutation instead of on every render.
+ */
+let snapshotCache: HistoryEntry[] | null = null;
+const listeners = new Set<() => void>();
+
+function notifyListeners(): void {
+  for (const listener of listeners) listener();
+}
+
+/**
+ * Subscribe to history mutations (add / delete / clear / prune).
+ * Returns an unsubscribe function. Intended for
+ * `useSyncExternalStore(subscribeHistory, getHistorySnapshot)`.
+ */
+export function subscribeHistory(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+/**
+ * Stable-reference snapshot of the current history entries.
+ * Server-safe: returns the same empty array on the server.
+ */
+const EMPTY_HISTORY: HistoryEntry[] = [];
+
+export function getHistorySnapshot(): HistoryEntry[] {
+  if (!isClient()) return EMPTY_HISTORY;
+  if (snapshotCache === null) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      snapshotCache = raw ? (JSON.parse(raw) as HistoryEntry[]) : [];
+    } catch {
+      snapshotCache = [];
+    }
+  }
+  return snapshotCache;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Read                                                              */
 /* ------------------------------------------------------------------ */
 
 /** Return all history entries (newest first). */
 export function getHistory(): HistoryEntry[] {
-  if (!isClient()) return [];
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as HistoryEntry[];
-  } catch {
-    return [];
-  }
+  return [...getHistorySnapshot()];
 }
 
 /** Return a single entry by ID, or `null` if not found. */
@@ -83,9 +122,41 @@ export function getEntryById(id: string): HistoryEntry | null {
 /* Write */
 /* ------------------------------------------------------------------ */
 
-/** Persist the current entries list. */
+/**
+ * Persist the current entries list.
+ *
+ * Quota-safe: localStorage typically caps at ~5 MB and each entry stores
+ * a full analysis response. When a write would exceed the quota, we evict
+ * oldest entries in batches (25%) and retry before giving up silently —
+ * a failed write must never crash the analysis flow.
+ */
 function persist(entries: HistoryEntry[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  if (!isClient()) return;
+
+  let working = entries;
+  // Hard upper bound on eviction rounds; 20 × 25% leaves < 0.3% of any
+  // realistic list, after which the problem is not recoverable anyway.
+  for (let attempt = 0; attempt < 20; attempt++) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(working));
+      snapshotCache = working;
+      notifyListeners();
+      return;
+    } catch (error) {
+      const isQuotaError =
+        error instanceof DOMException &&
+        (error.name === "QuotaExceededError" ||
+          error.name === "NS_ERROR_DOM_QUOTA_REACHED");
+      if (!isQuotaError || working.length === 0) {
+        console.warn("PhishGuard: could not persist history.", error);
+        return;
+      }
+      // Evict the oldest quarter and retry.
+      const keep = Math.max(1, Math.floor(working.length * 0.75));
+      working = working.slice(0, keep);
+    }
+  }
+  console.warn("PhishGuard: history quota still exceeded after eviction.");
 }
 
 /**
@@ -159,6 +230,8 @@ export function deleteEntry(id: string): boolean {
 export function clearHistory(): void {
   if (isClient()) {
     localStorage.removeItem(STORAGE_KEY);
+    snapshotCache = [];
+    notifyListeners();
   }
 }
 
@@ -211,22 +284,51 @@ export function exportToJson(): void {
   downloadFile("phishguard-history.json", json, "application/json");
 }
 
-/** Export the history as a CSV file download. */
-export function exportToCsv(): void {
-  const entries = getHistory();
+/**
+ * Neutralize CSV formula injection (CWE-1236) and preserve structure.
+ *
+ * - Spreadsheet applications execute cells beginning with =, +, -, or @
+ *   as formulas; prefixing a tab character is the standard mitigation.
+ * - Fields containing quotes, commas, or newlines are wrapped in double
+ *   quotes with internal quotes doubled.
+ */
+function sanitizeCsvCell(value: string): string {
+  // Quote when the field contains structural chars OR starts with a
+  // formula trigger (the tab we add must live inside the quotes).
+  const needsQuotes = /[",\n\r]/.test(value) || /^[=+\-@\t\r]/.test(value);
+  let out = value.replace(/"/g, '""');
+  if (/^[=+\-@\t\r]/.test(out)) {
+    out = `\t${out}`;
+  }
+  return needsQuotes ? `"${out}"` : out;
+}
+
+/**
+ * Build the CSV document for a list of history entries.
+ * Pure function so the sanitisation rules are directly unit-testable.
+ */
+export function historyToCsv(entries: HistoryEntry[]): string {
   const header = ["#", "Content", "Type", "Threat Level", "Score", "Date"];
 
   const rows = entries.map((entry, idx) => [
     String(idx + 1),
-    `"${entry.content.replace(/"/g, '""')}"`,
-    entry.contentType,
-    entry.threatLevel,
+    sanitizeCsvCell(entry.content),
+    sanitizeCsvCell(entry.contentType),
+    sanitizeCsvCell(entry.threatLevel),
     (entry.score * 100).toFixed(1),
     entry.analyzedAt,
   ]);
 
-  const csv = [header.join(","), ...rows.map((r) => r.join(","))].join("\n");
-  downloadFile("phishguard-history.csv", csv, "text/csv");
+  return [header.join(","), ...rows.map((r) => r.join(","))].join("\n");
+}
+
+/** Export the history as a CSV file download. */
+export function exportToCsv(): void {
+  downloadFile(
+    "phishguard-history.csv",
+    historyToCsv(getHistory()),
+    "text/csv",
+  );
 }
 
 /** Number of entries currently stored. */

@@ -35,7 +35,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { THREAT_LEVEL_MAP, URL_SCORING_WEIGHTS, MODEL_METRICS } from "@/lib/constants";
-import { PipelineDiagram } from "@/components/methodology";
+import { PipelineDiagram, ModelHealthCard } from "@/components/methodology";
 import { AnimatedSection } from "@/components/ui/animatedSection";
 
 export const metadata: Metadata = {
@@ -353,6 +353,9 @@ export default function HowItWorksPage() {
           primary classifier. The model was trained on {MODEL_METRICS.trainSamples.toLocaleString()} labelled
           samples and evaluated on a held-out test set of {MODEL_METRICS.testSamples.toLocaleString()} samples.
         </p>
+
+        {/* Live drift monitor */}
+        <ModelHealthCard />
 
         {/* ML Model card */}
         <Card className="overflow-hidden">

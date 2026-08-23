@@ -8,7 +8,7 @@
  * link back to the Analyse page.
  */
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Search } from "lucide-react";
@@ -30,6 +30,7 @@ import {
   OsintCards,
   FeatureCards,
   ExplanationPanel,
+  VerdictFeedback,
 } from "@/components/results";
 import { useResult } from "@/lib/resultsContext";
 import { getSetting, type ResultsDetailLevel } from "@/lib/storage/settingsStore";
@@ -82,8 +83,8 @@ const ConfidenceBar = dynamic(
 
 export default function ResultsPage() {
   const searchParams = useSearchParams();
-  const { result, setResult } = useResult();
-  const [restoredResult, setRestoredResult] = useState<StoredResult | null>(null);
+  const { result } = useResult();
+
   const detailLevel: ResultsDetailLevel =
     typeof window !== "undefined" ? getSetting("resultsDetailLevel") : "detailed";
 
@@ -92,43 +93,31 @@ export default function ResultsPage() {
   const showOsint = detailLevel !== "simple";
   const showFeatures = detailLevel === "expert";
 
-  useEffect(() => {
-    if (result) {
-      setRestoredResult(null);
-      return;
-    }
+  /* ── Deep-link restore (render-derived, no effects) ─────────────── */
+  // The result can always be reconstructed synchronously from the URL
+  // (base64 payload or history ID → localStorage), so we derive it during
+  // render. The Analyse / History pages own all context writes.
+  const urlResult = useMemo<StoredResult | null>(() => {
+    if (result) return null;
 
     const payloadResult = parseResultPayload(searchParams.get("r"));
-    if (payloadResult) {
-      setRestoredResult(payloadResult);
-      setResult(payloadResult);
-      return;
-    }
+    if (payloadResult) return payloadResult;
 
     const historyId = searchParams.get("hid");
-    if (!historyId) {
-      setRestoredResult(null);
-      return;
-    }
+    if (!historyId) return null;
 
     const entry = getEntryById(historyId);
-    if (!entry) {
-      setRestoredResult(null);
-      return;
-    }
+    if (!entry) return null;
 
-    const hydrated: StoredResult = {
+    return {
       response: entry.response,
       content: entry.content,
       contentType: entry.contentType,
       historyId: entry.id,
     };
+  }, [result, searchParams]);
 
-    setRestoredResult(hydrated);
-    setResult(hydrated);
-  }, [result, searchParams, setResult]);
-
-  const activeResult = result ?? restoredResult;
+  const activeResult = result ?? urlResult;
 
   /* ── Empty state ──────────────────────────────────────────────── */
   if (!activeResult) {
@@ -206,6 +195,9 @@ export default function ResultsPage() {
         <ScaleIn delay={0.15} duration={0.5}>
           <VerdictBanner verdict={response.verdict} />
         </ScaleIn>
+
+        {/* Operator feedback loop (needs a durable history ID) */}
+        <VerdictFeedback historyId={historyId} />
 
         {/* Deterministic "Why?" explanation (URL analyses) */}
         {showReasons && response.explanation && (

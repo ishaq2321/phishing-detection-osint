@@ -6,12 +6,16 @@ import {
   getHistory,
   getEntryById,
   addEntry,
-  deleteEntry,
   clearHistory,
+  deleteEntry,
   getHistoryCount,
   exportToCsv,
   exportToJson,
+  historyToCsv,
+  getHistorySnapshot,
+  subscribeHistory,
 } from "@/lib/storage/historyStore";
+import type { AnalysisResponse, HistoryEntry } from "@/types";
 import { safeResponse, dangerousResponse } from "../fixtures";
 
 /* ------------------------------------------------------------------ */
@@ -180,5 +184,130 @@ describe("exportToCsv", () => {
 
     appendSpy.mockRestore();
     removeSpy.mockRestore();
+  });
+});
+
+
+
+function makeResponse(score: number): AnalysisResponse {
+  return {
+    success: true,
+    verdict: {
+      isPhishing: score > 0.5,
+      confidenceScore: score,
+      threatLevel: score > 0.7 ? "critical" : "safe",
+      reasons: [],
+      recommendation: "",
+    },
+    osint: null,
+    features: {
+      urlFeatures: 0,
+      textFeatures: 0,
+      osintFeatures: 0,
+      totalRiskIndicators: 0,
+      detectedTactics: [],
+    },
+    explanation: null,
+    analysisTime: 1,
+    analyzedAt: new Date().toISOString(),
+    error: null,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/*  Hardening (2026-08): quota safety, CSV injection, external store   */
+/* ------------------------------------------------------------------ */
+
+function makeEntry(content: string): HistoryEntry {
+  const response = makeResponse(0.5);
+  return {
+    id: crypto.randomUUID(),
+    content,
+    contentType: "text",
+    threatLevel: "suspicious",
+    score: 0.5,
+    isPhishing: false,
+    analyzedAt: response.analyzedAt,
+    response,
+  };
+}
+
+describe("historyStore hardening", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    jest.restoreAllMocks();
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  it("notifies subscribers on add", () => {
+    const listener = jest.fn();
+    const unsubscribe = subscribeHistory(listener);
+    addEntry("https://example.com", "url", safeResponse);
+    expect(listener).toHaveBeenCalledTimes(1);
+    unsubscribe();
+  });
+
+  it("snapshot reference is stable between reads and changes on write", () => {
+    clearHistory();
+    const a = getHistorySnapshot();
+    const b = getHistorySnapshot();
+    expect(a).toBe(b); // stable identity — required by useSyncExternalStore
+
+    addEntry("https://example.com", "url", safeResponse);
+    expect(getHistorySnapshot()).not.toBe(a);
+  });
+
+  it("evicts oldest entries instead of throwing when quota is exceeded", () => {
+    const setItem = jest.spyOn(Storage.prototype, "setItem");
+    let calls = 0;
+    setItem.mockImplementation(() => {
+      calls += 1;
+      if (calls > 1) {
+        throw new DOMException("full", "QuotaExceededError");
+      }
+    });
+
+    expect(() =>
+      addEntry("https://big.com", "url", safeResponse),
+    ).not.toThrow();
+  });
+});
+
+describe("historyToCsv sanitization", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    jest.restoreAllMocks();
+  });
+
+  it("prefixes formula-triggering characters with a tab", () => {
+    const csv = historyToCsv([
+      makeEntry('=HYPERLINK("http://evil.com","click")'),
+      makeEntry("+1+2"),
+      makeEntry("-fragment"),
+      makeEntry("@cmd"),
+    ]);
+
+    const dataLines = csv.split("\n").slice(1);
+    // Quoted fields may contain commas, so assert on the raw cell text
+    // rather than naively splitting on commas.
+    expect(dataLines[0]).toContain('"\t=HYPERLINK');
+    expect(dataLines[1]).toMatch(/^\d+,"\t\+1\+2",/);
+    expect(dataLines[2]).toMatch(/^\d+,"\t-fragment",/);
+    expect(dataLines[3]).toMatch(/^\d+,"\t@cmd",/);
+  });
+
+  it("escapes embedded quotes and commas safely", () => {
+    const csv = historyToCsv([
+      makeEntry('He said "hello", then left'),
+    ]);
+    expect(csv).toContain('"He said ""hello"", then left"');
+  });
+
+  it("leaves benign content untouched", () => {
+    const csv = historyToCsv([makeEntry("https://example.com/page")]);
+    expect(csv).toContain("https://example.com/page,");
   });
 });

@@ -5,7 +5,7 @@
  * uploading a .txt / .csv file.
  */
 
-import { useRef, type ChangeEvent } from "react";
+import { useMemo, useRef, type ChangeEvent } from "react";
 import { Upload, Link2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { validateBatch } from "@/lib/validation";
 
 const MAX_URLS = 50;
 
@@ -28,9 +29,7 @@ interface BatchInputProps {
 export function BatchInput({ value, onChange, disabled }: BatchInputProps) {
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const urlCount = value
-    .split("\n")
-    .filter((line) => line.trim().length > 0).length;
+  const { valid, invalid } = useMemo(() => validateBatch(value), [value]);
 
   function handleFile(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -71,10 +70,18 @@ export function BatchInput({ value, onChange, disabled }: BatchInputProps) {
           aria-label="URLs to analyse (one per line)"
         />
 
+        {invalid.length > 0 && (
+          <p className="text-xs text-destructive" role="alert">
+            {invalid.length} line{invalid.length !== 1 ? "s" : ""} will be
+            skipped — not valid http(s) URLs (e.g. missing https://).
+          </p>
+        )}
+
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">
-            {urlCount} / {MAX_URLS} URLs
-            {urlCount > MAX_URLS && (
+            {valid.length} / {MAX_URLS} valid URLs
+            {invalid.length > 0 && ` · ${invalid.length} invalid`}
+            {valid.length > MAX_URLS && (
               <span className="ml-1 text-destructive font-medium">
                 (max {MAX_URLS})
               </span>

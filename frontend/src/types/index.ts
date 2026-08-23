@@ -9,6 +9,9 @@ export type {
   OsintSummary,
   FeatureSummary,
   AnalysisResponse,
+  ExplanationSeverity,
+  ExplanationItem,
+  ExplanationReport,
   HealthResponse,
   ModelStatusResponse,
   AnalyzeRequest,
@@ -21,6 +24,12 @@ export type {
   BatchAnalyzeResponse,
   EmIngestSummary,
   EmailIngestResponse,
+  FeedbackVerdict,
+  FeedbackRequest,
+  FeedbackResponse,
+  DriftStatus,
+  DriftFeature,
+  DriftReport,
 } from "./analysis";
 
 export type { HistoryEntry } from "@/lib/storage/historyStore";

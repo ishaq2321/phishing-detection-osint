@@ -5,7 +5,7 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { mockApi, clearStorage, safeAnalysisResponse } from "./fixtures";
+import { mockApi, clearStorage } from "./fixtures";
 
 test.describe("History", () => {
   test.beforeEach(async ({ page }) => {

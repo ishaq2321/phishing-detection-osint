@@ -39,11 +39,11 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [],
 
   /**
-   * Skip TypeScript type checking during Vercel builds.
-   * Type safety is enforced locally via Jest tests and pre-commit hooks.
+   * Type errors fail the build. CI also runs `tsc --noEmit` explicitly;
+   * this guarantees a type error can never reach production.
    */
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 };
 

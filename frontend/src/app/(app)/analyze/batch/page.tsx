@@ -11,7 +11,7 @@
  * to the legacy chunked loop of individual `/api/analyze/url` calls.
  */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Layers, StopCircle, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -24,6 +24,8 @@ import {
 } from "@/components/analyze/batchResults";
 import { analyzeBatch, analyzeUrl } from "@/lib/api/endpoints";
 import { showError, showInfo, showSuccess } from "@/lib/toast";
+import { validateBatch } from "@/lib/validation";
+import { addEntry } from "@/lib/storage/historyStore";
 import type { AnalysisResponse } from "@/types";
 
 /* ------------------------------------------------------------------ */
@@ -43,11 +45,11 @@ export default function BatchAnalysisPage() {
   const [isRunning, setIsRunning] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
-  /* ---- Parse URLs from textarea ---------------------------------- */
-  const urls = rawInput
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+  /* ---- Parse URLs from textarea (validated, deduplicated) --------- */
+  const { valid: urls } = useMemo(
+    () => validateBatch(rawInput),
+    [rawInput],
+  );
 
   const validCount = Math.min(urls.length, MAX_URLS);
   const canSubmit = validCount > 0 && !isRunning;
@@ -121,42 +123,56 @@ export default function BatchAnalysisPage() {
 
     let cancelled = false;
     let completedViaBatch = false;
+    /** Locally collected successes — `entries` state would be stale here. */
+    const completed: { url: string; response: AnalysisResponse }[] = [];
 
-    try {
-      /* Primary path: one round trip to POST /api/analyze/batch. */
-      const items = batch.map((url) => ({ type: "url" as const, url }));
-      const res = await analyzeBatch({ items }, { signal: controller.signal });
+    /* Primary path: one round trip to POST /api/analyze/batch.
+       One retry absorbs transient failures (Render cold start returns
+       503 while the instance spins up) before degrading to the
+       per-URL fallback, which burns 50 separate rate-limited calls. */
+    const items = batch.map((url) => ({ type: "url" as const, url }));
+    const MAX_BATCH_ATTEMPTS = 2;
 
-      completedViaBatch = true;
+    for (let attempt = 1; attempt <= MAX_BATCH_ATTEMPTS && !completedViaBatch; attempt++) {
+      try {
+        const res = await analyzeBatch({ items }, { signal: controller.signal });
 
-      const next: BatchEntry[] = batch.map((url, index) => {
-        const result = res.results.find((r) => r.index === index);
-        if (result?.status === "ok" && result.response) {
-          return { url, status: "done", response: result.response };
+        completedViaBatch = true;
+
+        const next: BatchEntry[] = batch.map((url, index) => {
+          const result = res.results.find((r) => r.index === index);
+          if (result?.status === "ok" && result.response) {
+            completed.push({ url, response: result.response });
+            return { url, status: "done", response: result.response };
+          }
+          return {
+            url,
+            status: "error",
+            error:
+              result?.error ?? "Analysis failed — no result returned",
+          };
+        });
+        setEntries(next);
+      } catch {
+        if (controller.signal.aborted) {
+          cancelled = true;
+          break;
         }
-        return {
-          url,
-          status: "error",
-          error:
-            result?.error ?? "Analysis failed — no result returned",
-        };
-      });
-      setEntries(next);
-    } catch (err) {
-      if (controller.signal.aborted) {
-        cancelled = true;
-      } else {
-        /* Fallback: endpoint missing (deploy skew) or unreachable.
-           Run the individual analyses instead so the page still works. */
-        showInfo(
-          "Batch endpoint unavailable — falling back to individual analysis.",
-        );
-        cancelled = await runChunked(batch, controller);
+        if (attempt < MAX_BATCH_ATTEMPTS) {
+          showInfo("Batch endpoint hiccup — retrying once…");
+        } else {
+          /* Fallback: endpoint missing (deploy skew) or unreachable.
+             Run the individual analyses instead so the page still works. */
+          showInfo(
+            "Batch endpoint unavailable — falling back to individual analysis.",
+          );
+          cancelled = await runChunked(batch, controller);
+        }
       }
-    } finally {
-      setIsRunning(false);
-      abortRef.current = null;
     }
+
+    setIsRunning(false);
+    abortRef.current = null;
 
     if (cancelled) {
       showError("Batch analysis cancelled.");
@@ -164,6 +180,16 @@ export default function BatchAnalysisPage() {
       showSuccess(
         `Batch analysis complete — ${batch.length} URL${batch.length !== 1 ? "s" : ""} processed.`,
       );
+      // Persist successful results to history so they appear alongside
+      // single analyses (consistent with the analyse page behaviour).
+      for (const { url, response } of completed) {
+        addEntry(url, "url", response);
+      }
+      if (completed.length > 0) {
+        showInfo(
+          `${completed.length} result${completed.length !== 1 ? "s" : ""} saved to history.`,
+        );
+      }
     }
     /* In fallback mode runChunked surfaces no completion toast to
        avoid double-notification; the per-row results speak for

@@ -2,105 +2,74 @@
 # =============================================================================
 # should-build.sh
 # =============================================================================
-# Used by Vercel's "Ignored Build Step" feature (configurable via the
-# ignoreCommand field in vercel.json).
-#
-# This script determines whether a Vercel build should proceed based on
-# which files changed in the latest commit. By default, Vercel builds on
-# every push to the configured branch. This script suppresses builds when
-# only non-frontend files (backend, docs/, README.md, render.yaml) changed.
-#
-# Configure via vercel.json's ignoreCommand:
-#     "ignoreCommand": "bash ./should-build.sh"
+# Used by Vercel's "Ignored Build Step" (vercel.json → ignoreCommand).
 #
 # Exit contract (Vercel-mandated):
-#   - 0  → SKIP the build (matched the ignore rule)
-#   - 1  → PROCEED with the build (no rule matched)
-#   - 2  → ALSO PROCEED (Vercel falls back to building too)
+#   0 → SKIP the build
+#   1 → PROCEED with the build
 #
-# Reference:
-#   https://vercel.com/docs/project-configuration/vercel-json#ignorecommand
+# HISTORY / LESSONS LEARNED (2026-08):
+#   The original version fell back to HEAD~1 when VERCEL_GIT_PREVIOUS_SHA
+#   was unset. That made every multi-commit push whose TIP commit touched
+#   only non-frontend files look skippable — even when an earlier commit in
+#   the same push had modified frontend/ — so frontend features silently
+#   never deployed and production drifted months behind main.
+#
+#   New contract, correctness over build-minutes:
+#     1. If VERCEL_GIT_PREVIOUS_SHA is set AND is a true ancestor of the
+#        current commit → build iff the whole range touched frontend/.
+#     2. In EVERY other case (missing SHA, shallow clone, force-push,
+#        anything unexpected) → BUILD. Fail-safe means "build".
 # =============================================================================
 
-set -uo pipefail  # note: no -e, because we use grep -q which exits 1 on miss
+set -uo pipefail
 
 # ---------------------------------------------------------------------------
-# Step 1: Identify the "current" commit SHA.
-#
-# We prefer VERCEL_GIT_COMMIT_SHA when set (Vercel-provided), but fall back to
-# HEAD if not — for local debugging.
+# Current commit (Vercel-provided, local-debug fallback)
 # ---------------------------------------------------------------------------
 if [ -n "${VERCEL_GIT_COMMIT_SHA:-}" ]; then
   CURR_SHA="${VERCEL_GIT_COMMIT_SHA}"
 elif git rev-parse HEAD > /dev/null 2>&1; then
-  CURR_SHA=$(git rev-parse HEAD)
+  CURR_SHA="$(git rev-parse HEAD)"
 else
-  echo "Cannot determine current commit SHA. Proceeding with build (fail-safe)."
+  echo "No commit SHA determinable. Fail-safe: build."
   exit 1
 fi
 
 # ---------------------------------------------------------------------------
-# Step 2: Identify the "previous" commit SHA.
-#
-# VERCEL_GIT_PREVIOUS_SHA is the documented way, but it has known issues
-# (https://community.vercel.com/t/vercel-git-previous-sha-is-always-empty/39835).
-# We therefore fall back to git's own notion of the parent commit. This means
-# we always know what the "previous" commit is, even if Vercel's variable is
-# blank.
-#
-# As an extra safeguard: if VERCEL_GIT_PREVIOUS_SHA is set we use it
-# (because that is the SHA Vercel considers "previously deployed",
-# which may not be HEAD~1 if there were force-pushes), but if it's
-# missing we fall back to HEAD~1.
+# Baseline: ONLY trust VERCEL_GIT_PREVIOUS_SHA when it is genuinely an
+# ancestor of the current commit. No parent-commit fallback — see header.
 # ---------------------------------------------------------------------------
+BASE_VALID=0
 if [ -n "${VERCEL_GIT_PREVIOUS_SHA:-}" ]; then
-  PREV_SHA="${VERCEL_GIT_PREVIOUS_SHA}"
-elif git rev-parse "${CURR_SHA}^" > /dev/null 2>&1; then
-  PREV_SHA="${CURR_SHA}^"
-  echo "VERCEL_GIT_PREVIOUS_SHA not set; using parent commit ${PREV_SHA} as fallback."
+  if git merge-base --is-ancestor "${VERCEL_GIT_PREVIOUS_SHA}" "${CURR_SHA}" > /dev/null 2>&1 \
+     && [ "${VERCEL_GIT_PREVIOUS_SHA}" != "${CURR_SHA}" ]; then
+    BASE="${VERCEL_GIT_PREVIOUS_SHA}"
+    BASE_VALID=1
+  else
+    echo "VERCEL_GIT_PREVIOUS_SHA '${VERCEL_GIT_PREVIOUS_SHA}' is not a proper ancestor. Fail-safe: build."
+  fi
 else
-  echo "Cannot determine previous commit SHA (no VERCEL_GIT_PREVIOUS_SHA and no parent). Proceeding with build (fail-safe)."
+  echo "VERCEL_GIT_PREVIOUS_SHA not set. Fail-safe: build."
+fi
+
+if [ "${BASE_VALID}" -ne 1 ]; then
   exit 1
 fi
 
 # ---------------------------------------------------------------------------
-# Step 3: List the paths that SHOULD trigger a build.
-#
-# If any changed file matches one of these patterns, we build. Otherwise we
-# skip. The patterns cover the 'frontend/' project at the repo root, which
-# is the directory Vercel is configured to deploy from.
+# Range diff limited to the frontend project. A path-limited diff over the
+# full range captures frontend changes from ALL commits in the push, not
+# just the tip — the flaw that caused the stale-production incident.
 # ---------------------------------------------------------------------------
-FRONTEND_PATHS=(
-  '^frontend/?$'        # a `.` or empty inside frontend/
-  '^frontend/'           # anything nested inside frontend/
-)
+CHANGED="$(git diff --name-only "${BASE}" "${CURR_SHA}" -- frontend/ 2>/dev/null || true)"
 
-# ---------------------------------------------------------------------------
-# Step 4: Collect changed files via git diff.
-# ---------------------------------------------------------------------------
-mapfile -t CHANGED_FILES < <(git diff --name-only "$PREV_SHA" "$CURR_SHA" 2>/dev/null || true)
-
-if [ "${#CHANGED_FILES[@]}" -eq 0 ]; then
-  # No changes detected (very rare in production). Build anyway to be safe.
-  echo "No changed files detected between $PREV_SHA..$CURR_SHA. Proceeding with build."
+if [ -n "${CHANGED}" ]; then
+  echo "Frontend files changed between ${BASE} and ${CURR_SHA}:"
+  printf '  - %s\n' ${CHANGED} | head -20
+  echo "Proceeding with build."
   exit 1
 fi
 
-# ---------------------------------------------------------------------------
-# Step 5: Decide.
-# ---------------------------------------------------------------------------
-for file in "${CHANGED_FILES[@]}"; do
-  for pattern in "${FRONTEND_PATHS[@]}"; do
-    if [[ "${file}" =~ ${pattern} ]]; then
-      echo "Changed file '${file}' is inside the frontend project. Proceeding with build."
-      exit 1
-    fi
-  done
-done
-
-# Only non-frontend files were changed — skip the build entirely.
-PRETTY=$(printf '  - %s\n' "${CHANGED_FILES[@]}")
-echo "No frontend files changed between $PREV_SHA and $CURR_SHA. The following files were modified:"
-echo "$PRETTY"
-echo "Skipping Vercel build (exit 0)."
+echo "No frontend changes in range ${BASE}..${CURR_SHA}. Skipping build."
 exit 0

@@ -101,6 +101,53 @@ export interface HealthResponse {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Feedback (operator loop)                                          */
+/* ------------------------------------------------------------------ */
+
+/** Operator's classification of a past verdict. */
+export type FeedbackVerdict = "false_negative" | "false_positive" | "correct";
+
+/** Body for `POST /api/feedback`. */
+export interface FeedbackRequest {
+  /** UUID of the history entry being labelled. */
+  historyId: string;
+  verdict: FeedbackVerdict;
+  comment?: string;
+  reporter?: string;
+}
+
+/** Response from `POST /api/feedback`. */
+export interface FeedbackResponse {
+  success: boolean;
+  id: string;
+  receivedAt?: string;
+  error?: string | null;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Model drift                                                       */
+/* ------------------------------------------------------------------ */
+
+export type DriftStatus = "stable" | "moderate" | "significant";
+
+/** Per-feature PSI entry from `GET /api/model/drift`. */
+export interface DriftFeature {
+  name: string;
+  psi: number;
+  status: DriftStatus;
+}
+
+/** Report from `GET /api/model/drift`. */
+export interface DriftReport {
+  /** `cold_start` until the reference window is populated. */
+  status: "cold_start" | "ok";
+  overall: DriftStatus;
+  sampleCount: number;
+  baselineAt: string | null;
+  features: DriftFeature[];
+}
+
+/* ------------------------------------------------------------------ */
 /*  Model status                                                      */
 /* ------------------------------------------------------------------ */
 

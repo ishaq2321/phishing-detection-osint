@@ -1,0 +1,39 @@
+# docker compose up --build
+# Frontend: http://localhost:3000  |  API docs: http://localhost:8000/docs
+#
+# The browser calls the API directly at localhost:8000 (CORS is open by
+# default); NEXT_PUBLIC_API_URL is baked into the frontend bundle at build
+# time, so change it here if you expose the API elsewhere.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      PHISHGUARD_ENV: production
+      # Optional OSINT keys — without them those checks degrade gracefully.
+      VIRUSTOTAL_API_KEY: ${VIRUSTOTAL_API_KEY:-}
+      ABUSEIPDB_API_KEY: ${ABUSEIPDB_API_KEY:-}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/live', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped

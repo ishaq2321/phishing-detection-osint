@@ -187,6 +187,17 @@ class TestDriftMonitorLifecycle:
         monitor._logPath.write_text("occupies-the-path")
         monitor.record(_vector())  # must not raise
 
+    def test_logRotationCapsGrowth(self, tmp_path):
+        monitor = DriftMonitor(dataDir=tmp_path, minSamples=10)
+        monitor.MAX_LOG_ROWS = 50
+        for i in range(120):
+            monitor.record(_vector({"urlLength": float(i)}))
+        report = monitor.evaluate()
+        # Repeated halving keeps the file well under the cap.
+        assert monitor._rowEstimate() <= 60
+        assert 10 <= report["sampleCount"] <= 60
+        assert report["status"] == "ok"
+
 
 # =============================================================================
 # Vector Mapping

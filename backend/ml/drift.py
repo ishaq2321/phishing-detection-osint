@@ -151,7 +151,15 @@ def buildBaseline(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 class DriftMonitor:
-    """Append-only feature log + PSI evaluation against a snapshotted baseline."""
+    """Append-only feature log + PSI evaluation against a snapshotted baseline.
+
+    The log is rotated in place once it exceeds ``maxLogRows`` entries:
+    the newest half is kept, so disk usage stays bounded on long-running
+    deployments.  Rotation preserves far more history than the evaluation
+    window needs, and the committed baseline snapshot is unaffected.
+    """
+
+    MAX_LOG_ROWS = 4000
 
     def __init__(
         self,
@@ -181,9 +189,28 @@ class DriftMonitor:
                 self._logPath.parent.mkdir(parents=True, exist_ok=True)
                 with open(self._logPath, "a", encoding="utf-8") as fh:
                     fh.write(json.dumps(payload) + "\n")
+                if self._rowEstimate() > self.MAX_LOG_ROWS:
+                    self._rotateLocked()
         except OSError:
             # Monitoring must never break analysis; drop the sample silently.
             pass
+
+    def _rowEstimate(self) -> int:
+        """Cheap row count via file size (average line ~450 bytes)."""
+        try:
+            return self._logPath.stat().st_size // 400
+        except OSError:
+            return 0
+
+    def _rotateLocked(self) -> None:
+        """Rewrite the log keeping only the newest half. Caller holds lock."""
+        rows = self._readLog()
+        keep = rows[len(rows) // 2 :]
+        tmpPath = self._logPath.with_suffix(".jsonl.tmp")
+        with open(tmpPath, "w", encoding="utf-8") as fh:
+            for row in keep:
+                fh.write(json.dumps({"features": row}) + "\n")
+        tmpPath.replace(self._logPath)
 
     # ------------------------------------------------------------------
     # Evaluation

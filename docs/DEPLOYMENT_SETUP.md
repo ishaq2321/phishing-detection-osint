@@ -1,5 +1,13 @@
 # Deployment Setup Guide — Controlling When Deployments Trigger
-*(Last updated: 2026-07-17 — verify ignoreCommand is active on Vercel + parent-commit fallback working)*
+*(Last updated: 2026-08-23 — pending: backend Manual Deploy required to ship drift monitoring + explanations)*
+
+> **⚠ Pending deployment (2026-08-23):** commits `e8ef255` and `462e773`
+> add two backend features — model drift monitoring (`GET /api/model/drift`,
+> `phishguard_drift_*` gauges) and deterministic verdict explanations
+> (`explanation` field on URL analyses). Because the backend uses
+> `autoDeployTrigger: 'off'`, these are **not live on Render yet**.
+> Ship them via Dashboard → `phishguard-api` → **Manual Deploy → Deploy
+> latest commit**. The frontend (Vercel) deployed automatically.
 
 Both **Vercel** (frontend) and **Render** (backend) are configured by
 default to auto-deploy on every push to `main`. Editing documentation,

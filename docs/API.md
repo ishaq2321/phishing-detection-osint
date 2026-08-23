@@ -69,9 +69,19 @@ Automatically detects the content type (URL or Email text) and performs a compre
     "totalRiskIndicators": 6,
     "detectedTactics": []
   },
+  "explanation": {
+    "summary": "Flagged primarily because the domain was registered only 2 days ago; fresh domains are a strong phishing indicator. 3 additional signal(s) were detected.",
+    "items": [
+      { "signal": "newlyRegisteredDomain", "severity": "critical", "detail": "The domain was registered only 2 days ago; fresh domains are a strong phishing indicator." },
+      { "signal": "hasSuspiciousTld", "severity": "high", "detail": "The domain uses a TLD frequently abused in phishing campaigns (.tk, .ml, .xyz, etc.)." }
+    ]
+  },
   "analysisTime": 1240.5
 }
 ```
+
+**Explanation field (URL analyses only):** deterministic template-generated report — every item is derived from a concrete feature value or OSINT signal and ranked by severity, then by global SHAP importance of the underlying feature. Severities: `critical`, `high`, `medium`, `low`. Absent (`null`) for email/text analyses and when explanation generation fails.
+
 
 ### 3. URL-Specific Analysis
 Forces the analyzer to treat the payload as a URL.
@@ -109,6 +119,29 @@ Returns whether the XGBoost model is loaded and which features it expects.
   "featureNames": ["urlLength", "domainLength", "..."]
 }
 ```
+
+### 5b. Model Drift Report
+Per-feature Population Stability Index (PSI) of the live feature distribution against a snapshotted reference window. The monitor cold-starts: until `minSamples` (default 200) URL analyses have been logged it reports `cold_start`; afterwards the oldest window freezes as the baseline and every call compares the most recent `evaluationWindow` (default 100) vectors against it.
+
+**Endpoint:** `GET /api/model/drift`
+
+**Response (200 OK, ready):**
+```json
+{
+  "status": "ok",
+  "overall": "significant",
+  "sampleCount": 312,
+  "baselineAt": "2026-08-23T10:00:00+00:00",
+  "features": [
+    { "name": "digitRatio", "psi": 0.412, "status": "significant" },
+    { "name": "hasSuspiciousTld", "psi": 0.081, "status": "stable" }
+  ]
+}
+```
+
+**Cold start:** `"status": "cold_start"`, empty `features`.
+
+Bands per feature: `stable` < 0.1 ≤ `moderate` < 0.25 ≤ `significant`. `overall` mirrors the worst feature. Each evaluation also refreshes the `phishguard_drift_psi{feature}` and `phishguard_drift_max_psi` Prometheus gauges on `/metrics`.
 
 ### 6. Batch Analysis
 Analyses 1–50 items (URL / email / auto-detect) in a single round trip, running them concurrently server-side. Per-item failures do **not** reject the batch — the top-level HTTP status is always 200 and each item carries its own `status`.

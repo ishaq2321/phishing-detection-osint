@@ -27,8 +27,8 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { title: "Home", href: "/", icon: LayoutDashboard },
   { title: "Analyse", href: "/analyze", icon: Search },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "History", href: "/history", icon: History },
   { title: "Learn", href: "/how-it-works", icon: BookOpen },
   { title: "Settings", href: "/settings", icon: Settings },

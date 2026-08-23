@@ -30,8 +30,8 @@ test.describe("URL Analysis Flow", () => {
 
     /* Verify verdict banner */
     await expect(page.getByLabel("Phishing detected")).toBeVisible();
-    await expect(page.getByLabel(/confidence score: 87 percent/i)).toBeVisible();
-    await expect(page.getByText("Dangerous")).toBeVisible();
+    await expect(page.getByLabel(/phishing risk: 87 percent/i)).toBeVisible();
+    await expect(page.getByText("Dangerous").first()).toBeVisible();
   });
 
   test("submits a safe URL and sees safe results", async ({ page }) => {
@@ -45,6 +45,6 @@ test.describe("URL Analysis Flow", () => {
     await page.waitForURL("**/results", { timeout: 15_000 });
 
     await expect(page.getByLabel("Not phishing")).toBeVisible();
-    await expect(page.getByLabel(/confidence score: 12 percent/i)).toBeVisible();
+    await expect(page.getByLabel(/phishing risk: 12 percent/i)).toBeVisible();
   });
 });

@@ -459,12 +459,19 @@ export default function SettingsPage() {
                 <dt className="font-medium text-muted-foreground">
                   Documentation
                 </dt>
-                <dd>
+                <dd className="flex flex-wrap items-center gap-3">
+                  <a
+                    href="https://github.com/ishaq2321/phishing-detection-osint/raw/main/docs/PhishGuard_Thesis.pdf"
+                    download="PhishGuard_Thesis.pdf"
+                    className="text-primary underline-offset-4 hover:underline"
+                  >
+                    Download thesis (PDF)
+                  </a>
                   <a
                     href="https://github.com/ishaq2321/phishing-detection-osint/tree/main/docs"
                     target="_blank"
                     rel="noreferrer"
-                    className="text-primary underline-offset-4 hover:underline"
+                    className="text-muted-foreground underline-offset-4 hover:underline"
                   >
                     GitHub docs folder
                   </a>

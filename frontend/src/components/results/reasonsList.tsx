@@ -75,9 +75,18 @@ export function ReasonsList({ reasons }: ReasonsListProps) {
   if (reasons.length === 0) {
     return (
       <Card>
-        <CardContent className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
-          <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" aria-hidden="true" />
-          No risk indicators found.
+        <CardContent className="flex h-full min-h-48 flex-col items-center justify-center gap-2 py-8 text-center">
+          <div className="rounded-full border bg-muted p-3">
+            <ShieldCheck
+              className="h-6 w-6 text-green-600 dark:text-green-400"
+              aria-hidden="true"
+            />
+          </div>
+          <p className="text-sm font-medium">No risk indicators found</p>
+          <p className="max-w-xs text-xs text-muted-foreground">
+            Neither the ML model nor the language analysis flagged this
+            content. Always apply your own judgement before trusting it.
+          </p>
         </CardContent>
       </Card>
     );

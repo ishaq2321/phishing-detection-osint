@@ -113,9 +113,9 @@ describe("NAV_ITEMS", () => {
     }
   });
 
-  it("first item is Dashboard at /", () => {
-    expect(NAV_ITEMS[0].title).toBe("Dashboard");
-    expect(NAV_ITEMS[0].href).toBe("/");
+  it("first item is Analyze at /analyze", () => {
+    expect(NAV_ITEMS[0].title).toBe("Analyze");
+    expect(NAV_ITEMS[0].href).toBe("/analyze");
   });
 
   it("includes Analyze and History routes", () => {

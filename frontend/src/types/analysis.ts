@@ -19,6 +19,12 @@ export interface VerdictResult {
   threatLevel: ThreatLevel;
   reasons: string[];
   recommendation: string;
+  /**
+   * Per-component contributions to the final score, each value already
+   * weighted (sums ≈ confidenceScore). Absent on results produced before
+   * this field existed and for error fallbacks.
+   */
+  componentScores?: Record<string, number> | null;
 }
 
 /* ------------------------------------------------------------------ */

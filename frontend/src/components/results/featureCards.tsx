@@ -233,18 +233,22 @@ interface DetectedTacticsCardProps {
 function DetectedTacticsCard({ tactics }: DetectedTacticsCardProps) {
   if (tactics.length === 0) {
     return (
-      <Card>
+      <Card className="h-full">
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Detected Tactics</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
+          <div className="flex h-full min-h-32 flex-col items-center justify-center gap-2 rounded-lg border border-green-200 bg-green-50 p-6 text-center dark:border-green-800 dark:bg-green-950">
             <ShieldCheck
-              className="h-6 w-6 text-green-600 dark:text-green-400"
+              className="h-7 w-7 text-green-600 dark:text-green-400"
               aria-hidden="true"
             />
             <p className="text-sm font-medium text-green-700 dark:text-green-300">
               No suspicious tactics detected
+            </p>
+            <p className="text-xs text-green-700/70 dark:text-green-300/70">
+              None of the ten known manipulation tactics were matched in this
+              content.
             </p>
           </div>
         </CardContent>

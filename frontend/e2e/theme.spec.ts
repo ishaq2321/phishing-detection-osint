@@ -19,12 +19,20 @@ test.describe("Theme Toggle", () => {
     const themeButton = page.getByRole("button", { name: /toggle theme/i });
     await expect(themeButton).toBeVisible();
 
+    /* Wait for hydration: clicking before React attaches handlers
+       silently opens nothing, and the menu item is never found. */
+    await page.waitForLoadState("networkidle");
+    await expect(themeButton).toBeEnabled();
+
     /* Get initial theme */
     const initialClass = await page.locator("html").getAttribute("class");
 
-    /* Open dropdown and click "Dark" */
-    await themeButton.click();
-    await page.getByRole("menuitem", { name: "Dark" }).click();
+    /* Open dropdown and click "Dark"; retry the click if hydration
+       finished between visibility check and click. */
+    await expect(async () => {
+      await themeButton.click();
+      await page.getByRole("menuitem", { name: "Dark" }).click();
+    }).toPass({ timeout: 10_000 });
 
     /* Wait for theme change */
     await page.waitForTimeout(500);

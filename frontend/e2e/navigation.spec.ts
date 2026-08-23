@@ -15,13 +15,14 @@ test.describe("Navigation", () => {
   test("navigates to all pages via sidebar links", async ({ page }) => {
     await page.goto("/");
 
-    /* Dashboard */
-    await expect(page.getByRole("heading", { name: "PhishGuard" })).toBeVisible();
-
-    /* Analyse */
-    await page.getByRole("link", { name: "Analyse" }).first().click();
+    /* Landing page redirects straight into the analyser */
     await page.waitForURL("**/analyze");
     await expect(page.getByRole("heading", { name: "Analyse Content" })).toBeVisible();
+
+    /* Dashboard */
+    await page.getByRole("link", { name: "Dashboard" }).first().click();
+    await page.waitForURL("**/dashboard");
+    await expect(page.getByRole("heading", { name: "PhishGuard" })).toBeVisible();
 
     /* History */
     await page.getByRole("link", { name: "History" }).first().click();
@@ -40,7 +41,7 @@ test.describe("Navigation", () => {
   });
 
   test("dashboard CTA links work", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/dashboard");
 
     /* "Analyse Now" button → /analyze */
     await page.getByRole("link", { name: "Analyse Now" }).click();
@@ -48,7 +49,7 @@ test.describe("Navigation", () => {
     await expect(page.getByRole("heading", { name: "Analyse Content" })).toBeVisible();
 
     /* Go back and try "How It Works" */
-    await page.goto("/");
+    await page.goto("/dashboard");
     await page.getByRole("link", { name: "How It Works" }).first().click();
     await page.waitForURL("**/how-it-works");
     await expect(page.getByRole("heading", { name: "How It Works" })).toBeVisible();

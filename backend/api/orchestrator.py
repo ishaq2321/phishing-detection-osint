@@ -327,10 +327,10 @@ class AnalysisOrchestrator:
             # URL analysis: ML model is the primary signal.  OSINT
             # features are already embedded in the model's prediction,
             # so adding OSINT a second time would double-count.
-            combinedScore = (
-                urlScore.finalScore * ML_PRIMARY_WEIGHT
-                + textAnalysis.confidenceScore * TEXT_SUPPLEMENT_WEIGHT
-            )
+            mlWeighted = urlScore.finalScore * ML_PRIMARY_WEIGHT
+            nlpWeighted = textAnalysis.confidenceScore * TEXT_SUPPLEMENT_WEIGHT
+            combinedScore = mlWeighted + nlpWeighted
+            componentScores = {"ml": round(mlWeighted, 3), "nlp": round(nlpWeighted, 3)}
         else:
             # Email / text analysis: NLP is primary, URL features
             # and OSINT are supplementary.
@@ -343,11 +343,15 @@ class AnalysisOrchestrator:
                     osintScore += 0.3
                 if osintData.whois.isPrivacyProtected:
                     osintScore += 0.2
-            combinedScore = (
-                textAnalysis.confidenceScore * TEXT_PRIMARY_WEIGHT
-                + featureScore * URL_SECONDARY_WEIGHT
-                + osintScore * OSINT_SECONDARY_WEIGHT
-            )
+            nlpWeighted = textAnalysis.confidenceScore * TEXT_PRIMARY_WEIGHT
+            featWeighted = featureScore * URL_SECONDARY_WEIGHT
+            osintWeighted = min(osintScore, 1.0) * OSINT_SECONDARY_WEIGHT
+            combinedScore = nlpWeighted + featWeighted + osintWeighted
+            componentScores = {
+                "nlp": round(nlpWeighted, 3),
+                "urlFeatures": round(featWeighted, 3),
+                "osint": round(osintWeighted, 3),
+            }
         
         combinedScore = min(max(combinedScore, 0.0), 1.0)
         
@@ -396,7 +400,8 @@ class AnalysisOrchestrator:
             confidenceScore=round(combinedScore, 3),
             threatLevel=threatLevel,
             reasons=reasons[:10],
-            recommendation=recommendation
+            recommendation=recommendation,
+            componentScores=componentScores
         )
     
     def _generateRecommendation(self, threatLevel: str) -> str:

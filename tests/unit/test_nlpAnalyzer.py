@@ -149,6 +149,46 @@ class TestPhishingDetection:
         
         suspiciousIndicators = [ind for ind in result.indicators if ind.category == "suspicious_action"]
         assert len(suspiciousIndicators) > 0
+
+    @pytest.mark.asyncio
+    async def test_lottery_scam_reworded(self, analyzer):
+        """Regression: 'You won a lottery' must never score as safe.
+
+        The exact phrase was historically absent from the monetary
+        phrase list, so the canonical lottery-scam sentence scored 0%.
+        """
+        content = "You won a lottery"
+        result = await analyzer.analyze(content, ContentType.TEXT)
+
+        assert PhishingTactic.MONETARY_REQUEST in result.detectedTactics
+        monetary = [i for i in result.indicators if i.category == "monetary_request"]
+        assert len(monetary) > 0
+        assert result.confidenceScore > 0.5
+        assert result.isPhishing
+
+    @pytest.mark.asyncio
+    async def test_prize_scam_lemma_inflections(self, analyzer):
+        """Lemma-level matching catches inflected prize-scam wording."""
+        for text in [
+            "She wins the raffle every year — claim now!",
+            "You are our jackpot winner",
+            "winning the sweepstakes requires a small fee",
+        ]:
+            result = await analyzer.analyze(text, ContentType.TEXT)
+            monetary = [i for i in result.indicators if i.category == "monetary_request"]
+            assert len(monetary) > 0, f"missed variant: {text}"
+
+    @pytest.mark.asyncio
+    async def test_no_duplicate_monetary_indicators(self, analyzer):
+        """Canonical phrases must not produce overlapping duplicate hits."""
+        content = "Congratulations! You won a lottery. Claim your prize now."
+        result = await analyzer.analyze(content, ContentType.TEXT)
+        positions = [(i.position) for i in result.indicators if i.category == "monetary_request"]
+        # 'won a lottery' (lemma pass) and 'claim your prize' (phrase list)
+        # are distinct spans; the lemma pass must not double-report a span
+        # already covered by the phrase matcher.
+        assert len(positions) == len(set(positions))
+
     
     @pytest.mark.asyncio
     async def test_link_manipulation_ip_address(self, analyzer):

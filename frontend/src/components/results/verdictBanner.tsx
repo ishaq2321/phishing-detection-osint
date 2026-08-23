@@ -77,16 +77,32 @@ export function VerdictBanner({ verdict }: VerdictBannerProps) {
 
         {/* Score + details */}
         <div className="flex flex-1 flex-col items-center gap-3 text-center sm:items-start sm:text-left">
-          {/* Animated confidence score */}
-          <div className="flex items-baseline gap-2">
-            <span
-              className={cn("text-5xl font-extrabold tabular-nums", meta.colorClass)}
-              aria-label={`Confidence score: ${Math.round(verdict.confidenceScore * 100)} percent`}
-            >
-              {Math.round(animatedScore)}
+          {/* Animated phishing-risk score, explicitly labelled */}
+          <div className="flex flex-col items-center gap-0.5 sm:items-start">
+            <div className="flex items-baseline gap-2">
+              <span
+                className={cn("text-5xl font-extrabold tabular-nums", meta.colorClass)}
+                aria-label={`Phishing risk: ${Math.round(verdict.confidenceScore * 100)} percent`}
+              >
+                {Math.round(animatedScore)}
+              </span>
+              <span className={cn("text-2xl font-bold", meta.colorClass)}>%</span>
+            </div>
+            <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              Phishing risk
             </span>
-            <span className={cn("text-2xl font-bold", meta.colorClass)}>%</span>
           </div>
+
+          {/* Safety estimate — inverts the scale for safe verdicts so
+              "risk 0%" can never be misread as "0% safe". */}
+          {!verdict.isPhishing && (
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              Safety estimate:{" "}
+              <span className="font-semibold text-green-600 dark:text-green-400">
+                {Math.round((1 - verdict.confidenceScore) * 100)}% safe
+              </span>
+            </p>
+          )}
 
           {/* Threat level badge */}
           <Badge

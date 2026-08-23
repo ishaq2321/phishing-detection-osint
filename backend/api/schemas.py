@@ -184,6 +184,15 @@ class VerdictResult(BaseModel):
         description="Recommended action for the user",
         examples=["Proceed with caution"]
     )
+    componentScores: dict[str, float] | None = Field(
+        default=None,
+        description=(
+            "Per-component contributions to the final score (each value "
+            "already weighted). Keys vary by content type, e.g. "
+            "'ml', 'nlp', 'urlFeatures', 'osint' for URL analyses or "
+            "'nlp', 'urlFeatures', 'osint' for text analyses."
+        ),
+    )
 
 
 class OsintSummary(BaseModel):

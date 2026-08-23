@@ -116,8 +116,8 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { title: "Dashboard", href: "/", icon: "LayoutDashboard" },
   { title: "Analyze", href: "/analyze", icon: "Search" },
+  { title: "Dashboard", href: "/dashboard", icon: "LayoutDashboard" },
   { title: "History", href: "/history", icon: "History" },
   { title: "How It Works", href: "/how-it-works", icon: "BookOpen" },
   { title: "Settings", href: "/settings", icon: "Settings" },

@@ -40,8 +40,8 @@ interface SidebarNavItem {
 }
 
 const sidebarNavItems: SidebarNavItem[] = [
-  { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "Analyse", href: "/analyze", icon: Search },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "History", href: "/history", icon: History },
   { title: "How It Works", href: "/how-it-works", icon: BookOpen },
   { title: "Settings", href: "/settings", icon: Settings },
@@ -124,7 +124,7 @@ export function SidebarContent({ collapsed = false }: SidebarContentProps) {
           <Link
             href="/"
             className="flex items-center gap-2.5 rounded-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={collapsed ? `${APP_NAME} — Go to dashboard` : undefined}
+            aria-label={collapsed ? `${APP_NAME} — Go to analyser` : undefined}
           >
             <div className="rounded-lg bg-primary/10 p-1.5">
               <Logo className="h-5 w-5 text-primary" />

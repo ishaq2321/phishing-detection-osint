@@ -437,7 +437,8 @@ export default function AnalyzePage() {
                       <li>Include the full URL with protocol (https://)</li>
                       <li>For emails, paste the complete body text</li>
                       <li>
-                        The system checks domain age, WHOIS, DNS, and blacklists
+                        URLs are enriched with WHOIS, DNS, blacklists,
+                        VirusTotal, and AbuseIPDB data
                       </li>
                     </ul>
                   </div>

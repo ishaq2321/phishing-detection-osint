@@ -135,10 +135,22 @@ describe("VerdictBanner — accessibility", () => {
     expect(screen.getByLabelText("Not phishing")).toBeInTheDocument();
   });
 
-  it("has aria-label for confidence score", () => {
+  it("has aria-label for phishing risk score", () => {
     render(<VerdictBanner verdict={safeVerdict} />);
     expect(
-      screen.getByLabelText("Confidence score: 15 percent"),
+      screen.getByLabelText("Phishing risk: 15 percent"),
     ).toBeInTheDocument();
+  });
+
+  it("shows a safety estimate for safe verdicts", () => {
+    render(<VerdictBanner verdict={safeVerdict} />);
+    // risk 15% → safety estimate 85%
+    expect(screen.getByText("85% safe")).toBeInTheDocument();
+    expect(screen.getByText("Phishing risk")).toBeInTheDocument();
+  });
+
+  it("does not show a safety estimate for phishing verdicts", () => {
+    render(<VerdictBanner verdict={dangerousVerdict} />);
+    expect(screen.queryByText(/safe$/)).not.toBeInTheDocument();
   });
 });

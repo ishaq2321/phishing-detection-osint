@@ -34,7 +34,7 @@ test.describe("Email Analysis Flow", () => {
 
     /* Verify results */
     await expect(page.getByLabel("Phishing detected")).toBeVisible();
-    await expect(page.getByText("Dangerous")).toBeVisible();
+    await expect(page.getByText("Dangerous").first()).toBeVisible();
   });
 
   test("analyses email without optional fields", async ({ page }) => {

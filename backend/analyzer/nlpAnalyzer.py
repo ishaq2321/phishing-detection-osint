@@ -24,7 +24,7 @@ from urllib.parse import urlparse
 
 import spacy
 from spacy.language import Language
-from spacy.matcher import PhraseMatcher
+from spacy.matcher import Matcher, PhraseMatcher
 from spacy.tokens import Doc
 
 from .base import (
@@ -154,9 +154,37 @@ MONETARY_PHRASES = [
     "overdue payment",
     "claim your prize",
     "lottery winnings",
+    "won a lottery",
+    "won the lottery",
+    "win the lottery",
+    "winning the lottery",
+    "you've won",
+    "you have won",
+    "you won",
+    "prize claim",
+    "claim your winnings",
+    "cash prize",
+    "lucky winner",
     "inheritance",
     "unclaimed funds",
     "beneficiary",
+]
+
+# Prize-scam keyword family for lemma-level matching.
+#
+# Exact phrase lists cannot catch reworded variants ("You won a lottery"
+# vs "lottery winnings"), so this family is matched with a token-level
+# Matcher on lemmas: any inflection of win/won/winning adjacent to any
+# prize-related noun triggers it.
+PRIZE_NOUN_LEMMAS = [
+    "lottery",
+    "lotto",
+    "prize",
+    "raffle",
+    "sweepstake",
+    "sweepstakes",
+    "jackpot",
+    "draw",
 ]
 
 # Social proof / trust signals
@@ -256,6 +284,25 @@ class NlpAnalyzer(BaseAnalyzer):
         self.monetaryMatcher = PhraseMatcher(self.nlp.vocab, attr="LOWER")
         monetaryPatterns = [self.nlp.make_doc(text) for text in MONETARY_PHRASES]
         self.monetaryMatcher.add("MONETARY", monetaryPatterns)
+
+        # Prize-scam lemma matcher — catches inflected rewordings such as
+        # "won a lottery", "wins the raffle", "winning the jackpot".
+        self.prizeScamMatcher = Matcher(self.nlp.vocab)
+        for nounLemma in PRIZE_NOUN_LEMMAS:
+            self.prizeScamMatcher.add(
+                "PRIZE_SCAM",
+                [
+                    [
+                        {"LEMMA": {"IN": ["win", "won"]}},
+                        {"LOWER": {"IN": ["a", "the", "our", "this"]}, "OP": "?"},
+                        {"LEMMA": nounLemma},
+                    ],
+                    [
+                        {"LEMMA": nounLemma},
+                        {"LEMMA": {"IN": ["win", "winner", "winnings"]}},
+                    ],
+                ],
+            )
 
         # Social proof matcher
         self.socialProofMatcher = PhraseMatcher(self.nlp.vocab, attr="LOWER")
@@ -532,6 +579,32 @@ class NlpAnalyzer(BaseAnalyzer):
                     category="monetary_request",
                     description=f"Monetary request detected: '{span.text}'",
                     severity=0.7,
+                    evidence=span.text,
+                    position=span.start_char,
+                )
+            )
+
+        # Lemma-level prize-scam pass: catches inflected variants that
+        # exact-phrase matching misses ("You won a lottery" etc.).  The
+        # phrase matcher above already covers the canonical wording, so
+        # only spans not overlapping an existing indicator are added.
+        covered = {(i.position, i.position + len(i.evidence)) for i in indicators}
+        for matchId, start, end in self.prizeScamMatcher(doc):
+            span = doc[start:end]
+            overlaps = any(
+                span.start_char < cEnd and cStart <= span.start_char
+                for cStart, cEnd in covered
+            )
+            if overlaps:
+                continue
+            indicators.append(
+                DetectedIndicator(
+                    category="monetary_request",
+                    description=(
+                        f"Prize scam pattern detected: '{span.text}' "
+                        "(win/lottery wording)"
+                    ),
+                    severity=0.75,
                     evidence=span.text,
                     position=span.start_char,
                 )

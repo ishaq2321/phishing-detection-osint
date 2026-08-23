@@ -239,8 +239,9 @@ export default function ResultsPage() {
         </StaggerGroup>
       )}
 
-      {/* OSINT intelligence cards */}
-      {showOsint && (
+      {/* OSINT intelligence cards — only meaningful when a domain was
+          involved; email/text analyses have no domain to enrich. */}
+      {showOsint && (response.osint || contentType === "url") && (
         <>
           <Separator />
           <SlideUp delay={0.1}>
@@ -280,6 +281,7 @@ export default function ResultsPage() {
             <StaggerItem>
               <ScoreBreakdown
                 confidenceScore={response.verdict.confidenceScore}
+                componentScores={response.verdict.componentScores}
               />
             </StaggerItem>
             <StaggerItem>

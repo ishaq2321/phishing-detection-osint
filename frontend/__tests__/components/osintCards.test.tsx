@@ -91,10 +91,10 @@ describe("OsintCards — suspicious data", () => {
 /* ------------------------------------------------------------------ */
 
 describe("OsintCards — null data", () => {
-  it("renders a fallback message when osint is null", () => {
+  it("renders a compact fallback message when osint is null", () => {
     render(<OsintCards osint={null} />);
     expect(
-      screen.getByText("OSINT Data Not Available"),
+      screen.getByText("No OSINT enrichment data."),
     ).toBeInTheDocument();
   });
 });

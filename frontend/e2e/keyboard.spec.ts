@@ -13,7 +13,7 @@ test.describe("Keyboard Navigation", () => {
   });
 
   test("can tab through dashboard to analyse link", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/dashboard");
 
     /* Tab through — skip links and sidebar first, eventually hit "Analyse Now" */
     let found = false;

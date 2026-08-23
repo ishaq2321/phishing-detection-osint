@@ -77,18 +77,31 @@ function domainAgeRisk(days: number | null): {
   return { label: "Established", colorClass: "text-green-600 dark:text-green-400" };
 }
 
-/** Map a reputation score (0–1) to a colour class for the progress bar. */
+/** Map a reputation score (0–1, higher = more trustworthy) to a bar colour.
+ *  A score of exactly 0 usually means the sources returned nothing at all,
+ *  which is "no signal" — not evidence of a bad domain — so it renders
+ *  neutral grey rather than alarming red. */
 function reputationColor(score: number): string {
+  if (score === 0) return "bg-muted-foreground/40";
   if (score >= 0.7) return "bg-green-500 dark:bg-green-400";
   if (score >= 0.4) return "bg-amber-500 dark:bg-amber-400";
   return "bg-red-500 dark:bg-red-400";
 }
 
-/** Map a reputation score (0–1) to a label. */
+/** Map a reputation score (0–1, higher = more trustworthy) to a label. */
 function reputationLabel(score: number): string {
+  if (score === 0) return "No signal";
   if (score >= 0.7) return "Good";
   if (score >= 0.4) return "Fair";
   return "Poor";
+}
+
+/** Text colour class matching the reputation label. */
+function reputationTextClass(score: number): string {
+  if (score === 0) return "text-muted-foreground";
+  if (score >= 0.7) return "text-green-600 dark:text-green-400";
+  if (score >= 0.4) return "text-amber-600 dark:text-amber-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 /* ------------------------------------------------------------------ */
@@ -125,16 +138,19 @@ function InfoTooltip({ text }: InfoTooltipProps) {
 function OsintUnavailable() {
   return (
     <Card>
-      <CardHeader className="items-center text-center">
-        <div className="rounded-full border bg-muted p-4">
-          <Globe className="h-8 w-8 text-muted-foreground" />
+      <CardContent className="flex items-center gap-3 py-4">
+        <div className="rounded-full border bg-muted p-2">
+          <Globe className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         </div>
-        <CardTitle className="text-base">OSINT Data Not Available</CardTitle>
-        <CardDescription>
-          No OSINT enrichment data was collected for this analysis. This can
-          happen when the input does not contain a recognisable domain.
-        </CardDescription>
-      </CardHeader>
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">
+            No OSINT enrichment data.
+          </span>{" "}
+          The domain lookups (WHOIS, DNS, blacklists, VirusTotal,
+          AbuseIPDB) returned nothing usable for this input — this is common
+          when a lookup times out or the host blocks automated queries.
+        </p>
+      </CardContent>
     </Card>
   );
 }
@@ -306,24 +322,20 @@ function ReputationCard({ osint }: ReputationCardProps) {
         <CardTitle className="flex items-center gap-2 text-base">
           <ShieldCheck className="h-4 w-4 text-teal-500" aria-hidden="true" />
           Reputation
-          <InfoTooltip text="Aggregated reputation from OSINT sources (WHOIS age, DNS, blacklists)." />
+          <InfoTooltip text="Trustworthiness aggregated from OSINT sources (WHOIS age, DNS, blacklists). Higher is more trustworthy; 'No signal' means the sources returned no usable data." />
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Score bar */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Score</span>
+            <span className="text-sm text-muted-foreground">Trust score</span>
             <span className="text-sm font-semibold tabular-nums">
               {scorePercent}%{" "}
               <span
                 className={cn(
                   "text-xs font-medium",
-                  osint.reputationScore >= 0.7
-                    ? "text-green-600 dark:text-green-400"
-                    : osint.reputationScore >= 0.4
-                      ? "text-amber-600 dark:text-amber-400"
-                      : "text-red-600 dark:text-red-400",
+                  reputationTextClass(osint.reputationScore),
                 )}
               >
                 ({label})

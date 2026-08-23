@@ -10,6 +10,7 @@ import {
   Heart,
   KeyRound,
   Link2,
+  MessageSquareText,
   Search,
   Shield,
   ShieldAlert,
@@ -492,6 +493,97 @@ export default function HowItWorksPage() {
               </Card>
             );
           })}
+        </div>
+      </AnimatedSection>
+
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/*  7. Explanations, Monitoring & Feedback                    */}
+      {/* ══════════════════════════════════════════════════════════ */}
+      <AnimatedSection className="space-y-4 rounded-lg border-l-4 border-cyan-500/60 bg-cyan-500/[0.02] px-5 py-4">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500 text-xs font-bold text-white">7</span>
+          <MessageSquareText className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold">
+            Explanations, Monitoring &amp; Feedback
+          </h2>
+        </div>
+        <p className="max-w-prose text-sm text-muted-foreground">
+          Beyond the verdict itself, every part of the pipeline is designed
+          to stay transparent and improvable over time.
+        </p>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">&ldquo;Why this verdict?&rdquo; panel</CardTitle>
+              <CardDescription className="text-sm">
+                URL analyses return a deterministic explanation: each item is
+                derived from a concrete feature value or OSINT signal — never
+                generated text — and carries its machine-readable signal ID.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+                <li>Plain-language summary of the deciding factors</li>
+                <li>Colour-coded severity per item</li>
+                <li>Auditable signal identifiers</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Drift monitoring</CardTitle>
+              <CardDescription className="text-sm">
+                Production inputs are compared against the training baseline
+                using Population Stability Index (PSI). The live report powers
+                the Model Health card above and a Prometheus metrics endpoint.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+                <li>Per-feature shift detection with severity bands</li>
+                <li>Cold-start state before enough samples accrue</li>
+                <li>Watchable over time without touching the app</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Feedback loop</CardTitle>
+              <CardDescription className="text-sm">
+                On the results page you can confirm or dispute a verdict. The
+                label is stored via <code>POST /api/feedback</code> and feeds
+                future model retraining — closing the analyse → correct →
+                improve loop.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+                <li>One click: &ldquo;correct&rdquo; or &ldquo;incorrect&rdquo;</li>
+                <li>Stored with the analysis history ID</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Batch &amp; email ingest</CardTitle>
+              <CardDescription className="text-sm">
+                Bulk workflows are first-class: paste up to 50 URLs for
+                concurrent analysis with per-item progress and retry, or drop
+                a raw <code>.eml</code> email file to have headers and body
+                extracted automatically.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+                <li>Chunked fallback when the batch API is unavailable</li>
+                <li>EML parsing removes the need to copy-paste emails</li>
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </AnimatedSection>
 

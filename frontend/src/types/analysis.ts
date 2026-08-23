@@ -50,6 +50,26 @@ export interface FeatureSummary {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Explanation                                                       */
+/* ------------------------------------------------------------------ */
+
+/** Severity band of a single explanation signal. */
+export type ExplanationSeverity = "critical" | "high" | "medium" | "low";
+
+/** One deterministic, template-generated explanation signal. */
+export interface ExplanationItem {
+  signal: string;
+  severity: ExplanationSeverity;
+  detail: string;
+}
+
+/** Structured "why?" report attached to URL analysis responses. */
+export interface ExplanationReport {
+  summary: string;
+  items: ExplanationItem[];
+}
+
+/* ------------------------------------------------------------------ */
 /*  Analysis response                                                 */
 /* ------------------------------------------------------------------ */
 
@@ -59,6 +79,7 @@ export interface AnalysisResponse {
   verdict: VerdictResult;
   osint: OsintSummary | null;
   features: FeatureSummary;
+  explanation: ExplanationReport | null;
   analysisTime: number;
   analyzedAt: string;
   error: string | null;

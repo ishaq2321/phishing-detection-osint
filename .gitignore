@@ -141,4 +141,5 @@ TDK_ABSTRACT.*
 # pyright / pytest
 pyrightconfig.json
 pytest.ini
-render.yamlbackend/data/
+render.yaml
+backend/data/

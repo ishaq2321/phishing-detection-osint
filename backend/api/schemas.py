@@ -12,7 +12,7 @@ Course: BSc Thesis - ELTE Faculty of Informatics
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -286,6 +286,44 @@ class FeatureSummary(BaseModel):
     )
 
 
+class ExplanationItem(BaseModel):
+    """A single deterministic explanation signal for a verdict.
+
+    Attributes:
+        signal: Machine-readable identifier (e.g. ``newlyRegisteredDomain``)
+        severity: One of critical / high / medium / low
+        detail: Human-readable sentence describing the signal
+    """
+    signal: str = Field(..., description="Machine-readable signal identifier")
+    severity: str = Field(
+        ...,
+        pattern="^(critical|high|medium|low)$",
+        description="Severity band of the signal",
+    )
+    detail: str = Field(
+        ...,
+        description="Human-readable explanation sentence",
+    )
+
+
+class ExplanationReport(BaseModel):
+    """Deterministic, template-generated verdict explanation.
+
+    Every item is derived from a concrete feature value or OSINT signal —
+    no generative model involved — so explanations are reproducible and
+    auditable. Items are ordered by severity, then by global SHAP
+    importance of the underlying feature.
+    """
+    summary: str = Field(
+        ...,
+        description="One-sentence plain-language summary of the verdict",
+    )
+    items: List[ExplanationItem] = Field(
+        default_factory=list,
+        description="Explanation signals ordered by severity then importance",
+    )
+
+
 class AnalysisResponse(BaseModel):
     """
     Complete analysis response.
@@ -324,6 +362,10 @@ class AnalysisResponse(BaseModel):
     features: FeatureSummary = Field(
         ...,
         description="Extracted features summary"
+    )
+    explanation: Optional[ExplanationReport] = Field(
+        default=None,
+        description="Deterministic explanation report (URL analyses)"
     )
     analysisTime: float = Field(
         ...,

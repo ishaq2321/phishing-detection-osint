@@ -143,6 +143,20 @@ class AnalysisOrchestrator:
                 analysisTime=analysisTime,
             )
 
+            # Template-based explanation (URL analyses only).  Deterministic
+            # and fire-and-forget: explanation failures never fail analysis.
+            if contentType == "url":
+                try:
+                    from backend.ml.explainer import getExplainer
+                    from .schemas import ExplanationItem, ExplanationReport
+                    raw = getExplainer().explain(featureSet, osintData)
+                    response.explanation = ExplanationReport(
+                        summary=raw["summary"],
+                        items=[ExplanationItem(**item) for item in raw["items"]],
+                    )
+                except Exception:  # noqa: BLE001
+                    pass
+
             # Tier 4 D: observability hook -- every analysis path (single,
             # batch, ingest) funnels through here.  Metrics must never be
             # able to break analysis, so this is fire-and-forget.

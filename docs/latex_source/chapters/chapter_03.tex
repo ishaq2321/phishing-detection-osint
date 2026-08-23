@@ -1005,6 +1005,52 @@ baseline bootstrapping, torn-write tolerance, and vector mapping; 5
 integration tests exercising the orchestrator hook, cold-start semantics,
 and metrics exposure through the real FastAPI application).
 
+\section{Deterministic Verdict Explanations}\label{explanation-engine}
+
+Security tooling carries a stricter explainability requirement than most
+domains: an explanation must be reproducible, auditable, and traceable to
+concrete evidence. A generative language model satisfies none of these
+properties --- the same input can yield different prose across calls, and
+the generated text may assert relationships that do not exist in the
+feature data. PhishGuard therefore explains its URL verdicts with a
+template-based natural-language generation engine
+(\texttt{backend/ml/explainer.py}) that contains no learned or generative
+component at all.
+
+\subsection{Signal Extraction and Ranking}
+
+The engine evaluates the raw feature vector against a catalogue of
+threshold rules, each mapping a value range onto a human-readable sentence
+and one of four severity bands (critical, high, medium, low). For example,
+a domain younger than 30 days produces \emph{``The domain was registered
+only 6 days ago; fresh domains are a strong phishing indicator''} at
+critical severity, while the absence of HTTPS yields a medium-severity
+sentence. OSINT signals (fresh registration, blacklist membership,
+aggregate reputation) participate in the same catalogue.
+
+Ranking within a severity band is informed by the global signed-mean SHAP
+values computed at training time and persisted alongside the model:
+signals on features that historically exert stronger pull towards the
+phishing class are surfaced first. The output is a structured report ---
+a one-sentence plain-language summary plus ordered
+\texttt{(signal,\ severity,\ detail)} items --- attached as an optional
+\texttt{explanation} field on URL analysis responses. Because the field is
+optional and absent for email/text analyses, the change is fully backward
+compatible for existing API consumers.
+
+\subsection{Properties}
+
+Three properties distinguish this design from an LLM-based alternative.
+First, \textbf{determinism}: identical inputs always produce identical
+explanations, which matters both for user trust and for regression
+testing. Second, \textbf{auditability}: every sentence is bound to a named
+signal identifier that a reviewer can trace back to a specific feature
+value. Third, \textbf{zero cost}: the engine requires no API keys, no
+network access, and adds negligible latency (~microseconds of template
+evaluation). The behaviour is covered by 15 dedicated tests covering
+trigger thresholds, ordering invariants, summary generation, and end-to-end
+response attachment.
+
 \section{Integration and Weighting
 Mechanisms}\label{integration-and-weighting-mechanisms}
 

@@ -29,6 +29,7 @@ import {
   ShareActions,
   OsintCards,
   FeatureCards,
+  ExplanationPanel,
 } from "@/components/results";
 import { useResult } from "@/lib/resultsContext";
 import { getSetting, type ResultsDetailLevel } from "@/lib/storage/settingsStore";
@@ -205,6 +206,14 @@ export default function ResultsPage() {
         <ScaleIn delay={0.15} duration={0.5}>
           <VerdictBanner verdict={response.verdict} />
         </ScaleIn>
+
+        {/* Deterministic "Why?" explanation (URL analyses) */}
+        {showReasons && response.explanation && (
+          <ExplanationPanel
+            summary={response.explanation.summary}
+            items={response.explanation.items}
+          />
+        )}
 
         <Separator />
 

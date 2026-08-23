@@ -22,8 +22,11 @@ test.describe("Responsive — Mobile", () => {
   });
 
   test("can navigate to analyse page on mobile", async ({ page }) => {
-    /* Use mobile bottom nav or header menu */
-    await page.getByRole("link", { name: /analyse/i }).first().click();
+    /* Landing already IS the analyse page; prove the mobile bottom nav
+       route to it explicitly (desktop sidebar links are display:none). */
+    await page.getByRole("navigation", { name: "Mobile navigation" })
+      .getByRole("link", { name: "Analyse" })
+      .click();
     await page.waitForURL("**/analyze");
     await expect(page.getByRole("heading", { name: "Analyse Content" })).toBeVisible();
   });

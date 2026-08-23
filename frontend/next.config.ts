@@ -45,6 +45,14 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+
+  /**
+   * Disable the floating dev-tools indicator. Its <nextjs-portal> overlay
+   * intercepts pointer events near the viewport edges, which blocks
+   * clicks on the mobile bottom navigation during dev-server E2E runs
+   * (and it covers real UI for human testers too).
+   */
+  devIndicators: false,
 };
 
 export default nextConfig;

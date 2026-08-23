@@ -30,9 +30,13 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "npm run dev",
+    /* E2E runs against a production build: dev-mode Turbopack aborts
+       in-flight navigations during cold compiles (net::ERR_ABORTED),
+       panics intermittently, and its dev overlay intercepts pointer
+       events — none of which exist in what we actually ship. */
+    command: "npm run build && npm run start",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
+    timeout: 300_000,
   },
 });

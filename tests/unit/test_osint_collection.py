@@ -109,7 +109,7 @@ class TestCollectOsintDataSemantics:
         ), patch(
             "backend.api.orchestrator.lookupDns", side_effect=slowDns
         ), patch(
-            "backend.api.orchestrator.lookupReputation",
+            "backend.api.orchestrator.lookupReputationCached",
             side_effect=fastReputation,
         ):
             t0 = time.perf_counter()
@@ -137,7 +137,7 @@ class TestCollectOsintDataSemantics:
         ), patch(
             "backend.api.orchestrator.lookupDns", side_effect=hang
         ), patch(
-            "backend.api.orchestrator.lookupReputation", side_effect=hang
+            "backend.api.orchestrator.lookupReputationCached", side_effect=hang
         ):
             t0 = time.perf_counter()
             data = await orchestrator._collectOsintData("slow.example", "https://slow.example")
@@ -167,7 +167,7 @@ class TestCollectOsintDataSemantics:
         ), patch(
             "backend.api.orchestrator.lookupDns", side_effect=fastDns
         ), patch(
-            "backend.api.orchestrator.lookupReputation",
+            "backend.api.orchestrator.lookupReputationCached",
             side_effect=fastReputation,
         ):
             data = await orchestrator._collectOsintData("example.com", "https://example.com")
@@ -196,7 +196,7 @@ class TestCollectOsintDataSemantics:
         ), patch(
             "backend.api.orchestrator.lookupDns", side_effect=fastDns
         ), patch(
-            "backend.api.orchestrator.lookupReputation",
+            "backend.api.orchestrator.lookupReputationCached",
             side_effect=fastReputation,
         ):
             data = await orchestrator._collectOsintData("example.com", "https://example.com")

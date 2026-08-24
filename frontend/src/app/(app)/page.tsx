@@ -1,11 +1,8 @@
-import { redirect } from "next/navigation";
-
 /**
- * Root route — the product IS the analyzer.
+ * Root route — the product IS the analyser.
  *
- * Users land directly on the paste-and-analyse screen; the activity
- * dashboard moved to /dashboard for those who want it.
+ * Renders the Analyze page directly (no redirect hop, no meta-refresh
+ * delay): the user lands on the paste-and-go screen instantly. The
+ * activity dashboard lives at /dashboard.
  */
-export default function Home() {
-  redirect("/analyze");
-}
+export { default } from "./analyze/page";

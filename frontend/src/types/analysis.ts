@@ -38,7 +38,14 @@ export interface OsintSummary {
   registrar: string | null;
   isPrivate: boolean;
   hasValidDns: boolean;
+  /**
+   * Suspicion score from OSINT sources: 0 = no malicious signals,
+   * 1 = flagged by all sources. Higher is MORE suspicious.
+   * Meaningless unless `reputationSourcesChecked > 0`.
+   */
   reputationScore: number;
+  /** How many reputation sources returned usable data (0 = none ran). */
+  reputationSourcesChecked: number;
   inBlacklists: boolean;
 }
 

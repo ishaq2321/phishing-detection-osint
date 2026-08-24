@@ -890,3 +890,53 @@ async def lookupReputation(
     """
     async with ReputationChecker(timeout=timeout) as checker:
         return await checker.lookup(domain, ipAddresses)
+
+
+# ---------------------------------------------------------------------------
+# Result cache
+#
+# VirusTotal's free tier allows only ~4 requests/minute and AbuseIPDB
+# ~1,000/day. Re-analysing the same domain within a short window must not
+# burn that quota, so successful lookups are cached in memory for 30
+# minutes. Failures are never cached — a transient timeout should get a
+# fresh chance on the next request.
+# ---------------------------------------------------------------------------
+
+_REPUTATION_CACHE: dict[tuple, tuple[float, ReputationResult]] = {}
+_REPUTATION_CACHE_TTL_SECONDS = 1800.0
+_REPUTATION_CACHE_MAX_ENTRIES = 500
+_REPUTATION_CACHE_LOCK = asyncio.Lock()
+
+
+async def lookupReputationCached(
+    domain: str,
+    ipAddresses: Optional[list[str]] = None,
+    timeout: Optional[float] = None,
+) -> ReputationResult:
+    """`lookupReputation` with a 30-minute in-memory result cache.
+
+    Only SUCCESS results are cached. The cache is process-local and
+    bounded (oldest entry evicted at 500 entries).
+    """
+    key = (domain, tuple(sorted(ipAddresses or [])))
+
+    async with _REPUTATION_CACHE_LOCK:
+        cached = _REPUTATION_CACHE.get(key)
+        if cached is not None:
+            cachedAt, cachedResult = cached
+            if time.monotonic() - cachedAt < _REPUTATION_CACHE_TTL_SECONDS:
+                logger.debug(f"Reputation cache hit for {domain}")
+                return cachedResult
+
+    result = await lookupReputation(domain, ipAddresses, timeout)
+
+    if result.status == LookupStatus.SUCCESS:
+        async with _REPUTATION_CACHE_LOCK:
+            if len(_REPUTATION_CACHE) >= _REPUTATION_CACHE_MAX_ENTRIES:
+                oldestKey = min(
+                    _REPUTATION_CACHE, key=lambda k: _REPUTATION_CACHE[k][0]
+                )
+                _REPUTATION_CACHE.pop(oldestKey, None)
+            _REPUTATION_CACHE[key] = (time.monotonic(), result)
+
+    return result

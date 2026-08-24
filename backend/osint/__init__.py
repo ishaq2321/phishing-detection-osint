@@ -72,6 +72,7 @@ from .reputationChecker import (
     ReputationRateLimitError,
     ReputationTimeoutError,
     lookupReputation,
+    lookupReputationCached,
 )
 
 __all__ = [

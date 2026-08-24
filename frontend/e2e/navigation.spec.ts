@@ -15,8 +15,7 @@ test.describe("Navigation", () => {
   test("navigates to all pages via sidebar links", async ({ page }) => {
     await page.goto("/");
 
-    /* Landing page redirects straight into the analyser */
-    await page.waitForURL("**/analyze");
+    /* Landing page renders the analyser directly at "/" */
     await expect(page.getByRole("heading", { name: "Analyse Content" })).toBeVisible();
 
     /* Dashboard */

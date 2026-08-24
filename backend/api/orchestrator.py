@@ -20,7 +20,7 @@ from urllib.parse import urlparse
 from backend.analyzer import AnalysisResult, ContentType, NlpAnalyzer
 from backend.config import settings
 from backend.ml import FeatureSet, PhishingPredictor, RiskScore, extractFeatures, scoreUrl
-from backend.osint import OsintData, lookupDns, lookupReputation, lookupWhois
+from backend.osint import OsintData, lookupDns, lookupReputationCached, lookupWhois
 
 from .schemas import (
     AnalysisResponse,
@@ -44,6 +44,11 @@ THREAT_SAFE_UPPER = 0.3
 THREAT_SUSPICIOUS_UPPER = 0.5
 THREAT_DANGEROUS_UPPER = 0.7
 RECENT_DOMAIN_AGE_DAYS = 30
+# Maximum number of batch items analysed simultaneously. Each item spawns
+# up to three OSINT lookups; an unbounded gather on a 50-item batch means
+# ~150 concurrent outbound requests, which overwhelms free-tier instances
+# and trips provider rate limits.
+BATCH_CONCURRENCY = 5
 
 
 # =============================================================================
@@ -273,7 +278,7 @@ class AnalysisOrchestrator:
             tasks = {
                 "whois": asyncio.create_task(lookupWhois(domain)),
                 "dns": asyncio.create_task(lookupDns(domain)),
-                "reputation": asyncio.create_task(lookupReputation(domain)),
+                "reputation": asyncio.create_task(lookupReputationCached(domain)),
             }
             done, pending = await asyncio.wait(
                 tasks.values(),
@@ -433,13 +438,28 @@ class AnalysisOrchestrator:
         domain: Optional[str]
     ) -> OsintSummary:
         """Build OSINT summary from OSINT data."""
+        # Count sources that produced usable data (skip skipped/failed
+        # checks) so the UI can tell "checked and clean" apart from
+        # "no source ran".
+        sourcesChecked = 0
+        if osintData.reputation:
+            sourcesChecked = sum(
+                1
+                for c in osintData.reputation.checks
+                if getattr(c, "category", None) not in (
+                    "api_key_missing",
+                    "check_failed",
+                    "not_found",
+                )
+            )
         return OsintSummary(
             domain=domain or osintData.domain,
             domainAgeDays=osintData.whois.domainAgeDays if osintData.whois else None,
             registrar=osintData.whois.registrar if osintData.whois else None,
             isPrivate=osintData.whois.isPrivacyProtected if osintData.whois else False,
             hasValidDns=bool(osintData.dns and osintData.dns.hasIpAddresses) if osintData.dns else False,
-            reputationScore=osintData.reputation.aggregateScore if osintData.reputation else 0.5,
+            reputationScore=osintData.reputation.aggregateScore if osintData.reputation else 0.0,
+            reputationSourcesChecked=sourcesChecked,
             inBlacklists=osintData.reputation.maliciousCount > 0 if osintData.reputation else False
         )
     
@@ -514,15 +534,18 @@ class AnalysisOrchestrator:
                 contentType="auto",
             )
 
+        semaphore = asyncio.Semaphore(BATCH_CONCURRENCY)
+
         async def _runner(item: object):
             """Run with exception captured into the result tuple."""
-            try:
-                resp = await _runOne(item)
-                return ("ok", resp, None)
-            except Exception as exc:  # noqa: BLE001 - we deliberately
-                # catch *everything*; per-item failures must not
-                # cancel sibling tasks.
-                return ("error", None, str(exc) or type(exc).__name__)
+            async with semaphore:
+                try:
+                    resp = await _runOne(item)
+                    return ("ok", resp, None)
+                except Exception as exc:  # noqa: BLE001 - we deliberately
+                    # catch *everything*; per-item failures must not
+                    # cancel sibling tasks.
+                    return ("error", None, str(exc) or type(exc).__name__)
 
         tasks = [asyncio.create_task(_runner(it)) for it in items]
         results = await asyncio.gather(*tasks)

@@ -33,13 +33,13 @@ services:
       cd backend && PYTHONPATH=.. exec uvicorn main:app --host 0.0.0.0 --port $PORT
 
     # ------------------------------------------------------------------
-    # Deployment behaviour — never auto-deploy on a git push.
-    #   'autoDeployTrigger: off' replaces the deprecated 'autoDeploy: false'
-    #  ipAllowList is deliberately omitted (this is a public API).
-    #  The value MUST be quoted as a string in YAML; otherwise the bare
-    #  token 'off' is parsed as the boolean false, which Render rejects.
+    # Deployment behaviour — auto-deploy on push, filtered to backend
+    # changes by buildFilter below. This removes the need for manual
+    # dashboard deploys after every backend fix (the old 'off' setting
+    # is exactly why production drifted behind main twice).
+    #   'commit' = deploy on every push that passes the buildFilter.
     # ------------------------------------------------------------------
-    autoDeployTrigger: 'off'
+    autoDeployTrigger: 'commit'
 
     # ------------------------------------------------------------------
     # Path filter — defence in depth. If Render ever ignores the

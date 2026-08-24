@@ -198,16 +198,22 @@ class VerdictResult(BaseModel):
 class OsintSummary(BaseModel):
     """
     Summary of OSINT data collection.
-    
+
     Attributes:
         domain: Domain that was analyzed
         domainAgeDays: Age of domain in days
         registrar: Domain registrar name
         isPrivate: Whether WHOIS privacy is enabled
         hasValidDns: Whether domain has valid DNS records
-        reputationScore: Reputation score (0.0-1.0, higher is better)
+        reputationScore: Suspicion score from OSINT sources
+            (0.0 = no malicious signals, 1.0 = flagged by all sources).
+            This mirrors the backend aggregateScore semantics exactly:
+            higher is MORE suspicious, not more trustworthy.
+        reputationSourcesChecked: How many reputation sources actually
+            returned data. 0 means no source ran (e.g. API keys absent)
+            and the score carries no information.
         inBlacklists: Whether domain is in any blacklists
-        
+
     Example:
         >>> osint = OsintSummary(
         ...     domain="example.com",
@@ -216,6 +222,7 @@ class OsintSummary(BaseModel):
         ...     isPrivate=True,
         ...     hasValidDns=True,
         ...     reputationScore=0.3,
+        ...     reputationSourcesChecked=2,
         ...     inBlacklists=False
         ... )
     """
@@ -237,10 +244,22 @@ class OsintSummary(BaseModel):
         description="Has valid DNS records"
     )
     reputationScore: float = Field(
-        default=0.5,
+        default=0.0,
         ge=0.0,
         le=1.0,
-        description="Reputation score (higher is better)"
+        description=(
+            "Suspicion score from OSINT sources: 0.0 = no malicious "
+            "signals, 1.0 = flagged by all sources. Higher is MORE "
+            "suspicious."
+        )
+    )
+    reputationSourcesChecked: int = Field(
+        default=0,
+        ge=0,
+        description=(
+            "Number of reputation sources that returned usable data. "
+            "0 = no source ran; the score is then meaningless."
+        )
     )
     inBlacklists: bool = Field(
         default=False,

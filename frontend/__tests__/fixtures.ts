@@ -67,6 +67,7 @@ export const safeOsint: OsintSummary = {
   isPrivate: false,
   hasValidDns: true,
   reputationScore: 0.02,
+  reputationSourcesChecked: 2,
   inBlacklists: false,
 };
 
@@ -77,6 +78,7 @@ export const suspiciousOsint: OsintSummary = {
   isPrivate: true,
   hasValidDns: true,
   reputationScore: 0.65,
+  reputationSourcesChecked: 2,
   inBlacklists: false,
 };
 

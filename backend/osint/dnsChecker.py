@@ -376,13 +376,20 @@ class DnsChecker:
             Tuple of (results dict, critical exception if any)
         """
         recordTypes = ["A", "AAAA", "MX", "NS", "TXT", "CNAME"]
-        
-        # Create tasks for parallel resolution
+
+        # Create tasks for parallel resolution. Each record type gets a
+        # hard deadline of 2x the query timeout: retries may happen within
+        # it, but one flaky record type (resolvers often drop TXT or MX)
+        # must not stretch the whole lookup past the OSINT budget.
+        perTypeDeadline = self._timeout * 2
         tasks = [
-            self._resolveWithRetry(domain, recordType)
+            asyncio.wait_for(
+                self._resolveWithRetry(domain, recordType),
+                timeout=perTypeDeadline,
+            )
             for recordType in recordTypes
         ]
-        
+
         # Run all lookups in parallel
         results = await asyncio.gather(*tasks, return_exceptions=True)
         

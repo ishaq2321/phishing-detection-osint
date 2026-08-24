@@ -18,6 +18,7 @@ from typing import Any, Optional
 from urllib.parse import urlparse
 
 from backend.analyzer import AnalysisResult, ContentType, NlpAnalyzer
+from backend.config import settings
 from backend.ml import FeatureSet, PhishingPredictor, RiskScore, extractFeatures, scoreUrl
 from backend.osint import OsintData, lookupDns, lookupReputation, lookupWhois
 
@@ -263,33 +264,45 @@ class AnalysisOrchestrator:
             url: Original URL being analyzed
         """
         try:
-            # Collect data from all OSINT sources in parallel with global timeout
-            # This ensures we don't hang indefinitely on non-existent domains
-            whoisResult, dnsResult, reputationResult = await asyncio.wait_for(
-                asyncio.gather(
-                    lookupWhois(domain),
-                    lookupDns(domain),
-                    lookupReputation(domain),
-                    return_exceptions=True,  # Don't fail if one lookup fails
-                ),
-                timeout=15.0,  # Global timeout for all OSINT lookups
+            # Collect data from all OSINT sources in parallel under a global
+            # budget. On deadline, sources that FINISHED are kept and only
+            # the still-running ones are cancelled — a slow DNS lookup must
+            # not discard an already-completed WHOIS result (the original
+            # wait_for cancelled everything, which is how established
+            # domains like github.com lost all OSINT data).
+            tasks = {
+                "whois": asyncio.create_task(lookupWhois(domain)),
+                "dns": asyncio.create_task(lookupDns(domain)),
+                "reputation": asyncio.create_task(lookupReputation(domain)),
+            }
+            done, pending = await asyncio.wait(
+                tasks.values(),
+                timeout=float(settings.osintTimeout),
             )
-            
-            # Handle exceptions returned by gather (when return_exceptions=True)
-            if isinstance(whoisResult, Exception):
-                whoisResult = None
-            if isinstance(dnsResult, Exception):
-                dnsResult = None
-            if isinstance(reputationResult, Exception):
-                reputationResult = None
-            
+            for task in pending:
+                task.cancel()
+            if pending:
+                await asyncio.gather(*pending, return_exceptions=True)
+
+            def result_of(name: str):
+                task = tasks[name]
+                if task in done and not task.cancelled():
+                    exc = task.exception()
+                    if exc is None:
+                        return task.result()
+                return None
+
+            whoisResult = result_of("whois")
+            dnsResult = result_of("dns")
+            reputationResult = result_of("reputation")
+
             # Build OsintData object
             return OsintData(
                 url=url or f"https://{domain}",
                 domain=domain,
-                whois=whoisResult if whoisResult and not isinstance(whoisResult, BaseException) and whoisResult.status == "success" else None,
-                dns=dnsResult if dnsResult and not isinstance(dnsResult, BaseException) and dnsResult.status == "success" else None,
-                reputation=reputationResult if reputationResult and not isinstance(reputationResult, BaseException) and reputationResult.status == "success" else None,
+                whois=whoisResult if whoisResult and whoisResult.status == "success" else None,
+                dns=dnsResult if dnsResult and dnsResult.status == "success" else None,
+                reputation=reputationResult if reputationResult and reputationResult.status == "success" else None,
             )
             
         except asyncio.TimeoutError:

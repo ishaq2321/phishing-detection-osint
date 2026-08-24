@@ -160,6 +160,18 @@ class Settings(BaseSettings):
         description="Reputation API request timeout in seconds"
     )
 
+    osintTimeout: int = Field(
+        default=25,
+        ge=5,
+        le=60,
+        validation_alias=_envAlias("osintTimeout", "OSINT_TIMEOUT"),
+        description=(
+            "Global budget for the parallel OSINT collection phase. "
+            "Sources that finish within the budget are kept even when a "
+            "sibling source is slow — only the slow source is discarded."
+        )
+    )
+
     maxRetries: int = Field(
         default=3,
         ge=0,

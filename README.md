@@ -34,7 +34,7 @@ the XGBoost classifier (23,374 training samples, 21 features) contributes
 | PR-AUC            | 99.48%                         |
 | Feature pipeline  | 17 URL structural + 4 OSINT    |
 | NLP detectors     | 10 social-engineering tactics  |
-| Automated tests   | **1,214** (1,010 pytest · 173 Jest · 31 Playwright) |
+| Automated tests   | **1,219** (1,015 pytest · 173 Jest · 31 Playwright) |
 
 ### Feature Highlights
 
@@ -175,10 +175,10 @@ Every commit runs the full suite via GitHub Actions (see the CI badge above).
 
 | Layer    | Framework  | Count | Command                                    |
 |----------|------------|-------|--------------------------------------------|
-| Backend  | pytest     | 1,010 | `python -m pytest tests/ -q`               |
+| Backend  | pytest     | 1,015 | `python -m pytest tests/ -q`               |
 | Frontend | Jest       | 173   | `cd frontend && npx jest --ci`             |
 | E2E      | Playwright | 31    | `cd frontend && npx playwright test`       |
-| **Total**|            | **1214** |                                          |
+| **Total**|            | **1219** |                                          |
 
 Useful variations:
 
@@ -216,7 +216,7 @@ npx jest --ci --watch                              # Jest watch mode
 │   ├── __tests__/           # Jest unit tests (173 tests)
 │   ├── e2e/                 # Playwright browser tests (31 tests)
 │   └── public/              # Static assets (logo, PWA icons)
-├── tests/                   # Backend tests (1010 pytest tests)
+├── tests/                   # Backend tests (1015 pytest tests)
 │   ├── unit/
 │   └── integration/
 ├── data/                    # Datasets (phishing + legitimate URLs)

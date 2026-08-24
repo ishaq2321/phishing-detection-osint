@@ -23,9 +23,19 @@ PhishGuard is a web application requiring no installation. The user accesses the
 
 \section{Using the Program}
 
-\subsection{The Dashboard}
+\subsection{The Landing Flow and Dashboard}
 
-Upon navigating to the application, the user is presented with the Dashboard (Figure \ref{fig:dashboard}). This screen serves as the landing page and provides two primary call-to-action buttons: ``Analyse Now,'' which navigates to the analysis page, and ``How It Works,'' which navigates to the methodology explanation. The Dashboard also displays three capability cards describing the system's detection modes: URL Analysis, OSINT Enrichment, and NLP Detection. Below the capability cards, a ``System Overview'' card summarises the current scoring weights (e.g., ``text 40\%, URL 25\%, OSINT 35\%''), the number of threat levels (4), and the available input modes (3).
+The application opens directly on the Analyser: the root route renders
+the paste-and-go analysis screen itself, so a user can act on a
+suspicious URL or message without any intermediate navigation. The
+activity Dashboard remains available (at \texttt{/dashboard}, listed
+second in the navigation) for users who want an aggregate view. The
+Dashboard presents two primary call-to-action buttons --- ``Analyse''
+and ``How It Works'' --- and four overview cards computed from the most
+recent local analyses: total analyses, safe ratio, average risk score
+(with sparkline), and critical-threat count, followed by a Recent
+Activity table whose rows are grid-aligned so that score bars,
+percentages, and threat badges form consistent columns.
 
 \begin{figure}[htbp]
 \centering
@@ -166,7 +176,7 @@ The OSINT Intelligence section presents the external intelligence gathered about
 \begin{itemize}
 \item \textbf{Domain Information:} Displays the domain name, domain age (classified as ``Very New'' if under 30 days, ``New'' if under 180 days, or ``Established'' otherwise), registrar name, and WHOIS privacy status (``Protected'' or ``Public''). Each field includes an info tooltip explaining its relevance: for example, ``Newly registered domains are more likely to be used for phishing'' (Domain Age) and ``Privacy-protected WHOIS records can hide the true registrant'' (Privacy).
 \item \textbf{DNS Status:} Indicates whether the domain has valid DNS records, shown with a checkmark or cross icon. The tooltip explains: ``DNS records indicate whether the domain resolves to a valid server.''
-\item \textbf{Reputation:} Displays a reputation score between 0 and 1 on a colour-coded progress bar (green for Good $\geq$0.7, amber for Fair $\geq$0.4, red for Poor), and a blacklist status badge (``Clean'' or ``Blacklisted''). The tooltip explains: ``Aggregated reputation from OSINT sources (WHOIS age, DNS, blacklists)'' and ``Checks whether the domain appears on known phishing/malware blacklists.''
+\item \textbf{Reputation:} Displays the OSINT suspicion score on a colour-coded progress bar using suspicion semantics that mirror the backend exactly --- low is good (green ``Clean'' $<$0.3, amber ``Suspicious signals'' $<$0.7, red ``Malicious signals'' above), with the number of sources that actually returned data shown alongside. When no reputation source produced data (typically because provider API keys are unconfigured), the card states ``No reputation source returned data'' instead of displaying a meaningless number. A blacklist status badge (``Clean'' or ``Blacklisted'') is always shown. The tooltip explains: ``Malicious signals reported by reputation sources (blacklists, VirusTotal, AbuseIPDB). Low is good.''
 \end{itemize}
 
 If OSINT data could not be retrieved because the input does not contain a recognisable domain, the section displays a card explaining: ``No OSINT enrichment data was collected for this analysis. This can happen when the input does not contain a recognisable domain.''
@@ -187,10 +197,16 @@ The Score Visualisation section provides three interactive charts (Figure \ref{f
 \end{figure}
 
 \begin{itemize}
-\item \textbf{Score Breakdown (Donut Chart):} A Recharts donut chart showing the proportion of the ML model contribution (85\% for URL inputs, 55\% for text inputs) versus the NLP contribution, with the final risk score displayed in the centre.
+\item \textbf{Score Breakdown (Donut Chart):} A Recharts donut chart in which each segment represents the \emph{actual weighted contribution} of a pipeline component (ML model, NLP analysis, URL features, OSINT) to this specific analysis, as reported by the backend's \texttt{componentScores} field; the final phishing risk score is displayed in the centre. Results produced before component reporting existed render an honest numeric fallback instead of fabricated segments.
 \item \textbf{Threat Gauge:} A semi-circular SVG gauge with four colour zones (green, yellow, orange, red) and an animated needle pointing to the calculated score.
-\item \textbf{Confidence Bar:} A horizontal progress bar colour-coded by threat level, with a gradient scale showing the boundaries between threat zones at 30\%, 50\%, 70\%, and 100\%.
+\item \textbf{Risk Score Bar:} A horizontal progress bar colour-coded by threat level, captioned so the direction is unambiguous (``Estimated phishing risk: N\%''), with a gradient scale whose ends are labelled ``no risk'' and ``certain risk''.
 \end{itemize}
+
+The verdict banner itself labels its headline number explicitly as
+``Phishing Risk'' and, for safe verdicts, adds a companion
+``Safety estimate'' line (100\% $-$ risk), eliminating the ambiguity of
+a bare ``0\%'' appearing next to a ``Safe'' badge --- a phrasing a
+naive reading interprets as ``0\% safe''.
 
 \subsection{Share and Export Actions}
 

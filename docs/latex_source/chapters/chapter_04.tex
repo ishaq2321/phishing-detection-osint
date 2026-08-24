@@ -329,11 +329,22 @@ the \texttt{/check} endpoint to retrieve an
 reports associated with the resolved IP address.
 
 The outputs from these APIs are mathematically aggregated into an
-overarching \texttt{reputationScore} bounded between 0.0 and 1.0. This
-score provides the orchestrator with definitive, community-verified
-intelligence that directly heavily influences the
+overarching \texttt{reputationScore} bounded between 0.0 and 1.0, in
+which higher values denote \emph{more} suspicious findings --- a
+convention the scoring engine and the API schema both follow
+consistently. The summary payload additionally reports
+\texttt{reputationSourcesChecked}, the number of sources that returned
+usable data, so that consumers can distinguish ``checked and clean''
+from ``no source ran'' (the typical case when provider API keys are
+absent). This score provides the orchestrator with definitive,
+community-verified intelligence that directly heavily influences the
 \texttt{VerdictResult}, particularly when the machine learning model's
-confidence falls into the ambiguous ``Suspicious'' tier.
+confidence falls into the ambiguous ``Suspicious'' tier. Because
+VirusTotal's free tier permits only about four requests per minute,
+successful lookups are memoised in a bounded 30-minute in-memory cache,
+and a bounded concurrency semaphore caps simultaneous batch analyses so
+that a full 50-item batch cannot exhaust the provider quota or the
+hosting instance.
 
 
 

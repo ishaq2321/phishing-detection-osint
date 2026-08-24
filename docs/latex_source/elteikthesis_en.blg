@@ -1,15 +1,15 @@
-[1] Config.pm:307> INFO - This is Biber 2.17
-[1] Config.pm:310> INFO - Logfile is 'elteikthesis_en.blg'
-[87] biber:340> INFO - === Fri Aug 14, 2026, 22:03:39
-[103] Biber.pm:418> INFO - Reading 'elteikthesis_en.bcf'
-[172] Biber.pm:972> INFO - Found 28 citekeys in bib section 0
-[186] Biber.pm:4383> INFO - Processing section 0
-[249] Biber.pm:4574> INFO - Looking for bibtex file 'elteikthesis.bib' for section 0
-[252] bibtex.pm:1713> INFO - LaTeX decoding ...
-[289] bibtex.pm:1518> INFO - Found BibTeX data source 'elteikthesis.bib'
-[598] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[598] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
-[598] Biber.pm:4203> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
-[598] Biber.pm:4209> INFO - No sort tailoring available for locale 'en-US'
-[623] bbl.pm:654> INFO - Writing 'elteikthesis_en.bbl' with encoding 'UTF-8'
-[636] bbl.pm:757> INFO - Output to elteikthesis_en.bbl
+[0] Config.pm:307> INFO - This is Biber 2.17
+[0] Config.pm:310> INFO - Logfile is 'elteikthesis_en.blg'
+[77] biber:340> INFO - === Mon Aug 24, 2026, 22:10:50
+[94] Biber.pm:418> INFO - Reading 'elteikthesis_en.bcf'
+[152] Biber.pm:972> INFO - Found 28 citekeys in bib section 0
+[166] Biber.pm:4383> INFO - Processing section 0
+[176] Biber.pm:4574> INFO - Looking for bibtex file 'elteikthesis.bib' for section 0
+[177] bibtex.pm:1713> INFO - LaTeX decoding ...
+[198] bibtex.pm:1518> INFO - Found BibTeX data source 'elteikthesis.bib'
+[332] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[332] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[332] Biber.pm:4203> INFO - Sorting list 'none/global//global/global' of type 'entry' with template 'none' and locale 'en-US'
+[332] Biber.pm:4209> INFO - No sort tailoring available for locale 'en-US'
+[352] bbl.pm:654> INFO - Writing 'elteikthesis_en.bbl' with encoding 'UTF-8'
+[360] bbl.pm:757> INFO - Output to elteikthesis_en.bbl

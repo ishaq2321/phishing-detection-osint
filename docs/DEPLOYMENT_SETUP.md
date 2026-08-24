@@ -2,15 +2,18 @@
 *(Last updated: 2026-08-23 — pending: backend Manual Deploy required to ship drift monitoring + explanations)*
 
 > **⚠ Pending deployment (2026-08-23):** commits `e8ef255` and `462e773`
-> add two backend features — model drift monitoring (`GET /api/model/drift`,
-> `phishguard_drift_*` gauges) and deterministic verdict explanations
-> (`explanation` field on URL analyses). Because the backend uses
-> `autoDeployTrigger: 'off'`, these are **not live on Render yet**.
-> Ship them via Dashboard → `phishguard-api` → **Manual Deploy → Deploy
-> latest commit**. The frontend (Vercel) deployed automatically.
+> **Status (2026-08-24): RESOLVED.** Render auto-deploys backend
+> changes (`autoDeployTrigger: 'commit'` + backend `buildFilter` are
+> live and verified — commit 10c4eb4 onward auto-deployed without any
+> dashboard action). The historical warning below is kept for context.
+>
+> ~~Because the backend uses `autoDeployTrigger: 'off'`, these are not
+> live on Render yet~~ → fixed by the blueprint sync performed on
+> 2026-08-24.
 
 Both **Vercel** (frontend) and **Render** (backend) are configured by
-default to auto-deploy on every push to `main`. Editing documentation,
+default to auto-deploy on every push to `main`, filtered to backend
+paths. Editing documentation,
 updating `README.md`, or tweaking `render.yaml` should not trigger a
 rebuild — wasting build minutes, blocking your team, and producing
 noisy deploy logs.
@@ -29,8 +32,8 @@ control** so no dashboard click is required.
 | Edit `frontend/**` code | Rebuilds normally | n/a |
 | Edit `frontend/vercel.json` | Rebuilds normally | n/a |
 | Edit `frontend/should-build.sh` | Rebuilds normally | n/a |
-| Edit `backend/**` code | n/a | No auto-deploy (manual only — see "backend — Render") |
-| Edit `render.yaml` | No rebuild | Synced and applied at next manual deploy |
+| Edit `backend/**` code | n/a | **Auto-deploys** (`autoDeployTrigger: 'commit'` + backend `buildFilter`) |
+| Edit `render.yaml` | No rebuild | Auto-applied via Blueprint sync |
 | Edit `tests/**` | **No rebuild** | **No rebuild** |
 
 The thesis deliberately uses a **belt-and-suspenders** strategy:
@@ -40,9 +43,13 @@ The thesis deliberately uses a **belt-and-suspenders** strategy:
   paths changed; **Vercel skips the build entirely when exit code
   is 0**. This is a documented, official Vercel feature that takes
   precedence over the dashboard Ignored Build Step setting.
-- **`render.yaml`** includes both `autoDeployTrigger: 'off'` AND a
-  `buildFilter` glob list — if Render ever ignores one, the other
-  still applies.
+- **`render.yaml`** sets `autoDeployTrigger: 'commit'` (auto-deploy on
+  push) with a `buildFilter` glob list restricted to `backend/**` and
+  `render.yaml` — backend fixes ship automatically, docs/frontend edits
+  never waste build minutes. (Historical note: this was deliberately
+  `'off'` until 2026-08, which caused production to drift behind main
+  twice and required manual dashboard deploys; the path-filtered
+  auto-deploy is the corrected posture.)
 
 ### Live-verified status (last live test 2026-07-17)
 
@@ -128,8 +135,10 @@ behave correctly.
 
 The repository now contains a top-level `render.yaml` blueprint with:
 
-- **`autoDeployTrigger: 'off'`** — replaces the legacy
-  `autoDeploy: false` field per the current Render schema.
+- **`autoDeployTrigger: 'commit'`** — replaces the legacy
+  `autoDeploy: false` field per the current Render schema. Backend
+  changes now deploy automatically (was `'off'` until 2026-08-24,
+  which caused two production-drift incidents).
 - **`buildFilter.paths`** — globs for `backend/**/*.{py,txt,cfg,toml}`
   + `backend/main.py` + `render.yaml`. Only commits that change one
   of these files can trigger an auto-build.
@@ -162,9 +171,10 @@ edit:
    & deploy**
 4. Click **Deploy**
 
-This forces Render to re-read the blueprint, apply your
-`autoDeployTrigger: 'off'` setting, and use your new `buildFilter`
-glob list. Future pushes will now respect both.
+This forces Render to re-read the blueprint and apply the
+`autoDeployTrigger: 'commit'` setting with the `buildFilter` glob
+list. Future pushes now respect both — verified live on 2026-08-24
+when commit 313968f auto-deployed without dashboard action.
 
 #### Method B — Set Auto-Deploy off from the dashboard
 
@@ -190,12 +200,11 @@ deploy control lives in version control.
 
 ### One-time, optional but recommended:
 
-With `autoDeployTrigger: 'off'` already in `render.yaml`, the next
-time Render re-syncs the blueprint (next time it touches the repo),
-backend deploys will correctly stop auto-firing. **You are no
-longer required to click anything in either dashboard.** The
-optional Render one-click confirmation ("Clear build cache &
-deploy") in Method A above just accelerates when that sync happens.
+With `autoDeployTrigger: 'commit'` live since 2026-08-24, backend
+deploys fire automatically on every push that touches backend paths.
+**You are no longer required to click anything in either dashboard.**
+(Historically this paragraph described the opposite posture — 'off' —
+which is what caused the production-drift incidents documented above.)
 
 ### After the first sync, deploy control is fully version-controlled:
 

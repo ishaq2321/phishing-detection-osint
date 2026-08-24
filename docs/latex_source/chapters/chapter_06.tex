@@ -452,6 +452,49 @@ the following critical implementations:
   user trust and reinforcing secure behavioral conditioning.
 \end{enumerate}
 
+\section{Post-Development Hardening: A Reliability Case
+Study}\label{post-development-hardening}
+
+Following the initial delivery, a systematic review and
+production-verification pass surfaced and repaired a series of defects
+that collectively form a instructive case study in distributed-systems
+hygiene. Three are worth recording.
+
+First, a latency benchmark of the live OSINT collectors exposed a
+silent data-loss mechanism: the original collection phase cancelled
+\emph{all three} parallel lookups when its global deadline expired,
+discarding results that had already completed. A single flaky DNS
+record type (resolvers frequently drop TXT or MX queries) could thus
+strip a well-established domain of every OSINT signal. The remedy --- a
+keep-what-finished collection semantic, a configurable 25-second
+budget, per-record-type deadlines, a quota-protecting result cache, and
+an RDAP fallback for the TLD families legacy WHOIS cannot serve ---
+restored complete OSINT coverage for every reachable domain measured.
+
+Second, a semantic-direction defect was caught by cross-checking the
+API schema against its consumer: the aggregated reputation score
+encodes \emph{suspicion} (higher is worse), but the client rendered it
+as \emph{trust} (higher is better), meaning a domain flagged by
+VirusTotal would have been displayed in green. The repair introduced an
+explicit \texttt{reputationSourcesChecked} counter so that ``verified
+clean'' and ``no source ran'' are distinguishable at a glance --- an
+honesty property the interface previously lacked.
+
+Third, the deployment pipeline itself was found to be the source of
+production drift on two separate occasions: a path-matching bug in the
+frontend build filter silently skipped every push (git pathspecs are
+working-directory-relative, and the filter was written for the wrong
+directory), and the backend service ran with auto-deployment disabled,
+requiring a manual dashboard action per release. Both were corrected
+with path-aware, fail-open build filters verified against every real
+push range, and the incident is a concrete demonstration that
+\emph{deployment configuration is code} and demands the same
+adversarial review as application logic.
+
+The general lesson aligns with the thesis's central theme: reliability
+is not a feature to be declared but a property to be measured,
+verified, and re-verified against the running system.
+
 \section{Future Work: Algorithmic
 Enhancements}\label{future-work-algorithmic-enhancements}
 

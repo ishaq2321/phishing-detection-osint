@@ -87,7 +87,7 @@ Orchestration}\label{asynchronous-osint-orchestration}
 \centering
 \includegraphics[width=0.85\linewidth,height=0.65\textheight,keepaspectratio]{images/sequence-diagram.png}
 \caption{Sequence Diagram illustrating parallel execution of
-Structural Features, NLP Analysis, and the strict 15.0s OSINT timeout}
+Structural Features, NLP Analysis, and the budgeted OSINT collection phase}
 \end{figure}
 
 The integration of real-time OSINT constitutes the primary bottleneck in
@@ -102,15 +102,32 @@ Instead, it utilizes \texttt{asyncio.gather} to concurrently execute
 \texttt{lookupWhois(domain)}, \texttt{lookupDns(domain)}, and
 \texttt{lookupReputation(domain)}.
 
-Crucially, this parallel execution is wrapped in an
-\texttt{asyncio.wait\_for} block with a strict global timeout of 15.0
-seconds. This architectural safeguard ensures that unresponsive external
-servers or rate-limited third-party APIs do not cause the internal event
-loop to hang indefinitely. The system is designed to fail gracefully; if
-an OSINT query times out or returns an exception, the orchestrator
-catches it, logs the failure, and proceeds with the analysis utilizing
-the available subset of data (or falling back to pure ML/NLP
-heuristics).
+Crucially, this parallel execution runs under a configurable global
+budget (\texttt{OSINT\_TIMEOUT}, default 25\,seconds) enforced with
+\texttt{asyncio.wait}. The collection semantics were redesigned after
+latency benchmarking revealed a data-loss defect in the original
+\texttt{wait\_for}-based implementation: when one slow source (a flaky
+DNS record type stretching past the budget) triggered the deadline, the
+entire gather was cancelled and \emph{already-completed} sibling results
+were discarded --- even well-established domains lost all OSINT data.
+The corrected semantics keep every source that finishes within the
+budget and cancel only the stragglers, and the budget itself was raised
+from a hardcoded 15\,s to a configurable 25\,s: for an investigative
+tool, waiting a few extra seconds is preferable to silently losing
+critical data. Unresponsive external servers or rate-limited
+third-party APIs therefore degrade the analysis gracefully --- the
+orchestrator proceeds with whatever subset of OSINT data completed,
+falling back to pure ML/NLP heuristics when nothing survives.
+
+Two further reliability measures complete the OSINT layer. First, a
+30-minute in-memory result cache shields rate-limited providers
+(VirusTotal's free tier permits roughly four requests per minute) from
+repeated analyses of the same domain. Second, because legacy port-43
+WHOIS has poor coverage for modern gTLDs and hangs on some ccTLDs, a
+WHOIS failure triggers an RDAP fallback: the Registration Data Access
+Protocol, the HTTP successor to WHOIS, is queried via \texttt{rdap.org}
+and yields registration dates and registrar information for TLD
+families that legacy WHOIS misses entirely.
 
 \section{The API and Scoring
 Engine}\label{the-api-and-scoring-engine}
@@ -899,7 +916,7 @@ independent jobs that mirror the local verification commands exactly:
   the pinned spaCy model wheel, and executes the full pytest suite (965
   tests) on Python~3.10.
   \item \textbf{Frontend} --- performs a clean \texttt{npm ci} and runs the
-  Jest suite (145 tests).
+  Jest suite (173 tests).
   \item \textbf{E2E} --- installs Chromium via Playwright and executes the
   31 browser tests against a development server whose API responses are
   fully mocked through \texttt{page.route} fixtures, so no live backend is
@@ -1069,7 +1086,7 @@ input content type.
 \subsection{The 15-Second Concurrency
 Window}\label{the-15-second-concurrency-window}
 
-The API enforces a strict 15-second timeout on all OSINT queries using \texttt{asyncio.wait\_for}. This prevents external service delays from blocking the response. The implementation details are described in Section \ref{asynchronous-osint-orchestration}.
+The API enforces a configurable 25-second budget on all OSINT queries using \texttt{asyncio.wait}, keeping every source that finishes and cancelling only stragglers. This prevents external service delays from blocking the response while avoiding the data loss a hard cancel-everything timeout caused. The implementation details are described in Section \ref{asynchronous-osint-orchestration}.
 
 \subsection{Content-Specific Scoring
 Pipelines}\label{content-specific-scoring-pipelines}
@@ -1104,7 +1121,7 @@ Next.js frontend.
 Methodology}\label{backend-testing-methodology}
 
 The backend testing architecture is constructed upon the \texttt{pytest}
-framework, comprising 1141 distinct tests (965 backend \texttt{pytest} unit/integration tests, 145 frontend \texttt{Jest} tests, and 31 \texttt{Playwright} E2E browser tests) distributed
+framework, comprising 1219 distinct tests (1015 backend \texttt{pytest} unit/integration tests, 173 frontend \texttt{Jest} tests, and 31 \texttt{Playwright} E2E browser tests) distributed
 across the \texttt{tests/unit/} and \texttt{tests/integration/}
 directories. Given the asynchronous nature of the FastAPI orchestrator
 and the underlying Open-Source Intelligence (OSINT) network calls, the

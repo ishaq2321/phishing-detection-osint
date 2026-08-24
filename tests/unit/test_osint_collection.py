@@ -244,3 +244,82 @@ class TestDnsPerTypeDeadline:
         assert elapsed < 6, f"DNS lookup took {elapsed:.1f}s — per-type deadline not enforced"
         assert result.status == LookupStatus.SUCCESS
         assert result.ipAddresses, "A records should still resolve"
+
+
+# =============================================================================
+# RDAP fallback for WHOIS coverage gaps
+# =============================================================================
+
+class TestRdapFallback:
+    """Port-43 WHOIS has poor coverage for modern gTLDs (.app, .dev...);
+    the RDAP fallback must recover those domains."""
+
+    @pytest.mark.asyncio
+    async def test_whois_failure_falls_back_to_rdap(self):
+        from unittest.mock import AsyncMock, MagicMock, patch
+        from backend.osint.whoisLookup import WhoisLookup
+
+        rdapPayload = {
+            "ldhName": "proxicall.app",
+            "status": ["client transfer prohibited"],
+            "events": [
+                {"eventAction": "registration",
+                 "eventDate": "2025-12-23T20:22:01.153Z"},
+            ],
+            "entities": [
+                {"roles": ["registrar"],
+                 "vcardArray": ["vcard", [["fn", {}, "text", "Namecheap Inc."]]]},
+            ],
+            "nameservers": [{"ldhName": "ns1.namecheap.com"}],
+        }
+
+        class FailingWhoisClient:
+            def query(self, domain):
+                raise RuntimeError("whois socket dead")
+
+        lookup = WhoisLookup(client=FailingWhoisClient(), maxRetries=0)
+
+        mockResp = MagicMock()
+        mockResp.status_code = 200
+        mockResp.json.return_value = rdapPayload
+
+        with patch("backend.osint.whoisLookup.httpx.AsyncClient") as mockClientCls:
+            mockClientCls.return_value.__aenter__ = asyncio.coroutine(
+                lambda self: None
+            )() if False else None
+            # Simpler: async context manager via AsyncMock
+            instance = mockClientCls.return_value
+            instance.__aenter__ = AsyncMock(return_value=instance)
+            instance.__aexit__ = AsyncMock(return_value=False)
+            instance.get = AsyncMock(return_value=mockResp)
+
+            result = await lookup.lookup("proxicall.app")
+
+        assert result.status == LookupStatus.SUCCESS
+        assert result.registrar == "Namecheap Inc."
+        assert result.domainAgeDays is not None and result.domainAgeDays > 200
+        assert result.rawData.get("via") == "rdap"
+
+    @pytest.mark.asyncio
+    async def test_rdap_unavailable_keeps_original_error(self):
+        from unittest.mock import AsyncMock, MagicMock, patch
+        from backend.osint.whoisLookup import WhoisLookup
+
+        class FailingWhoisClient:
+            def query(self, domain):
+                raise RuntimeError("whois socket dead")
+
+        lookup = WhoisLookup(client=FailingWhoisClient(), maxRetries=0)
+
+        mockResp = MagicMock()
+        mockResp.status_code = 404
+
+        with patch("backend.osint.whoisLookup.httpx.AsyncClient") as mockClientCls:
+            instance = mockClientCls.return_value
+            instance.__aenter__ = AsyncMock(return_value=instance)
+            instance.__aexit__ = AsyncMock(return_value=False)
+            instance.get = AsyncMock(return_value=mockResp)
+
+            result = await lookup.lookup("nothing.example")
+
+        assert result.status in (LookupStatus.ERROR, LookupStatus.NOT_FOUND)

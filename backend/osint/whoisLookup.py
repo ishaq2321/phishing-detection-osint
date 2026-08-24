@@ -34,6 +34,7 @@ import time
 from datetime import datetime
 from typing import Any, Optional, Protocol
 
+import httpx
 import whois
 
 from backend.config import settings
@@ -219,6 +220,8 @@ class WhoisParser:
             "%Y-%m-%d",
             "%Y-%m-%dT%H:%M:%S",
             "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S.%fZ",  # RDAP: 2025-12-23T20:22:01.153Z
+            "%Y-%m-%dT%H:%M:%S.%f",   # RDAP without Z
             "%d-%b-%Y",
             "%Y/%m/%d",
             "%d/%m/%Y",
@@ -491,21 +494,30 @@ class WhoisLookup:
                 if attempt < self.maxRetries:
                     await self._sleepWithBackoff(attempt)
                 else:
+                    rdap = await self._lookupRdap(domain)
+                    if rdap is not None:
+                        return rdap
                     return self._createErrorResult(
                         domain, LookupStatus.TIMEOUT, str(e), startTime
                     )
-                    
+
             except WhoisNotFoundError as e:
                 logger.info(f"Domain not found in WHOIS: {domain}")
+                rdap = await self._lookupRdap(domain)
+                if rdap is not None:
+                    return rdap
                 return self._createErrorResult(
                     domain, LookupStatus.NOT_FOUND, str(e), startTime
                 )
-                
+
             except Exception as e:
                 logger.error(f"WHOIS error for {domain}: {e}")
                 if attempt < self.maxRetries:
                     await self._sleepWithBackoff(attempt)
                 else:
+                    rdap = await self._lookupRdap(domain)
+                    if rdap is not None:
+                        return rdap
                     return self._createErrorResult(
                         domain, LookupStatus.ERROR, str(e), startTime
                     )
@@ -514,6 +526,85 @@ class WhoisLookup:
         return self._createErrorResult(
             domain, LookupStatus.ERROR, "Max retries exceeded", startTime
         )
+
+    async def _lookupRdap(self, domain: str) -> Optional[WhoisResult]:
+        """RDAP fallback for domains where port-43 WHOIS fails.
+
+        Legacy WHOIS (raw sockets to per-TLD whois servers) has poor
+        coverage for modern gTLDs (.app, .dev, .io, ...) and hangs on
+        some others. RDAP is the HTTP successor protocol with uniform
+        coverage across all gTLD registries; rdap.org redirects to the
+        authoritative server. Only some ccTLDs (e.g. .tk) lack it.
+
+        Returns a WhoisResult on success, None when RDAP has no data —
+        the caller then keeps the original WHOIS error result.
+        """
+        startTime = time.perf_counter()
+        try:
+            async with httpx.AsyncClient(
+                timeout=8.0, follow_redirects=True
+            ) as client:
+                response = await client.get(f"https://rdap.org/domain/{domain}")
+            if response.status_code != 200:
+                logger.info(
+                    f"RDAP fallback: HTTP {response.status_code} for {domain}"
+                )
+                return None
+
+            data = response.json()
+            events = {
+                e.get("eventAction"): e.get("eventDate")
+                for e in data.get("events", [])
+            }
+            creationDate = self.parser._extractDate(events.get("registration"))
+            domainAgeDays = self.parser._calculateAgeDays(creationDate)
+
+            registrar = None
+            for entity in data.get("entities", []):
+                if "registrar" in entity.get("roles", []):
+                    vcard = entity.get("vcardArray", [None, []])
+                    for field in vcard[1]:
+                        if isinstance(field, list) and field[0] == "fn":
+                            registrar = field[3]
+                            break
+
+            nameServers = [
+                ns.get("ldhName")
+                for ns in data.get("nameservers", [])
+                if ns.get("ldhName")
+            ]
+
+            result = WhoisResult(
+                source=DataSource.WHOIS,
+                status=LookupStatus.SUCCESS,
+                domain=domain,
+                registrar=registrar,
+                creationDate=creationDate,
+                nameServers=nameServers,
+                domainAgeDays=domainAgeDays,
+                isPrivacyProtected=False,
+                recentlyRegistered=(
+                    domainAgeDays is not None and domainAgeDays < 30
+                ),
+                rawData={"via": "rdap", "rdap": self._sanitize(data)},
+            )
+            result.durationMs = (time.perf_counter() - startTime) * 1000
+            logger.info(
+                f"RDAP fallback succeeded for {domain} "
+                f"({result.durationMs:.0f}ms)"
+            )
+            return result
+        except Exception as e:  # noqa: BLE001 - fallback must never raise
+            logger.info(f"RDAP fallback failed for {domain}: {e}")
+            return None
+
+    def _sanitize(self, data: dict) -> dict:
+        """Keep only small, non-sensitive RDAP fields for rawData."""
+        return {
+            k: data.get(k)
+            for k in ("ldhName", "status", "handle")
+            if data.get(k) is not None
+        }
     
     async def _lookupWithTimeout(self, domain: str) -> WhoisResult:
         """

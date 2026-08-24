@@ -175,6 +175,20 @@ class TestWhoisParser:
 # =============================================================================
 
 class TestWhoisLookup:
+
+    async def _withRdapUnavailable(self, coro):
+        """Run a lookup with RDAP mocked unreachable (404) so legacy
+        error-path assertions stay valid."""
+        from unittest.mock import AsyncMock, MagicMock, patch
+        mockResp = MagicMock()
+        mockResp.status_code = 404
+        with patch("backend.osint.whoisLookup.httpx.AsyncClient") as cls:
+            instance = cls.return_value
+            instance.__aenter__ = AsyncMock(return_value=instance)
+            instance.__aexit__ = AsyncMock(return_value=False)
+            instance.get = AsyncMock(return_value=mockResp)
+            return await coro
+
     """Tests for the WhoisLookup class."""
     
     @pytest.mark.asyncio
@@ -228,7 +242,9 @@ class TestWhoisLookup:
             maxRetries=0,
         )
         
-        result = await lookup.lookup("error-domain.com")
+        result = await self._withRdapUnavailable(
+            lookup.lookup("error-domain.com")
+        )
         
         assert result.hasFailed is True
         assert result.status == LookupStatus.ERROR
@@ -282,7 +298,9 @@ class TestWhoisLookup:
             maxRetries=2,
         )
         
-        result = await lookup.lookup("not-found.com")
+        result = await self._withRdapUnavailable(
+            lookup.lookup("not-found.com")
+        )
         
         assert result.status == LookupStatus.NOT_FOUND
         # Should only call once, no retries
@@ -420,6 +438,20 @@ class TestWhoisExceptions:
 
 
 class TestResultProperties:
+
+    async def _withRdapUnavailable(self, coro):
+        """Run a lookup with RDAP mocked unreachable (404) so legacy
+        error-path assertions stay valid."""
+        from unittest.mock import AsyncMock, MagicMock, patch
+        mockResp = MagicMock()
+        mockResp.status_code = 404
+        with patch("backend.osint.whoisLookup.httpx.AsyncClient") as cls:
+            instance = cls.return_value
+            instance.__aenter__ = AsyncMock(return_value=instance)
+            instance.__aexit__ = AsyncMock(return_value=False)
+            instance.get = AsyncMock(return_value=mockResp)
+            return await coro
+
     """Tests for WhoisResult computed properties."""
     
     @pytest.mark.asyncio
@@ -435,7 +467,7 @@ class TestResultProperties:
     async def test_hasFailedProperty(self, mockWhoisClientError):
         """hasFailed should return True for failed lookups."""
         lookup = WhoisLookup(client=mockWhoisClientError, maxRetries=0)
-        result = await lookup.lookup("example.com")
+        result = await self._withRdapUnavailable(lookup.lookup("example.com"))
         
         assert result.hasFailed is True
         assert result.isSuccess is False
@@ -450,6 +482,20 @@ class TestResultProperties:
 
 
 class TestEdgeCases:
+
+    async def _withRdapUnavailable(self, coro):
+        """Run a lookup with RDAP mocked unreachable (404) so legacy
+        error-path assertions stay valid."""
+        from unittest.mock import AsyncMock, MagicMock, patch
+        mockResp = MagicMock()
+        mockResp.status_code = 404
+        with patch("backend.osint.whoisLookup.httpx.AsyncClient") as cls:
+            instance = cls.return_value
+            instance.__aenter__ = AsyncMock(return_value=instance)
+            instance.__aexit__ = AsyncMock(return_value=False)
+            instance.get = AsyncMock(return_value=mockResp)
+            return await coro
+
     """Tests for edge cases and boundary conditions."""
     
     @pytest.mark.asyncio
@@ -473,7 +519,7 @@ class TestEdgeCases:
             maxRetries=0,
         )
         
-        result = await lookup.lookup("test.com")
+        result = await self._withRdapUnavailable(lookup.lookup("test.com"))
         
         assert result.hasFailed is True
         assert mockWhoisClientError.query.call_count == 1

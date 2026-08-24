@@ -291,7 +291,15 @@ class TestOsintErrorHandling:
         )
         
         # All should return ERROR status, not raise
-        whoisResult = await whoisLookup.lookup("example.com")
+        from unittest.mock import MagicMock as SyncMagicMock, patch
+        mockResp = SyncMagicMock()
+        mockResp.status_code = 404
+        with patch("backend.osint.whoisLookup.httpx.AsyncClient") as cls:
+            instance = cls.return_value
+            instance.__aenter__ = AsyncMock(return_value=instance)
+            instance.__aexit__ = AsyncMock(return_value=False)
+            instance.get = AsyncMock(return_value=mockResp)
+            whoisResult = await whoisLookup.lookup("example.com")
         dnsResult = await dnsChecker.lookup("example.com")
         reputationResult = await reputationChecker.lookup("example.com")
         

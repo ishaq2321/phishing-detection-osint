@@ -20,6 +20,12 @@ import type { ValidationDetail } from "./errors";
 /** Default timeout for all requests (ms). */
 const DEFAULT_TIMEOUT_MS = 30_000;
 
+/** Default number of retries for network errors (Render cold start). */
+const DEFAULT_MAX_RETRIES = 3;
+
+/** Base delay for exponential backoff (ms). */
+const RETRY_BASE_DELAY_MS = 2_000;
+
 /** Headers sent with every request. */
 const DEFAULT_HEADERS: HeadersInit = {
   "Content-Type": "application/json",
@@ -49,6 +55,8 @@ export interface RequestOptions {
   timeoutMs?: number;
   /** AbortSignal for external cancellation (e.g. user clicks Cancel). */
   signal?: AbortSignal;
+  /** Override the default max retries for network errors. */
+  maxRetries?: number;
 }
 
 /* ------------------------------------------------------------------ */
@@ -56,12 +64,14 @@ export interface RequestOptions {
 /* ------------------------------------------------------------------ */
 
 /**
- * Low-level fetch wrapper.
+ * Low-level fetch wrapper with automatic retry on network errors.
  *
  * - Resolves `path` against the configured `API_BASE_URL`.
  * - Attaches JSON headers and an `AbortController`-based timeout.
  * - Maps failures to typed error classes: {@link NetworkError},
  *   {@link ValidationError}, {@link ApiError}.
+ * - Automatically retries on network errors (e.g., Render cold start)
+ *   with exponential backoff.
  *
  * @typeParam T - Expected shape of the JSON response body.
  */
@@ -71,67 +81,84 @@ export async function apiClient<T>(
   options: RequestOptions = {},
 ): Promise<T> {
   const { timeoutMs = DEFAULT_TIMEOUT_MS, signal: externalSignal } = options;
+  const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
 
-  /* ---- AbortController (timeout + external signal) --------------- */
-  const controller = new AbortController();
+  let lastError: Error | null = null;
 
-  const timeoutId = setTimeout(() => controller.abort("Request timed out"), timeoutMs);
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    /* ---- AbortController (timeout + external signal) --------------- */
+    const controller = new AbortController();
 
-  /* If the caller provided a signal, abort ours when theirs fires. */
-  externalSignal?.addEventListener("abort", () => controller.abort(externalSignal.reason), {
-    once: true,
-  });
+    const timeoutId = setTimeout(() => controller.abort("Request timed out"), timeoutMs);
 
-  /* ---- Build the Request ---------------------------------------- */
-  const baseUrl = resolveBaseUrl();
-  const url = `${baseUrl}${path}`;
+    /* If the caller provided a signal, abort ours when theirs fires. */
+    externalSignal?.addEventListener("abort", () => controller.abort(externalSignal.reason), {
+      once: true,
+    });
 
-  const fetchInit: RequestInit = {
-    ...init,
-    headers: { ...DEFAULT_HEADERS, ...init.headers },
-    signal: controller.signal,
-  };
+    /* ---- Build the Request ---------------------------------------- */
+    const baseUrl = resolveBaseUrl();
+    const url = `${baseUrl}${path}`;
 
-  /* ---- Execute -------------------------------------------------- */
-  let response: Response;
+    const fetchInit: RequestInit = {
+      ...init,
+      headers: { ...DEFAULT_HEADERS, ...init.headers },
+      signal: controller.signal,
+    };
 
-  try {
-    response = await fetch(url, fetchInit);
-  } catch (error: unknown) {
-    clearTimeout(timeoutId);
+    /* ---- Execute -------------------------------------------------- */
+    let response: Response;
 
-    if (error instanceof DOMException && error.name === "AbortError") {
-      throw new NetworkError("Request was cancelled or timed out.", error);
+    try {
+      response = await fetch(url, fetchInit);
+    } catch (error: unknown) {
+      clearTimeout(timeoutId);
+
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw new NetworkError("Request was cancelled or timed out.", error);
+      }
+
+      lastError = new NetworkError(
+        "Cannot connect to the analysis server. Is the backend running?",
+        error,
+      );
+
+      /* Retry on network errors (cold start, connection refused) */
+      if (attempt < maxRetries) {
+        const delay = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      throw lastError;
+    } finally {
+      clearTimeout(timeoutId);
     }
 
-    throw new NetworkError(
-      "Cannot connect to the analysis server. Is the backend running?",
-      error,
-    );
-  } finally {
-    clearTimeout(timeoutId);
-  }
+    /* ---- Handle non-2xx ------------------------------------------- */
+    if (!response.ok) {
+      const body = await safeJson(response);
 
-  /* ---- Handle non-2xx ------------------------------------------- */
-  if (!response.ok) {
-    const body = await safeJson(response);
+      /* FastAPI validation errors (422) */
+      if (response.status === 422 && isValidationBody(body)) {
+        throw new ValidationError(body.detail as ValidationDetail[]);
+      }
 
-    /* FastAPI validation errors (422) */
-    if (response.status === 422 && isValidationBody(body)) {
-      throw new ValidationError(body.detail as ValidationDetail[]);
+      /* Generic API error */
+      const message =
+        typeof body?.detail === "string"
+          ? body.detail
+          : `Request failed with status ${response.status}`;
+
+      throw new ApiError(message, response.status, body);
     }
 
-    /* Generic API error */
-    const message =
-      typeof body?.detail === "string"
-        ? body.detail
-        : `Request failed with status ${response.status}`;
-
-    throw new ApiError(message, response.status, body);
+    /* ---- Parse JSON ----------------------------------------------- */
+    return (await response.json()) as T;
   }
 
-  /* ---- Parse JSON ----------------------------------------------- */
-  return (await response.json()) as T;
+  /* This should never be reached, but TypeScript needs it */
+  throw lastError ?? new NetworkError("Request failed after retries.");
 }
 
 /* ------------------------------------------------------------------ */

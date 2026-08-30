@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AnalysisProgress, type AnalysisPhase } from "@/components/analyze";
+import { BackendWarmupBanner } from "@/components/BackendWarmupBanner";
 import { LinkButton } from "@/components/ui/linkButton";
 import { useResult } from "@/lib/resultsContext";
 import { addEntry } from "@/lib/storage/historyStore";
@@ -229,6 +230,9 @@ export default function AnalyzePage() {
   return (
     <PageTransition>
       <div className="space-y-6">
+        {/* Backend warmup banner */}
+        <BackendWarmupBanner />
+
         {/* Header */}
         <FadeIn>
           <div>

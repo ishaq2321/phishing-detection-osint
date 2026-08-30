@@ -24,20 +24,25 @@ interface HealthState {
   data: LiveHealthResponse | null;
   isLoading: boolean;
   error: string | null;
+  isColdStart: boolean;
 }
 
 /** Default polling interval: 30 seconds. */
 const DEFAULT_INTERVAL_MS = 30_000;
 
+/** Threshold for detecting cold starts (ms). */
+const COLD_START_THRESHOLD_MS = 5_000;
+
 /* ------------------------------------------------------------------ */
 /*  Hook                                                              */
 /* ------------------------------------------------------------------ */
 
-export function useHealth(intervalMs: number = DEFAULT_INTERVAL_MS): { data: LiveHealthResponse | null; isLoading: boolean; error: string | null; refetch: () => Promise<void> } {
+export function useHealth(intervalMs: number = DEFAULT_INTERVAL_MS): { data: LiveHealthResponse | null; isLoading: boolean; error: string | null; isColdStart: boolean; refetch: () => Promise<void> } {
   const [state, setState] = useState<HealthState>({
     data: null,
     isLoading: true,
     error: null,
+    isColdStart: false,
   });
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -47,10 +52,16 @@ export function useHealth(intervalMs: number = DEFAULT_INTERVAL_MS): { data: Liv
 
     try {
       const data = await checkHealthLive();
-      setState({ data, isLoading: false, error: null });
+      setState({ data, isLoading: false, error: null, isColdStart: false });
     } catch (err: unknown) {
       const message = friendlyErrorMessage(err);
-      setState((prev) => ({ ...prev, isLoading: false, error: message }));
+      // Detect cold start: if we've been waiting for a while and get a network error
+      setState((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: message,
+        isColdStart: prev.isColdStart || (prev.error === null && message.includes("Cannot connect")),
+      }));
     }
   }, []);
 
@@ -61,11 +72,16 @@ export function useHealth(intervalMs: number = DEFAULT_INTERVAL_MS): { data: Liv
     async function fetchHealth() {
       try {
         const result = await checkHealthLive();
-        if (!cancelled) setState({ data: result, isLoading: false, error: null });
+        if (!cancelled) setState({ data: result, isLoading: false, error: null, isColdStart: false });
       } catch (err: unknown) {
         if (!cancelled) {
           const message = friendlyErrorMessage(err);
-          setState((prev) => ({ ...prev, isLoading: false, error: message }));
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: message,
+            isColdStart: prev.isColdStart || (prev.error === null && message.includes("Cannot connect")),
+          }));
         }
       }
     }

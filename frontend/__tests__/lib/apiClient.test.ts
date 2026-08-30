@@ -80,7 +80,8 @@ describe("apiClient — errors", () => {
   it("throws NetworkError when fetch throws", async () => {
     global.fetch = jest.fn().mockRejectedValue(new TypeError("Failed to fetch"));
 
-    await expect(apiClient("/api/test")).rejects.toThrow(NetworkError);
+    // Disable retries for this test to avoid timeout
+    await expect(apiClient("/api/test", {}, { maxRetries: 0 })).rejects.toThrow(NetworkError);
   });
 
   it("throws NetworkError with abort message on timeout", async () => {

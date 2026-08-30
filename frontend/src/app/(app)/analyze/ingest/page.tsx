@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/card";
 import { PageTransition } from "@/components/ui/pageTransition";
 import { FadeIn } from "@/components/ui/animations";
+import { BackendWarmupBanner } from "@/components/BackendWarmupBanner";
 import { VerdictBanner } from "@/components/results/verdictBanner";
 import { ReasonsList } from "@/components/results/reasonsList";
 import { OsintCards } from "@/components/results/osintCards";
@@ -81,6 +82,9 @@ export default function EmlIngestPage() {
   return (
     <PageTransition>
       <div className="space-y-6">
+        {/* Backend warmup banner */}
+        <BackendWarmupBanner />
+
         <FadeIn>
           <div className="flex items-center gap-3">
             <div className="rounded-full border bg-muted p-3">

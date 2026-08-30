@@ -22,6 +22,7 @@ import {
   BatchResults,
   type BatchEntry,
 } from "@/components/analyze/batchResults";
+import { BackendWarmupBanner } from "@/components/BackendWarmupBanner";
 import { analyzeBatch, analyzeUrl } from "@/lib/api/endpoints";
 import { showError, showInfo, showSuccess } from "@/lib/toast";
 import { validateBatch } from "@/lib/validation";
@@ -211,6 +212,9 @@ export default function BatchAnalysisPage() {
   return (
     <PageTransition>
       <div className="space-y-6">
+        {/* Backend warmup banner */}
+        <BackendWarmupBanner />
+
         {/* Header */}
         <FadeIn>
           <div className="flex items-center gap-3">

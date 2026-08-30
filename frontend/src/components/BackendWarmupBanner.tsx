@@ -18,39 +18,67 @@ interface BackendWarmupBannerProps {
   className?: string;
 }
 
-export function BackendWarmupBanner({ className }: BackendWarmupBannerProps) {
-  const { data, isLoading, error, isColdStart } = useHealth(5_000); // Poll every 5s during warmup
-  const [showBanner, setShowBanner] = useState(false);
-  const [startTime, setStartTime] = useState<number | null>(null);
+/** Auto-hide after 60 seconds (give up). */
+const WARMUP_TIMEOUT_MS = 60_000;
 
+/** Estimated cold-start duration on Render free tier (seconds). */
+const ESTIMATED_COLD_START_S = 45;
+
+export function BackendWarmupBanner({ className }: BackendWarmupBannerProps) {
+  const { data, isLoading, error } = useHealth(5_000); // Poll every 5s during warmup
+
+  // Visibility is derived from health state + a user-dismiss flag,
+  // so no setState-in-effect mirroring is needed.
+  const backendAlive = data?.status === "alive";
+  const backendDown = Boolean(error) && !isLoading;
+  const [dismissed, setDismissed] = useState(false);
+  const showBanner = backendDown && !dismissed;
+
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [now, setNow] = useState<number | null>(null);
+
+  // Reset dismissal whenever the backend recovers, so the banner can
+  // reappear on the next cold start.
   useEffect(() => {
-    // If we have an error (backend not responding), start showing the banner
-    if (error && !isLoading) {
-      if (!startTime) {
-        setStartTime(Date.now());
-      }
-      setShowBanner(true);
+    if (backendAlive && dismissed) {
+      // Defer via timeout: runs outside the render/commit cascade.
+      const id = setTimeout(() => setDismissed(false), 0);
+      return () => clearTimeout(id);
     }
-    // If backend is alive, hide the banner
-    if (data?.status === "alive") {
-      setShowBanner(false);
-      setStartTime(null);
+  }, [backendAlive, dismissed]);
+
+  // Record the moment the backend first became unreachable.
+  useEffect(() => {
+    if (backendDown && startTime === null) {
+      const t = Date.now();
+      const id = setTimeout(() => setStartTime((prev) => prev ?? t), 0);
+      return () => clearTimeout(id);
     }
-  }, [error, isLoading, data, startTime]);
+    if (!backendDown && startTime !== null) {
+      const id = setTimeout(() => setStartTime(null), 0);
+      return () => clearTimeout(id);
+    }
+  }, [backendDown, startTime]);
+
+  // Tick once per second while the banner is visible so elapsed/ETA stay
+  // current without calling impure time functions during render.
+  useEffect(() => {
+    if (!showBanner) return;
+    const tick = setInterval(() => setNow(Date.now()), 1_000);
+    return () => clearInterval(tick);
+  }, [showBanner]);
 
   // Auto-hide after 60 seconds (give up)
   useEffect(() => {
     if (!showBanner) return;
-    const timeout = setTimeout(() => {
-      setShowBanner(false);
-    }, 60_000);
+    const timeout = setTimeout(() => setDismissed(true), WARMUP_TIMEOUT_MS);
     return () => clearTimeout(timeout);
   }, [showBanner]);
 
   if (!showBanner) return null;
 
-  const elapsed = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
-  const eta = Math.max(0, 45 - elapsed); // Render free tier cold start ~45s
+  const elapsed = startTime && now ? Math.floor((now - startTime) / 1000) : 0;
+  const eta = Math.max(0, ESTIMATED_COLD_START_S - elapsed);
 
   return (
     <div
@@ -89,10 +117,7 @@ export function BackendWarmupBanner({ className }: BackendWarmupBannerProps) {
           </p>
         </div>
         <button
-          onClick={() => {
-            setShowBanner(false);
-            setStartTime(Date.now());
-          }}
+          onClick={() => setDismissed(true)}
           className="shrink-0 rounded p-1 text-blue-600 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900"
           aria-label="Retry connection"
           title="Retry connection"

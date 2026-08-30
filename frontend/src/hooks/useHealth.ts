@@ -30,9 +30,6 @@ interface HealthState {
 /** Default polling interval: 30 seconds. */
 const DEFAULT_INTERVAL_MS = 30_000;
 
-/** Threshold for detecting cold starts (ms). */
-const COLD_START_THRESHOLD_MS = 5_000;
-
 /* ------------------------------------------------------------------ */
 /*  Hook                                                              */
 /* ------------------------------------------------------------------ */
